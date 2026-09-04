@@ -1,35 +1,12 @@
 /* ============================================================
- * GoVara — 28-Customer.js
- * Customer Registration + Profile + KYC/Documents
- *
- * PURPOSE
- * - Customer registration UI
- * - Customer profile information
- * - Optional profile photo
- * - Optional Aadhaar document
- * - Optional PAN document
- * - Optional additional document
- * - Frontend basic validation only
- * - ONE Consolidated API Boundary
- * - Backend-generated Customer_ID
- * - Backend-generated User_ID
- * - No direct database access
- * - No frontend-generated business IDs
- * - Admin-controlled document requirement hooks
- * - Testing Mode / Real Money safety preserved
- *
- * IMPORTANT
- * - Frontend is NOT KYC authority.
- * - Backend remains authoritative.
- * - Actual document storage/verification must be handled
- *   by the backend/document service when its API contract exists.
- * ============================================================ */
+   GoVara — STEP 28 Customer Module
+   Registration Contract Safe Version
+   ============================================================ */
 
-(function (window, document) {
-
+(function () {
   'use strict';
 
-  var GoVaraCustomer = {
+  var Customer = {
 
     MODULE: 'CUSTOMER',
     ACTION: 'CUSTOMER_REGISTER',
@@ -37,2156 +14,570 @@
     state: {
       loading: false,
       registered: false,
-
       customerId: '',
       userId: '',
       session: null,
-
       error: '',
       success: '',
-
-      /*
-       * Admin-controlled requirement hooks.
-       *
-       * These defaults are OPTIONAL.
-       * Backend/Admin policy remains authoritative.
-       */
       documentPolicy: {
         profilePhoto: 'OPTIONAL',
         aadhaar: 'OPTIONAL',
         pan: 'OPTIONAL',
         additional: 'OPTIONAL'
+      },
+      files: {
+        profilePhoto: null,
+        aadhaar: null,
+        pan: null,
+        additional: null
       }
     },
 
-
-    /* ========================================================
-     * INITIALIZE
-     * ======================================================== */
-
     init: function () {
-
       this.registerModule();
-
       this.render();
-
       this.bindEvents();
+    },
 
+    registerModule: function () {
+      window.GoVaraCustomer = this;
+    },
+
+    render: function () {
+      var root =
+        document.getElementById('customer-page') ||
+        document.getElementById('main-content');
+
+      if (!root) return;
+
+      root.innerHTML = this.getHTML();
       this.applyDocumentPolicy();
     },
 
-
-    /* ========================================================
-     * MODULE REGISTRATION
-     * ======================================================== */
-
-    registerModule: function () {
-
-      window.GoVaraCustomer = this;
-
-      if (!window.GoVaraModules) {
-        window.GoVaraModules = {};
-      }
-
-      window.GoVaraModules.Customer = this;
-    },
-
-
-    /* ========================================================
-     * RENDER
-     * ======================================================== */
-
-    render: function () {
-
-      var container =
-        document.getElementById('customer-page');
-
-      if (!container) {
-
-        container =
-          document.getElementById('main-content');
-      }
-
-      if (!container) {
-        return;
-      }
-
-      container.innerHTML = this.getHTML();
-    },
-
-
-    /* ========================================================
-     * HTML
-     * ======================================================== */
-
     getHTML: function () {
-
       return `
-        <section
-          class="govara-customer-module"
-          data-module="CUSTOMER"
-        >
-
-          <div class="govara-module-header">
-
+        <div class="module-card" style="max-width:900px;margin:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
             <div>
-              <h2>Customer Registration</h2>
-
-              <p>
-                Register a new GoVara Customer.
-                Customer ID and User ID are generated
-                by the backend.
-              </p>
+              <h2 style="margin:0;">Customer Registration</h2>
+              <div class="muted">Register a new GoVara Customer.</div>
             </div>
-
-            <div class="govara-status-badge">
-              TESTING MODE
-            </div>
-
+            <span class="status-badge">TESTING MODE</span>
           </div>
 
+          <div id="customer-message" style="margin-top:16px;"></div>
 
-          <div
-            id="customer-registration-message"
-            class="govara-message"
-            style="display:none;"
-          ></div>
+          <form id="customer-registration-form" style="margin-top:18px;">
 
+            <h3>Basic Profile</h3>
 
-          <!-- ==================================================
-               SUCCESS
-          =================================================== -->
-
-          <div
-            id="customer-registration-success"
-            style="display:none;"
-          >
-
-            <div class="govara-success-card">
-
-              <h3>Customer Registered Successfully</h3>
-
-              <div class="govara-id-row">
-                <span>Customer ID</span>
-                <strong id="customer-generated-id"></strong>
+            <div class="form-grid">
+              <div>
+                <label>Full Name *</label>
+                <input id="customer-name" type="text"
+                       maxlength="150" autocomplete="name"
+                       placeholder="Enter full name">
               </div>
 
-              <div class="govara-id-row">
-                <span>User ID</span>
-                <strong id="customer-generated-user-id"></strong>
+              <div>
+                <label>Mobile Number *</label>
+                <input id="customer-mobile" type="tel"
+                       maxlength="13" autocomplete="tel"
+                       placeholder="10-digit Indian mobile">
               </div>
 
-              <div class="govara-id-row">
-                <span>KYC Status</span>
-                <strong id="customer-generated-kyc"></strong>
+              <div>
+                <label>Email *</label>
+                <input id="customer-email" type="email"
+                       maxlength="150" autocomplete="email"
+                       placeholder="name@example.com">
               </div>
 
-              <div class="govara-id-row">
-                <span>Status</span>
-                <strong id="customer-generated-status"></strong>
+              <div>
+                <label>Address *</label>
+                <textarea id="customer-address"
+                          maxlength="500"
+                          placeholder="Enter address"></textarea>
               </div>
-
             </div>
 
-          </div>
-
-
-          <!-- ==================================================
-               REGISTRATION FORM
-          =================================================== -->
-
-          <form
-            id="customer-registration-form"
-            autocomplete="off"
-            enctype="multipart/form-data"
-          >
-
-            <!-- ================================================
-                 BASIC PROFILE
-            ================================================= -->
-
-            <div class="govara-section-card">
-
-              <div class="govara-section-title">
-                <h3>Basic Profile</h3>
-                <span>Customer information</span>
-              </div>
-
-              <div class="govara-form-grid">
-
-                <div class="govara-form-group">
-
-                  <label for="customer-name">
-                    Full Name
-                  </label>
-
-                  <input
-                    id="customer-name"
-                    name="name"
-                    type="text"
-                    maxlength="100"
-                    required
-                    placeholder="Enter full name"
-                  />
-
-                </div>
-
-
-                <div class="govara-form-group">
-
-                  <label for="customer-mobile">
-                    Mobile Number
-                  </label>
-
-                  <input
-                    id="customer-mobile"
-                    name="mobile"
-                    type="tel"
-                    inputmode="numeric"
-                    maxlength="15"
-                    required
-                    placeholder="10 digit mobile number"
-                  />
-
-                  <small>
-                    Indian mobile number required.
-                  </small>
-
-                </div>
-
-
-                <div class="govara-form-group">
-
-                  <label for="customer-email">
-                    Email
-                  </label>
-
-                  <input
-                    id="customer-email"
-                    name="email"
-                    type="email"
-                    maxlength="150"
-                    required
-                    placeholder="name@example.com"
-                  />
-
-                </div>
-
-
-                <div class="govara-form-group">
-
-                  <label for="customer-address">
-                    Address
-                  </label>
-
-                  <textarea
-                    id="customer-address"
-                    name="address"
-                    maxlength="500"
-                    required
-                    rows="4"
-                    placeholder="Enter address"
-                  ></textarea>
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <!-- ================================================
-                 PROFILE PHOTO
-            ================================================= -->
-
-            <div class="govara-section-card">
-
-              <div class="govara-section-title">
-
-                <div>
-                  <h3>Profile Photo</h3>
-
-                  <span>
-                    Optional — requirement can be controlled
-                    by Admin policy.
-                  </span>
-                </div>
-
-                <span
-                  id="customer-photo-policy"
-                  class="govara-policy-badge"
-                >
-                  OPTIONAL
-                </span>
-
-              </div>
-
-
-              <div class="govara-upload-group">
-
-                <label for="customer-profile-photo">
-                  Profile Photo
-                </label>
-
-                <input
-                  id="customer-profile-photo"
-                  name="profilePhoto"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                />
-
-                <small>
-                  Accepted: JPG, PNG or WebP.
-                  Maximum recommended size: 5 MB.
-                </small>
-
-                <div
-                  id="customer-profile-photo-preview"
-                  class="govara-file-preview"
-                  style="display:none;"
-                ></div>
-
-              </div>
-
-            </div>
-
-
-            <!-- ================================================
-                 IDENTITY DOCUMENTS
-            ================================================= -->
-
-            <div class="govara-section-card">
-
-              <div class="govara-section-title">
-
-                <div>
-                  <h3>Identity & KYC Documents</h3>
-
-                  <span>
-                    Documents are optional by default.
-                    Admin policy can control requirements.
-                  </span>
-                </div>
-
-                <span class="govara-policy-badge">
-                  ADMIN CONTROLLED
-                </span>
-
-              </div>
-
-
-              <!-- Aadhaar -->
-
-              <div class="govara-document-card">
-
-                <div class="govara-document-heading">
-
-                  <div>
-                    <strong>Aadhaar Card</strong>
-
-                    <small>
-                      Optional identity document
-                    </small>
-                  </div>
-
-                  <span
-                    id="customer-aadhaar-policy"
-                    class="govara-policy-badge"
-                  >
-                    OPTIONAL
-                  </span>
-
-                </div>
-
-
-                <div class="govara-form-grid">
-
-                  <div class="govara-form-group">
-
-                    <label for="customer-aadhaar-number">
-                      Aadhaar Number
-                    </label>
-
-                    <input
-                      id="customer-aadhaar-number"
-                      name="aadhaarNumber"
-                      type="text"
-                      inputmode="numeric"
-                      maxlength="14"
-                      placeholder="XXXX XXXX XXXX"
-                    />
-
-                    <small>
-                      Enter only if Aadhaar is being provided.
-                    </small>
-
-                  </div>
-
-
-                  <div class="govara-form-group">
-
-                    <label for="customer-aadhaar-file">
-                      Aadhaar Document
-                    </label>
-
-                    <input
-                      id="customer-aadhaar-file"
-                      name="aadhaarDocument"
-                      type="file"
-                      accept="image/jpeg,image/png,application/pdf"
-                    />
-
-                    <small>
-                      JPG, PNG or PDF.
-                    </small>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              <!-- PAN -->
-
-              <div class="govara-document-card">
-
-                <div class="govara-document-heading">
-
-                  <div>
-                    <strong>PAN Card</strong>
-
-                    <small>
-                      Optional identity document
-                    </small>
-                  </div>
-
-                  <span
-                    id="customer-pan-policy"
-                    class="govara-policy-badge"
-                  >
-                    OPTIONAL
-                  </span>
-
-                </div>
-
-
-                <div class="govara-form-grid">
-
-                  <div class="govara-form-group">
-
-                    <label for="customer-pan-number">
-                      PAN Number
-                    </label>
-
-                    <input
-                      id="customer-pan-number"
-                      name="panNumber"
-                      type="text"
-                      maxlength="10"
-                      placeholder="ABCDE1234F"
-                    />
-
-                    <small>
-                      Enter only if PAN is being provided.
-                    </small>
-
-                  </div>
-
-
-                  <div class="govara-form-group">
-
-                    <label for="customer-pan-file">
-                      PAN Document
-                    </label>
-
-                    <input
-                      id="customer-pan-file"
-                      name="panDocument"
-                      type="file"
-                      accept="image/jpeg,image/png,application/pdf"
-                    />
-
-                    <small>
-                      JPG, PNG or PDF.
-                    </small>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              <!-- Additional Document -->
-
-              <div class="govara-document-card">
-
-                <div class="govara-document-heading">
-
-                  <div>
-                    <strong>Additional Document</strong>
-
-                    <small>
-                      Optional supporting document
-                    </small>
-                  </div>
-
-                  <span
-                    id="customer-additional-policy"
-                    class="govara-policy-badge"
-                  >
-                    OPTIONAL
-                  </span>
-
-                </div>
-
-
-                <div class="govara-form-grid">
-
-                  <div class="govara-form-group">
-
-                    <label for="customer-additional-type">
-                      Document Type
-                    </label>
-
-                    <select
-                      id="customer-additional-type"
-                      name="additionalDocumentType"
-                    >
-
-                      <option value="">
-                        Select document type
-                      </option>
-
-                      <option value="PASSPORT">
-                        Passport
-                      </option>
-
-                      <option value="DRIVING_LICENSE">
-                        Driving Licence
-                      </option>
-
-                      <option value="VOTER_ID">
-                        Voter ID
-                      </option>
-
-                      <option value="OTHER">
-                        Other
-                      </option>
-
-                    </select>
-
-                  </div>
-
-
-                  <div class="govara-form-group">
-
-                    <label for="customer-additional-file">
-                      Document File
-                    </label>
-
-                    <input
-                      id="customer-additional-file"
-                      name="additionalDocument"
-                      type="file"
-                      accept="image/jpeg,image/png,application/pdf"
-                    />
-
-                    <small>
-                      JPG, PNG or PDF.
-                    </small>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <!-- ================================================
-                 ID NOTE
-            ================================================= -->
-
-            <div class="govara-id-note">
-
-              <strong>Customer ID</strong>
-
-              <span>
-                Automatically generated by GoVara Backend.
-                Frontend does not generate business IDs.
+            <hr>
+
+            <h3>
+              Documents
+              <span class="muted" style="font-size:12px;">
+                Admin controlled
               </span>
+            </h3>
 
+            <div class="document-box">
+              <div class="document-row">
+                <div>
+                  <strong>Profile Photo</strong>
+                  <div id="profile-photo-policy" class="muted">OPTIONAL</div>
+                </div>
+                <input id="profile-photo" type="file"
+                       accept="image/jpeg,image/png,image/webp">
+              </div>
+
+              <div id="profile-preview" style="margin-top:8px;"></div>
+
+              <div class="document-row">
+                <div>
+                  <strong>Aadhaar Card</strong>
+                  <div id="aadhaar-policy" class="muted">OPTIONAL</div>
+                </div>
+                <div>
+                  <input id="aadhaar-number" type="text"
+                         maxlength="14"
+                         placeholder="XXXX XXXX XXXX">
+                  <input id="aadhaar-file" type="file"
+                         accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+              </div>
+
+              <div class="document-row">
+                <div>
+                  <strong>PAN Card</strong>
+                  <div id="pan-policy" class="muted">OPTIONAL</div>
+                </div>
+                <div>
+                  <input id="pan-number" type="text"
+                         maxlength="10"
+                         placeholder="ABCDE1234F">
+                  <input id="pan-file" type="file"
+                         accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+              </div>
+
+              <div class="document-row">
+                <div>
+                  <strong>Other Document</strong>
+                  <div id="additional-policy" class="muted">OPTIONAL</div>
+                </div>
+                <div>
+                  <input id="additional-type" type="text"
+                         maxlength="100"
+                         placeholder="Document type">
+                  <input id="additional-file" type="file"
+                         accept=".jpg,.jpeg,.png,.pdf">
+                </div>
+              </div>
             </div>
 
-
-            <div class="govara-id-note">
-
-              <strong>KYC Authority</strong>
-
-              <span>
-                Backend remains authoritative for KYC,
-                document verification and final status.
-              </span>
-
+            <div class="muted" style="margin-top:12px;">
+              Documents are collected in the Customer UI only.
+              They are NOT sent inside CUSTOMER_REGISTER until the
+              backend Document Service contract is connected.
             </div>
 
-
-            <!-- ================================================
-                 ACTIONS
-            ================================================= -->
-
-            <div class="govara-form-actions">
-
-              <button
-                type="submit"
-                id="customer-register-button"
-              >
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+              <button id="customer-register-btn" type="submit">
                 Register Customer
               </button>
-
-              <button
-                type="button"
-                id="customer-clear-button"
-              >
+              <button id="customer-clear-btn" type="button">
                 Clear
               </button>
-
             </div>
 
           </form>
-
-        </section>
+        </div>
       `;
     },
 
-
-    /* ========================================================
-     * EVENT BINDING
-     * ======================================================== */
-
     bindEvents: function () {
-
       var self = this;
 
-
-      var form =
-        document.getElementById(
-          'customer-registration-form'
-        );
+      var form = document.getElementById('customer-registration-form');
+      var clear = document.getElementById('customer-clear-btn');
+      var photo = document.getElementById('profile-photo');
 
       if (form) {
-
-        form.addEventListener(
-          'submit',
-          function (event) {
-
-            event.preventDefault();
-
-            self.submit();
-          }
-        );
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          self.submit();
+        });
       }
 
-
-      var clearButton =
-        document.getElementById(
-          'customer-clear-button'
-        );
-
-      if (clearButton) {
-
-        clearButton.addEventListener(
-          'click',
-          function () {
-
-            self.clearForm();
-          }
-        );
+      if (clear) {
+        clear.addEventListener('click', function () {
+          self.clear();
+        });
       }
 
-
-      /*
-       * Profile photo preview.
-       */
-      var photoInput =
-        document.getElementById(
-          'customer-profile-photo'
-        );
-
-      if (photoInput) {
-
-        photoInput.addEventListener(
-          'change',
-          function () {
-
-            self.previewProfilePhoto(
-              photoInput
-            );
-          }
-        );
+      if (photo) {
+        photo.addEventListener('change', function () {
+          self.state.files.profilePhoto =
+            photo.files && photo.files[0] ? photo.files[0] : null;
+          self.previewProfilePhoto();
+        });
       }
 
+      var aadhaarFile = document.getElementById('aadhaar-file');
+      var panFile = document.getElementById('pan-file');
+      var additionalFile = document.getElementById('additional-file');
 
-      /*
-       * Aadhaar formatting.
-       */
-      var aadhaarInput =
-        document.getElementById(
-          'customer-aadhaar-number'
-        );
-
-      if (aadhaarInput) {
-
-        aadhaarInput.addEventListener(
-          'input',
-          function () {
-
-            aadhaarInput.value =
-              self.formatAadhaar(
-                aadhaarInput.value
-              );
-          }
-        );
+      if (aadhaarFile) {
+        aadhaarFile.addEventListener('change', function () {
+          self.state.files.aadhaar =
+            aadhaarFile.files && aadhaarFile.files[0]
+              ? aadhaarFile.files[0] : null;
+        });
       }
 
+      if (panFile) {
+        panFile.addEventListener('change', function () {
+          self.state.files.pan =
+            panFile.files && panFile.files[0]
+              ? panFile.files[0] : null;
+        });
+      }
 
-      /*
-       * PAN formatting.
-       */
-      var panInput =
-        document.getElementById(
-          'customer-pan-number'
-        );
-
-      if (panInput) {
-
-        panInput.addEventListener(
-          'input',
-          function () {
-
-            panInput.value =
-              String(
-                panInput.value || ''
-              )
-                .toUpperCase()
-                .replace(
-                  /[^A-Z0-9]/g,
-                  ''
-                )
-                .substring(0, 10);
-          }
-        );
+      if (additionalFile) {
+        additionalFile.addEventListener('change', function () {
+          self.state.files.additional =
+            additionalFile.files && additionalFile.files[0]
+              ? additionalFile.files[0] : null;
+        });
       }
     },
-
-
-    /* ========================================================
-     * DOCUMENT POLICY
-     * ======================================================== */
-
-    applyDocumentPolicy: function () {
-
-      var policy =
-        this.documentPolicy || {};
-
-      this.setPolicyBadge(
-        'customer-photo-policy',
-        policy.profilePhoto
-      );
-
-      this.setPolicyBadge(
-        'customer-aadhaar-policy',
-        policy.aadhaar
-      );
-
-      this.setPolicyBadge(
-        'customer-pan-policy',
-        policy.pan
-      );
-
-      this.setPolicyBadge(
-        'customer-additional-policy',
-        policy.additional
-      );
-
-
-      /*
-       * Default frontend behavior:
-       * OPTIONAL documents are not required.
-       *
-       * If Admin policy is later fetched from backend,
-       * this method can be called again with the authoritative
-       * policy.
-       */
-      this.applyRequiredState(
-        'customer-profile-photo',
-        policy.profilePhoto
-      );
-
-      this.applyRequiredState(
-        'customer-aadhaar-number',
-        policy.aadhaar
-      );
-
-      this.applyRequiredState(
-        'customer-aadhaar-file',
-        policy.aadhaar
-      );
-
-      this.applyRequiredState(
-        'customer-pan-number',
-        policy.pan
-      );
-
-      this.applyRequiredState(
-        'customer-pan-file',
-        policy.pan
-      );
-
-      this.applyRequiredState(
-        'customer-additional-file',
-        policy.additional
-      );
-    },
-
-
-    setPolicyBadge: function (
-      id,
-      value
-    ) {
-
-      var element =
-        document.getElementById(id);
-
-      if (!element) {
-        return;
-      }
-
-      element.textContent =
-        String(
-          value || 'OPTIONAL'
-        ).toUpperCase();
-    },
-
-
-    applyRequiredState: function (
-      id,
-      policy
-    ) {
-
-      var element =
-        document.getElementById(id);
-
-      if (!element) {
-        return;
-      }
-
-      element.required =
-        String(policy || 'OPTIONAL')
-          .toUpperCase() === 'MANDATORY';
-    },
-
-
-    /* ========================================================
-     * READ FORM
-     * ======================================================== */
 
     getFormData: function () {
-
       return {
-
-        name:
-          this.getValue(
-            'customer-name'
-          ),
-
-        mobile:
-          this.getValue(
-            'customer-mobile'
-          ),
-
-        email:
-          this.getValue(
-            'customer-email'
-          ),
-
-        address:
-          this.getValue(
-            'customer-address'
-          ),
-
-        aadhaarNumber:
-          this.getValue(
-            'customer-aadhaar-number'
-          ),
-
-        panNumber:
-          this.getValue(
-            'customer-pan-number'
-          ),
-
-        additionalDocumentType:
-          this.getValue(
-            'customer-additional-type'
-          )
+        name: (document.getElementById('customer-name') || {}).value || '',
+        mobile: (document.getElementById('customer-mobile') || {}).value || '',
+        email: (document.getElementById('customer-email') || {}).value || '',
+        address: (document.getElementById('customer-address') || {}).value || ''
       };
     },
 
-
-    getValue: function (id) {
-
-      var element =
-        document.getElementById(id);
-
-      if (!element) {
-        return '';
-      }
-
-      return String(
-        element.value || ''
-      ).trim();
-    },
-
-
-    getFile: function (id) {
-
-      var element =
-        document.getElementById(id);
-
-      if (
-        !element ||
-        !element.files ||
-        !element.files.length
-      ) {
-        return null;
-      }
-
-      return element.files[0];
-    },
-
-
-    /* ========================================================
-     * MOBILE NORMALIZATION
-     * ======================================================== */
-
     normalizeMobile: function (mobile) {
+      var value = String(mobile || '').trim();
+      value = value.replace(/[\s-]/g, '');
 
-      var value =
-        String(
-          mobile || ''
-        ).trim();
-
-      value =
-        value.replace(
-          /[\s-]/g,
-          ''
-        );
-
-      if (
-        value.indexOf('+91') === 0
-      ) {
-
-        value =
-          value.substring(3);
-
-      } else if (
-        value.indexOf('91') === 0 &&
-        value.length === 12
-      ) {
-
-        value =
-          value.substring(2);
+      if (value.indexOf('+91') === 0) {
+        value = value.substring(3);
+      } else if (value.indexOf('91') === 0 && value.length === 12) {
+        value = value.substring(2);
       }
 
       return value;
     },
 
-
-    /* ========================================================
-     * EMAIL VALIDATION
-     * ======================================================== */
-
-    isValidEmail: function (email) {
-
-      var value =
-        String(
-          email || ''
-        ).trim();
-
-      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-        .test(value);
-    },
-
-
-    /* ========================================================
-     * AADHAAR
-     * ======================================================== */
-
-    normalizeAadhaar: function (
-      value
-    ) {
-
-      return String(
-        value || ''
-      )
-        .replace(
-          /[^0-9]/g,
-          ''
-        )
-        .substring(0, 12);
-    },
-
-
-    formatAadhaar: function (
-      value
-    ) {
-
-      var normalized =
-        this.normalizeAadhaar(
-          value
-        );
-
-      return normalized
-        .replace(
-          /(\d{4})(?=\d)/g,
-          '$1 '
-        )
-        .trim();
-    },
-
-
-    isValidAadhaar: function (
-      value
-    ) {
-
-      var normalized =
-        this.normalizeAadhaar(
-          value
-        );
-
-      return (
-        !normalized ||
-        /^[0-9]{12}$/.test(
-          normalized
-        )
-      );
-    },
-
-
-    /* ========================================================
-     * PAN
-     * ======================================================== */
-
-    isValidPAN: function (
-      value
-    ) {
-
-      var normalized =
-        String(
-          value || ''
-        )
-          .trim()
-          .toUpperCase();
-
-      return (
-        !normalized ||
-        /^[A-Z]{5}[0-9]{4}[A-Z]$/
-          .test(normalized)
-      );
-    },
-
-
-    /* ========================================================
-     * FILE VALIDATION
-     * ======================================================== */
-
-    validateFile: function (
-      file,
-      options
-    ) {
-
-      if (!file) {
-        return null;
-      }
-
-      options =
-        options || {};
-
-      var maxSize =
-        options.maxSize ||
-        (5 * 1024 * 1024);
-
-      var allowedTypes =
-        options.allowedTypes ||
-        [
-          'image/jpeg',
-          'image/png',
-          'image/webp',
-          'application/pdf'
-        ];
-
-      if (
-        file.size >
-        maxSize
-      ) {
-
-        return (
-          file.name +
-          ' exceeds the maximum allowed size of 5 MB.'
-        );
-      }
-
-      if (
-        allowedTypes.indexOf(
-          file.type
-        ) === -1
-      ) {
-
-        return (
-          file.name +
-          ' has an unsupported file type.'
-        );
-      }
-
-      return null;
-    },
-
-
-    /* ========================================================
-     * FRONTEND VALIDATION
-     * ======================================================== */
-
     validate: function (data) {
-
       var errors = [];
 
-
-      /* Name */
-
-      if (!data.name) {
-
-        errors.push(
-          'Name is required.'
-        );
-
-      } else if (
-        data.name.length < 2
-      ) {
-
-        errors.push(
-          'Name must contain at least 2 characters.'
-        );
+      if (!data.name || data.name.trim().length < 2) {
+        errors.push('Enter a valid full name.');
       }
 
+      data.mobile = this.normalizeMobile(data.mobile);
 
-      /* Mobile */
-
-      var mobile =
-        this.normalizeMobile(
-          data.mobile
-        );
-
-      if (!mobile) {
-
-        errors.push(
-          'Mobile number is required.'
-        );
-
-      } else if (
-        !/^[6-9][0-9]{9}$/.test(
-          mobile
-        )
-      ) {
-
-        errors.push(
-          'Enter a valid 10-digit Indian mobile number.'
-        );
+      if (!/^[6-9][0-9]{9}$/.test(data.mobile)) {
+        errors.push('Enter a valid 10-digit Indian mobile number.');
       }
-
-
-      /* Email */
-
-      if (!data.email) {
-
-        errors.push(
-          'Email is required.'
-        );
-
-      } else if (
-        !this.isValidEmail(
-          data.email
-        )
-      ) {
-
-        errors.push(
-          'Enter a valid email address.'
-        );
-      }
-
-
-      /* Address */
-
-      if (!data.address) {
-
-        errors.push(
-          'Address is required.'
-        );
-
-      } else if (
-        data.address.length < 5
-      ) {
-
-        errors.push(
-          'Address is too short.'
-        );
-      }
-
-
-      /* Aadhaar */
 
       if (
-        !this.isValidAadhaar(
-          data.aadhaarNumber
-        )
+        !data.email ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())
       ) {
-
-        errors.push(
-          'Aadhaar number must contain 12 digits.'
-        );
+        errors.push('Enter a valid email address.');
       }
 
-
-      /* PAN */
-
-      if (
-        !this.isValidPAN(
-          data.panNumber
-        )
-      ) {
-
-        errors.push(
-          'Enter a valid PAN number.'
-        );
+      if (!data.address || data.address.trim().length < 3) {
+        errors.push('Enter a valid address.');
       }
 
-
-      /* Files */
-
-      var photo =
-        this.getFile(
-          'customer-profile-photo'
-        );
-
-      var aadhaarFile =
-        this.getFile(
-          'customer-aadhaar-file'
-        );
-
-      var panFile =
-        this.getFile(
-          'customer-pan-file'
-        );
-
-      var additionalFile =
-        this.getFile(
-          'customer-additional-file'
-        );
-
-
-      var fileError;
-
-
-      fileError =
-        this.validateFile(
-          photo,
-          {
-            allowedTypes: [
-              'image/jpeg',
-              'image/png',
-              'image/webp'
-            ]
-          }
-        );
-
-      if (fileError) {
-        errors.push(fileError);
+      if (data.address.length > 500) {
+        errors.push('Address cannot exceed 500 characters.');
       }
 
+      return errors;
+    },
 
-      fileError =
-        this.validateFile(
-          aadhaarFile
-        );
+    applyDocumentPolicy: function () {
+      var p = this.state.documentPolicy;
 
-      if (fileError) {
-        errors.push(fileError);
+      this.setPolicyBadge('profile-photo-policy', p.profilePhoto);
+      this.setPolicyBadge('aadhaar-policy', p.aadhaar);
+      this.setPolicyBadge('pan-policy', p.pan);
+      this.setPolicyBadge('additional-policy', p.additional);
+
+      this.applyRequiredState('profile-photo', p.profilePhoto);
+      this.applyRequiredState('aadhaar-file', p.aadhaar);
+      this.applyRequiredState('pan-file', p.pan);
+      this.applyRequiredState('additional-file', p.additional);
+    },
+
+    setPolicyBadge: function (id, value) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = value;
+    },
+
+    applyRequiredState: function (id, policy) {
+      var el = document.getElementById(id);
+      if (!el) return;
+
+      el.required = policy === 'MANDATORY';
+      el.disabled = policy === 'DISABLED';
+
+      if (policy === 'DISABLED') {
+        el.value = '';
+      }
+    },
+
+    previewProfilePhoto: function () {
+      var root = document.getElementById('profile-preview');
+      var file = this.state.files.profilePhoto;
+
+      if (!root) return;
+
+      root.innerHTML = '';
+
+      if (!file) return;
+
+      if (!/^image\//.test(file.type)) {
+        root.textContent = 'Profile photo must be an image.';
+        return;
       }
 
+      var url = URL.createObjectURL(file);
 
-      fileError =
-        this.validateFile(
-          panFile
-        );
+      root.innerHTML =
+        '<img src="' + url +
+        '" alt="Profile Preview" ' +
+        'style="width:90px;height:90px;object-fit:cover;border-radius:8px;">';
+    },
 
-      if (fileError) {
-        errors.push(fileError);
+    validateDocuments: function () {
+      var errors = [];
+      var p = this.state.documentPolicy;
+      var f = this.state.files;
+
+      if (p.profilePhoto === 'MANDATORY' && !f.profilePhoto) {
+        errors.push('Profile Photo is mandatory.');
       }
 
-
-      fileError =
-        this.validateFile(
-          additionalFile
-        );
-
-      if (fileError) {
-        errors.push(fileError);
+      if (p.aadhaar === 'MANDATORY' && !f.aadhaar) {
+        errors.push('Aadhaar document is mandatory.');
       }
 
-
-      /*
-       * If a document type is selected,
-       * an additional document should exist.
-       */
-      if (
-        data.additionalDocumentType &&
-        !additionalFile
-      ) {
-
-        errors.push(
-          'Please upload the selected additional document.'
-        );
+      if (p.pan === 'MANDATORY' && !f.pan) {
+        errors.push('PAN document is mandatory.');
       }
 
+      if (p.additional === 'MANDATORY' && !f.additional) {
+        errors.push('Additional document is mandatory.');
+      }
 
-      /*
-       * If Aadhaar number is provided,
-       * document upload is not automatically mandatory
-       * unless Admin policy makes it mandatory.
-       *
-       * Backend remains authoritative.
-       */
+      var aadhaar =
+        (document.getElementById('aadhaar-number') || {}).value || '';
 
+      aadhaar = aadhaar.replace(/\s/g, '');
+
+      if (aadhaar && !/^[2-9][0-9]{11}$/.test(aadhaar)) {
+        errors.push('Enter a valid 12-digit Aadhaar number.');
+      }
+
+      var pan =
+        (document.getElementById('pan-number') || {}).value || '';
+
+      pan = pan.trim().toUpperCase();
+
+      if (pan && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+        errors.push('Enter a valid PAN number.');
+      }
+
+      return errors;
+    },
+
+    /*
+     * IMPORTANT:
+     * Registration payload deliberately contains ONLY the fields
+     * supported by the current backend CUSTOMER_REGISTER contract.
+     *
+     * Do NOT add documents here until Document Service is connected.
+     */
+    buildRegistrationPayload: function () {
+      var data = this.getFormData();
 
       return {
-
-        valid:
-          errors.length === 0,
-
-        errors:
-          errors
+        name: data.name.trim(),
+        mobile: this.normalizeMobile(data.mobile),
+        email: data.email.trim().toLowerCase(),
+        address: data.address.trim()
       };
     },
 
+    submit: function () {
+      var self = this;
+      var data = this.getFormData();
+      var errors = this.validate(data);
 
-    /* ========================================================
-     * BUILD API PAYLOAD
-     * ======================================================== */
+      if (!errors.length) {
+        errors = this.validateDocuments();
+      }
 
-    buildRegistrationPayload:
-      async function (data) {
-
-        /*
-         * IMPORTANT:
-         * File objects are NOT JSON serializable.
-         *
-         * We prepare metadata here.
-         * Actual file persistence must be implemented by
-         * the backend/document API contract.
-         */
-
-        var payload = {
-
-          name:
-            data.name,
-
-          mobile:
-            this.normalizeMobile(
-              data.mobile
-            ),
-
-          email:
-            data.email,
-
-          address:
-            data.address,
-
-          documents: {
-
-            profilePhoto: null,
-
-            aadhaar: {
-              number:
-                this.normalizeAadhaar(
-                  data.aadhaarNumber
-                ),
-              file: null
-            },
-
-            pan: {
-              number:
-                String(
-                  data.panNumber || ''
-                )
-                  .trim()
-                  .toUpperCase(),
-              file: null
-            },
-
-            additional: {
-              type:
-                data.additionalDocumentType ||
-                '',
-              file: null
-            }
-          }
-        };
-
-
-        var photo =
-          this.getFile(
-            'customer-profile-photo'
-          );
-
-        var aadhaarFile =
-          this.getFile(
-            'customer-aadhaar-file'
-          );
-
-        var panFile =
-          this.getFile(
-            'customer-pan-file'
-          );
-
-        var additionalFile =
-          this.getFile(
-            'customer-additional-file'
-          );
-
-
-        /*
-         * File metadata only.
-         *
-         * No fake document IDs are generated.
-         */
-        if (photo) {
-
-          payload.documents.profilePhoto = {
-            name: photo.name,
-            type: photo.type,
-            size: photo.size
-          };
-        }
-
-
-        if (aadhaarFile) {
-
-          payload.documents.aadhaar.file = {
-            name: aadhaarFile.name,
-            type: aadhaarFile.type,
-            size: aadhaarFile.size
-          };
-        }
-
-
-        if (panFile) {
-
-          payload.documents.pan.file = {
-            name: panFile.name,
-            type: panFile.type,
-            size: panFile.size
-          };
-        }
-
-
-        if (additionalFile) {
-
-          payload.documents.additional.file = {
-            name: additionalFile.name,
-            type: additionalFile.type,
-            size: additionalFile.size
-          };
-        }
-
-
-        return payload;
-      },
-
-
-    /* ========================================================
-     * SUBMIT
-     * ======================================================== */
-
-    submit: async function () {
-
-      if (this.state.loading) {
+      if (errors.length) {
+        this.showError(errors.join('<br>'));
         return;
       }
 
-      this.clearMessage();
+      if (this.state.loading) return;
 
+      this.state.loading = true;
+      this.state.error = '';
+      this.state.success = '';
+      this.setButtonState(true);
 
-      var data =
-        this.getFormData();
-
-
-      /*
-       * Frontend validation.
-       */
-      var validation =
-        this.validate(data);
-
-      if (!validation.valid) {
-
-        this.showError(
-          validation.errors.join(' ')
-        );
-
-        return;
-      }
-
-
-      data.mobile =
-        this.normalizeMobile(
-          data.mobile
-        );
-
-
-      /*
-       * API boundary must exist.
-       */
-      if (!window.GoVaraAPI) {
-
-        this.showError(
-          'GoVara API is not configured.'
-        );
-
-        return;
-      }
-
-
-      this.setLoading(true);
-
-
-      try {
-
-        var payload =
-          await this.buildRegistrationPayload(
-            data
-          );
-
-
-        var response =
-          await this.callCustomerRegister(
-            payload
-          );
-
-
-        this.handleResponse(
-          response
-        );
-
-      } catch (error) {
-
-        this.showError(
-          error &&
-          error.message
-            ? error.message
-            : 'Customer registration failed.'
-        );
-
-      } finally {
-
-        this.setLoading(false);
-      }
+      this.callCustomerRegister(this.buildRegistrationPayload())
+        .then(function (response) {
+          self.handleResponse(response);
+        })
+        .catch(function (error) {
+          self.showError(self.extractError(error));
+        })
+        .finally(function () {
+          self.state.loading = false;
+          self.setButtonState(false);
+        });
     },
 
+    callCustomerRegister: function (data) {
+      var api = window.GoVaraAPI;
 
-    /* ========================================================
-     * API CALL
-     * ======================================================== */
-
-    callCustomerRegister:
-      async function (data) {
-
-        /*
-         * Preferred API method.
-         */
-        if (
-          typeof window.GoVaraAPI.customerRegister ===
-          'function'
-        ) {
-
-          return await
-            window.GoVaraAPI.customerRegister(
-              data
-            );
-        }
-
-
-        /*
-         * Generic consolidated API fallback.
-         */
-        if (
-          typeof window.GoVaraAPI.request ===
-          'function'
-        ) {
-
-          return await
-            window.GoVaraAPI.request({
-
-              action:
-                this.ACTION,
-
-              module:
-                this.MODULE,
-
-              data:
-                data
-            });
-        }
-
-
-        throw new Error(
-          'CUSTOMER_REGISTER API method is not available.'
-        );
-      },
-
-
-    /* ========================================================
-     * RESPONSE HANDLING
-     * ======================================================== */
-
-    handleResponse: function (
-      response
-    ) {
-
-      if (!response) {
-
-        this.showError(
-          'Empty response received from backend.'
-        );
-
-        return;
+      if (!api) {
+        return Promise.reject(new Error('GoVara API is not available.'));
       }
 
-
-      if (
-        response.success !== true
-      ) {
-
-        this.showError(
-          this.extractError(
-            response
-          )
-        );
-
-        return;
+      if (typeof api.customerRegister === 'function') {
+        return Promise.resolve(api.customerRegister(data));
       }
 
+      if (typeof api.request === 'function') {
+        return Promise.resolve(
+          api.request({
+            action: 'CUSTOMER_REGISTER',
+            module: 'CUSTOMER',
+            data: data
+          })
+        );
+      }
 
-      var result =
-        response.result ||
-        response;
-
-
-      this.state.registered =
-        true;
-
-
-      this.state.customerId =
-        response.customerId ||
-        result.customerId ||
-        '';
-
-
-      this.state.userId =
-        response.userId ||
-        result.userId ||
-        '';
-
-
-      this.state.session =
-        response.session ||
-        result.session ||
-        null;
-
-
-      this.state.success =
-        'Customer registered successfully.';
-
-
-      this.showSuccess(
-        result,
-        response
+      return Promise.reject(
+        new Error('CUSTOMER_REGISTER API method is not available.')
       );
     },
 
+    handleResponse: function (response) {
+      var result = response && response.result
+        ? response.result
+        : response;
 
-    /* ========================================================
-     * ERROR EXTRACTION
-     * ======================================================== */
-
-    extractError: function (
-      response
-    ) {
-
-      var result =
-        response.result ||
-        response;
-
-
-      var validation =
-        result.validation ||
-        response.validation;
-
-
-      if (
-        validation &&
-        Array.isArray(
-          validation.errors
-        ) &&
-        validation.errors.length
-      ) {
-
-        var errors =
-          validation.errors;
-
+      if (!result || result.success !== true) {
+        var message =
+          result && (
+            result.message ||
+            result.error ||
+            result.status
+          );
 
         if (
-          errors.indexOf(
-            'MOBILE_ALREADY_REGISTERED'
-          ) !== -1
+          result &&
+          result.validation &&
+          result.validation.errors &&
+          result.validation.errors.length
         ) {
-
-          return (
-            'This mobile number is already registered.'
-          );
+          message = result.validation.errors.join('<br>');
         }
 
-
-        if (
-          errors.indexOf(
-            'EMAIL_ALREADY_REGISTERED'
-          ) !== -1
-        ) {
-
-          return (
-            'This email address is already registered.'
-          );
-        }
-
-
-        return errors.join(' ');
+        this.showError(message || 'Customer registration failed.');
+        return;
       }
 
+      this.state.registered = true;
+      this.state.customerId = result.customerId || '';
+      this.state.userId = result.userId || '';
+      this.state.session = result.session || null;
 
-      if (response.error) {
+      this.state.success =
+        'Customer registered successfully.' +
+        '<br><strong>Customer ID:</strong> ' +
+        (this.state.customerId || 'Generated by Backend') +
+        '<br><strong>User ID:</strong> ' +
+        (this.state.userId || 'Generated by Backend');
 
-        return String(
-          response.error
-        );
-      }
+      this.showSuccess(this.state.success);
+    },
 
+    extractError: function (error) {
+      if (!error) return 'Customer registration failed.';
 
-      if (result.error) {
-
-        return String(
-          result.error
-        );
-      }
-
-
-      if (
-        response.status ===
-        'UNAUTHORIZED'
-      ) {
-
-        return (
-          'Registration is not authorized.'
-        );
-      }
-
-
-      if (
-        response.status ===
-        'FORBIDDEN'
-      ) {
-
-        return (
-          'Registration permission denied.'
-        );
-      }
-
+      if (typeof error === 'string') return error;
 
       return (
+        error.message ||
+        error.error ||
         'Customer registration failed.'
       );
     },
 
+    showError: function (message) {
+      var box = document.getElementById('customer-message');
+      if (!box) return;
 
-    /* ========================================================
-     * SUCCESS UI
-     * ======================================================== */
-
-    showSuccess: function (
-      result,
-      response
-    ) {
-
-      var successBox =
-        document.getElementById(
-          'customer-registration-success'
-        );
-
-
-      var form =
-        document.getElementById(
-          'customer-registration-form'
-        );
-
-
-      if (successBox) {
-
-        successBox.style.display =
-          'block';
-      }
-
-
-      if (form) {
-
-        form.style.display =
-          'none';
-      }
-
-
-      this.setText(
-        'customer-generated-id',
-        this.state.customerId ||
-          'Not returned'
-      );
-
-
-      this.setText(
-        'customer-generated-user-id',
-        this.state.userId ||
-          'Not returned'
-      );
-
-
-      this.setText(
-        'customer-generated-kyc',
-        result.kycStatus ||
-          result.KYC_Status ||
-          'PENDING'
-      );
-
-
-      this.setText(
-        'customer-generated-status',
-        result.status ||
-          response.status ||
-          'ACTIVE'
-      );
-
-
-      this.showMessage(
-        'Customer registered successfully.',
-        'success'
-      );
+      box.innerHTML =
+        '<div class="error-box">' + message + '</div>';
     },
 
+    showSuccess: function (message) {
+      var box = document.getElementById('customer-message');
+      if (!box) return;
 
-    /* ========================================================
-     * PROFILE PHOTO PREVIEW
-     * ======================================================== */
-
-    previewProfilePhoto: function (
-      input
-    ) {
-
-      var preview =
-        document.getElementById(
-          'customer-profile-photo-preview'
-        );
-
-
-      if (!preview) {
-        return;
-      }
-
-
-      preview.innerHTML = '';
-
-
-      if (
-        !input ||
-        !input.files ||
-        !input.files.length
-      ) {
-
-        preview.style.display =
-          'none';
-
-        return;
-      }
-
-
-      var file =
-        input.files[0];
-
-
-      if (
-        [
-          'image/jpeg',
-          'image/png',
-          'image/webp'
-        ].indexOf(
-          file.type
-        ) === -1
-      ) {
-
-        preview.style.display =
-          'none';
-
-        return;
-      }
-
-
-      var url =
-        URL.createObjectURL(
-          file
-        );
-
-
-      var image =
-        document.createElement(
-          'img'
-        );
-
-
-      image.src =
-        url;
-
-      image.alt =
-        'Profile photo preview';
-
-      image.style.maxWidth =
-        '120px';
-
-      image.style.maxHeight =
-        '120px';
-
-      image.style.borderRadius =
-        '12px';
-
-
-      preview.appendChild(
-        image
-      );
-
-
-      preview.style.display =
-        'block';
+      box.innerHTML =
+        '<div class="success-box">' + message + '</div>';
     },
 
+    setButtonState: function (loading) {
+      var btn = document.getElementById('customer-register-btn');
 
-    /* ========================================================
-     * TEXT HELPER
-     * ======================================================== */
+      if (!btn) return;
 
-    setText: function (
-      id,
-      value
-    ) {
-
-      var element =
-        document.getElementById(id);
-
-
-      if (element) {
-
-        element.textContent =
-          String(
-            value || ''
-          );
-      }
+      btn.disabled = loading;
+      btn.textContent = loading
+        ? 'Registering...'
+        : 'Register Customer';
     },
 
+    clear: function () {
+      var form = document.getElementById('customer-registration-form');
 
-    /* ========================================================
-     * LOADING STATE
-     * ======================================================== */
+      if (form) form.reset();
 
-    setLoading: function (
-      loading
-    ) {
+      this.state.registered = false;
+      this.state.customerId = '';
+      this.state.userId = '';
+      this.state.session = null;
+      this.state.error = '';
+      this.state.success = '';
 
-      this.state.loading =
-        loading;
+      this.state.files = {
+        profilePhoto: null,
+        aadhaar: null,
+        pan: null,
+        additional: null
+      };
 
+      var preview = document.getElementById('profile-preview');
+      if (preview) preview.innerHTML = '';
 
-      var button =
-        document.getElementById(
-          'customer-register-button'
-        );
+      var message = document.getElementById('customer-message');
+      if (message) message.innerHTML = '';
 
-
-      if (!button) {
-        return;
-      }
-
-
-      button.disabled =
-        loading;
-
-
-      button.textContent =
-        loading
-          ? 'Registering...'
-          : 'Register Customer';
-    },
-
-
-    /* ========================================================
-     * CLEAR FORM
-     * ======================================================== */
-
-    clearForm: function () {
-
-      var form =
-        document.getElementById(
-          'customer-registration-form'
-        );
-
-
-      if (form) {
-
-        form.reset();
-      }
-
-
-      var preview =
-        document.getElementById(
-          'customer-profile-photo-preview'
-        );
-
-
-      if (preview) {
-
-        preview.innerHTML =
-          '';
-
-        preview.style.display =
-          'none';
-      }
-
-
-      this.clearMessage();
-    },
-
-
-    /* ========================================================
-     * MESSAGE
-     * ======================================================== */
-
-    showMessage: function (
-      message,
-      type
-    ) {
-
-      var box =
-        document.getElementById(
-          'customer-registration-message'
-        );
-
-
-      if (!box) {
-        return;
-      }
-
-
-      box.style.display =
-        'block';
-
-
-      box.className =
-        'govara-message govara-message-' +
-        (
-          type || 'info'
-        );
-
-
-      box.textContent =
-        message;
-    },
-
-
-    showError: function (
-      message
-    ) {
-
-      this.state.error =
-        String(
-          message || ''
-        );
-
-
-      this.showMessage(
-        message,
-        'error'
-      );
-    },
-
-
-    clearMessage: function () {
-
-      var box =
-        document.getElementById(
-          'customer-registration-message'
-        );
-
-
-      if (!box) {
-        return;
-      }
-
-
-      box.style.display =
-        'none';
-
-
-      box.textContent =
-        '';
-
-
-      box.className =
-        'govara-message';
+      this.applyDocumentPolicy();
     }
   };
 
+  window.GoVaraCustomer = Customer;
 
-  /* ==========================================================
-   * GLOBAL EXPOSURE
-   * ========================================================== */
-
-  window.GoVaraCustomer =
-    GoVaraCustomer;
-
-
-  /*
-   * IMPORTANT:
-   * No automatic rendering.
-   *
-   * Master frontend router calls:
-   *
-   * GoVaraCustomer.init()
-   *
-   * when STEP 28 is opened.
-   */
-
-
-})(window, document);
-
+})();

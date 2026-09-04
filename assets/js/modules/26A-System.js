@@ -1,89 +1,554 @@
 /* ============================================================
-   GoVara — STEP 26A
-   System Configuration
-   FRONTEND ONLY
-   Backend / Database / API untouched
-   ============================================================ */
+   GoVara — 26A System Configuration
+   VERSION: GOVARA-26A-V1
+   FRONTEND-ONLY CONFIGURATION MODULE
+
+   RULES:
+   - No backend call
+   - No database call
+   - No API test
+   - No financial authority in frontend
+   - Backend remains authoritative
+   - Real Money = BLOCKED
+   - Real Payment = BLOCKED
+   - Bank Transfer = BLOCKED
+============================================================ */
 
 window.GoVara26A = (function () {
 
+  "use strict";
+
   const STORAGE_KEY = "GOVARA_SYSTEM_CONFIG_26A_V1";
 
+  /* ==========================================================
+     DEFAULT CONFIGURATION
+  ========================================================== */
+
   const DEFAULT_CONFIG = {
+
+    /* ---------- SYSTEM IDENTITY ---------- */
+
     systemName: "GoVara",
-    platformName: "GoVara Transport & Mobility Platform",
-    environment: "TESTING",
-    systemStatus: "ACTIVE",
 
-    maintenanceMode: false,
-    productionLock: true,
-    testingMode: true,
+    platformName:
+      "GoVara Transport & Mobility Platform",
 
-    apiEndpoint: "",
+    systemVersion:
+      "26A-V1",
 
-    defaultLanguage: "English",
-    supportedLanguages: ["English", "Hindi"],
+    systemStatus:
+      "ACTIVE",
 
-    country: "India",
-    currency: "INR",
-    timezone: "Asia/Kolkata",
-    dateFormat: "DD-MM-YYYY",
-    timeFormat: "12-hour",
+    environment:
+      "TESTING",
 
-    customerRegistration: true,
-    vendorRegistration: true,
-    driverRegistration: true,
 
-    bookingEnabled: true,
-    fareEstimateEnabled: true,
-    notificationsEnabled: true,
+    /* ---------- SYSTEM LIFECYCLE ---------- */
 
-    welfareEnabled: true,
+    maintenanceMode:
+      false,
 
-    realMoney: false,
-    realPayment: false,
-    bankTransfer: false,
+    suspendedMode:
+      false,
 
-    frontendAuthority: false,
-    backendAuthority: true,
+    productionLock:
+      true,
 
-    lastUpdated: null
+    testingMode:
+      true,
+
+
+    /* ---------- CENTRAL CONFIGURATION ---------- */
+
+    apiEndpoint:
+      "",
+
+    configVersion:
+      "GOVARA-26A-V1",
+
+    configSource:
+      "FRONTEND_LOCAL_CONFIGURATION",
+
+    configurationValidated:
+      false,
+
+
+    /* ---------- REGIONAL SETTINGS ---------- */
+
+    defaultLanguage:
+      "English",
+
+    enabledLanguages:
+      ["English", "Hindi"],
+
+    country:
+      "India",
+
+    currency:
+      "INR",
+
+    timezone:
+      "Asia/Kolkata",
+
+    dateFormat:
+      "DD-MM-YYYY",
+
+    timeFormat:
+      "12-hour",
+
+
+    /* ---------- GLOBAL PLATFORM CONTROLS ---------- */
+
+    platformEnabled:
+      true,
+
+    customerRegistration:
+      true,
+
+    vendorRegistration:
+      true,
+
+    driverRegistration:
+      true,
+
+    bookingEnabled:
+      true,
+
+    fareEstimateEnabled:
+      true,
+
+    notificationsEnabled:
+      true,
+
+
+    /* ---------- SOCIAL WELFARE ---------- */
+
+    welfareEnabled:
+      true,
+
+    welfareMasterControl:
+      true,
+
+
+    /* ---------- MODULE REGISTRY ---------- */
+
+    modules: {
+      Customer: true,
+      Vendor: true,
+      Driver: true,
+      Vehicle: true,
+      Booking: true,
+      Duty: true,
+      Fare: true,
+      Transaction: true,
+      Wallet: true,
+      Ledger: true,
+      Settlement: true,
+      Billing: true,
+      Documents: true,
+      Admin: true,
+      Audit: true
+    },
+
+
+    /* ---------- FINANCIAL SAFETY ---------- */
+
+    realMoney:
+      false,
+
+    realPayment:
+      false,
+
+    bankTransfer:
+      false,
+
+    frontendAuthority:
+      false,
+
+    backendAuthority:
+      true,
+
+
+    /* ---------- HEALTH / AUDIT ---------- */
+
+    auditLogging:
+      true,
+
+    healthMonitoring:
+      true,
+
+    lastAction:
+      "INITIALIZED",
+
+    lastUpdated:
+      null
+
   };
 
-  function load() {
+
+  /* ==========================================================
+     UTILITIES
+  ========================================================== */
+
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+
+  function getConfig() {
+
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return { ...DEFAULT_CONFIG };
 
-      const parsed = JSON.parse(saved);
+      const stored =
+        localStorage.getItem(STORAGE_KEY);
 
-      return {
-        ...DEFAULT_CONFIG,
-        ...parsed
-      };
+      if (!stored) {
+        return clone(DEFAULT_CONFIG);
+      }
+
+      const parsed =
+        JSON.parse(stored);
+
+      return mergeConfig(
+        clone(DEFAULT_CONFIG),
+        parsed
+      );
+
     } catch (error) {
-      console.warn("GoVara 26A load error:", error);
-      return { ...DEFAULT_CONFIG };
+
+      console.warn(
+        "GoVara26A: configuration load failed.",
+        error
+      );
+
+      return clone(DEFAULT_CONFIG);
     }
   }
 
-  function save(config) {
-    const finalConfig = {
-      ...DEFAULT_CONFIG,
-      ...config,
-      lastUpdated: new Date().toISOString()
+
+  function mergeConfig(base, incoming) {
+
+    if (!incoming || typeof incoming !== "object") {
+      return base;
+    }
+
+    Object.keys(incoming).forEach(function (key) {
+
+      if (
+        incoming[key] &&
+        typeof incoming[key] === "object" &&
+        !Array.isArray(incoming[key]) &&
+        base[key] &&
+        typeof base[key] === "object" &&
+        !Array.isArray(base[key])
+      ) {
+
+        base[key] =
+          mergeConfig(base[key], incoming[key]);
+
+      } else {
+
+        base[key] =
+          incoming[key];
+      }
+
+    });
+
+    return base;
+  }
+
+
+  /* ==========================================================
+     VALIDATION
+  ========================================================== */
+
+  function validateConfig(config) {
+
+    const errors = [];
+    const warnings = [];
+
+    if (!config.systemName) {
+      errors.push("System name is required.");
+    }
+
+    if (!config.platformName) {
+      errors.push("Platform name is required.");
+    }
+
+    if (!config.environment) {
+      errors.push("Environment is required.");
+    }
+
+    if (!config.systemStatus) {
+      errors.push("System status is required.");
+    }
+
+    if (!config.defaultLanguage) {
+      errors.push("Default language is required.");
+    }
+
+    if (!Array.isArray(config.enabledLanguages)) {
+      errors.push("Enabled languages must be an array.");
+    }
+
+    if (!config.country) {
+      errors.push("Country is required.");
+    }
+
+    if (!config.currency) {
+      errors.push("Currency is required.");
+    }
+
+    if (!config.timezone) {
+      errors.push("Timezone is required.");
+    }
+
+    /* ---------- SAFETY ENFORCEMENT ---------- */
+
+    if (config.realMoney !== false) {
+      errors.push(
+        "Real Money must remain BLOCKED."
+      );
+    }
+
+    if (config.realPayment !== false) {
+      errors.push(
+        "Real Payment must remain BLOCKED."
+      );
+    }
+
+    if (config.bankTransfer !== false) {
+      errors.push(
+        "Bank Transfer must remain BLOCKED."
+      );
+    }
+
+    if (config.frontendAuthority !== false) {
+      errors.push(
+        "Frontend must never become financial authority."
+      );
+    }
+
+    if (config.backendAuthority !== true) {
+      errors.push(
+        "Backend must remain authoritative."
+      );
+    }
+
+    /* ---------- TESTING SAFETY ---------- */
+
+    if (
+      config.environment === "TESTING" &&
+      config.testingMode !== true
+    ) {
+
+      warnings.push(
+        "Testing environment normally uses Testing Mode."
+      );
+    }
+
+    if (
+      config.environment === "PRODUCTION" &&
+      config.productionLock !== true
+    ) {
+
+      errors.push(
+        "Production Lock must remain enabled."
+      );
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors: errors,
+      warnings: warnings
     };
+  }
+
+
+  /* ==========================================================
+     SAVE
+  ========================================================== */
+
+  function save(config) {
+
+    const current =
+      mergeConfig(
+        clone(DEFAULT_CONFIG),
+        config || {}
+      );
+
+
+    /* ------------------------------------------
+       HARD SAFETY BOUNDARY
+    ------------------------------------------ */
+
+    current.realMoney = false;
+    current.realPayment = false;
+    current.bankTransfer = false;
+
+    current.frontendAuthority = false;
+    current.backendAuthority = true;
+
+    current.productionLock = true;
+
+
+    current.lastUpdated =
+      new Date().toISOString();
+
+    current.lastAction =
+      "CONFIGURATION_SAVED";
+
+
+    const validation =
+      validateConfig(current);
+
+    if (!validation.valid) {
+
+      console.error(
+        "GoVara26A validation failed:",
+        validation.errors
+      );
+
+      return {
+        success: false,
+        validation: validation
+      };
+    }
+
+
+    current.configurationValidated =
+      true;
+
 
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify(finalConfig)
+      JSON.stringify(current)
     );
 
-    return finalConfig;
+
+    return {
+      success: true,
+      config: current,
+      validation: validation
+    };
   }
 
-  function escapeHtml(value) {
-    return String(value ?? "")
+
+  /* ==========================================================
+     RESET
+  ========================================================== */
+
+  function reset() {
+
+    localStorage.removeItem(
+      STORAGE_KEY
+    );
+
+    return clone(DEFAULT_CONFIG);
+  }
+
+
+  /* ==========================================================
+     STATUS HELPERS
+  ========================================================== */
+
+  function getSystemHealth(config) {
+
+    const c =
+      config || getConfig();
+
+    const validation =
+      validateConfig(c);
+
+    return {
+
+      system:
+        c.platformEnabled
+          ? "HEALTHY"
+          : "DISABLED",
+
+      configuration:
+        validation.valid
+          ? "VALID"
+          : "ERROR",
+
+      environment:
+        c.environment,
+
+      api:
+        c.apiEndpoint
+          ? "CONFIGURED"
+          : "NOT CONFIGURED",
+
+      backend:
+        "AUTHORITATIVE",
+
+      financial:
+        (
+          c.realMoney === false &&
+          c.realPayment === false &&
+          c.bankTransfer === false
+        )
+          ? "SAFE"
+          : "BLOCKED",
+
+      audit:
+        c.auditLogging
+          ? "ENABLED"
+          : "DISABLED"
+
+    };
+  }
+
+
+  /* ==========================================================
+     AUDIT EVENT
+  ========================================================== */
+
+  function createAuditEvent(
+    action,
+    details
+  ) {
+
+    return {
+
+      module:
+        "26A",
+
+      action:
+        action || "UNKNOWN",
+
+      details:
+        details || "",
+
+      timestamp:
+        new Date().toISOString(),
+
+      authority:
+        "FRONTEND_CONFIGURATION_ONLY",
+
+      backendModified:
+        false,
+
+      databaseModified:
+        false
+
+    };
+  }
+
+
+  /* ==========================================================
+     HTML HELPERS
+  ========================================================== */
+
+  function esc(value) {
+
+    return String(
+      value === undefined ||
+      value === null
+        ? ""
+        : value
+    )
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -91,926 +556,1780 @@ window.GoVara26A = (function () {
       .replace(/'/g, "&#039;");
   }
 
-  function toggle(id, label, checked, description) {
-    return `
-      <label class="gv26a-toggle-row">
-        <span>
-          <strong>${label}</strong>
-          <small>${description}</small>
-        </span>
 
-        <input
-          type="checkbox"
-          id="${id}"
-          ${checked ? "checked" : ""}
-        >
-      </label>
+  function option(value, label, selected) {
+
+    return `
+      <option
+        value="${esc(value)}"
+        ${selected === value ? "selected" : ""}
+      >
+        ${esc(label)}
+      </option>
     `;
   }
 
-  function render() {
 
-    const config = load();
+  function boolControl(
+    id,
+    label,
+    value,
+    description,
+    locked
+  ) {
 
     return `
-      <div class="gv26a">
+      <div class="govara26a-control">
 
-        <div class="gv26a-header">
-          <div>
-            <div class="gv26a-kicker">ADMINISTRATOR CONTROL CENTER</div>
-            <h1>26A — System Configuration</h1>
-            <p>
-              Core system identity, environment, regional settings,
-              operational controls and safety boundaries.
-            </p>
-          </div>
+        <div class="govara26a-control-main">
 
-          <div class="gv26a-status">
-            <span class="gv26a-dot"></span>
-            FRONTEND CONFIGURATION
-          </div>
-        </div>
-
-
-        <!-- SYSTEM IDENTITY -->
-        <section class="gv26a-card">
-
-          <div class="gv26a-card-title">
-            <div>
-              <span class="gv26a-number">01</span>
-              <h2>System Identity</h2>
-            </div>
-
-            <span class="gv26a-badge">CONFIGURATION</span>
-          </div>
-
-          <div class="gv26a-grid">
-
-            <div class="gv26a-field">
-              <label>System Name</label>
-              <input
-                id="gv26a-systemName"
-                value="${escapeHtml(config.systemName)}"
-              >
-            </div>
-
-            <div class="gv26a-field">
-              <label>Platform Name</label>
-              <input
-                id="gv26a-platformName"
-                value="${escapeHtml(config.platformName)}"
-              >
-            </div>
-
-            <div class="gv26a-field">
-              <label>Environment</label>
-              <select id="gv26a-environment">
-                <option value="TESTING" ${config.environment === "TESTING" ? "selected" : ""}>
-                  TESTING
-                </option>
-                <option value="STAGING" ${config.environment === "STAGING" ? "selected" : ""}>
-                  STAGING
-                </option>
-                <option value="PRODUCTION" ${config.environment === "PRODUCTION" ? "selected" : ""}>
-                  PRODUCTION
-                </option>
-              </select>
-            </div>
-
-            <div class="gv26a-field">
-              <label>System Status</label>
-              <select id="gv26a-systemStatus">
-                <option value="ACTIVE" ${config.systemStatus === "ACTIVE" ? "selected" : ""}>
-                  ACTIVE
-                </option>
-                <option value="PAUSED" ${config.systemStatus === "PAUSED" ? "selected" : ""}>
-                  PAUSED
-                </option>
-                <option value="MAINTENANCE" ${config.systemStatus === "MAINTENANCE" ? "selected" : ""}>
-                  MAINTENANCE
-                </option>
-              </select>
-            </div>
-
-          </div>
-        </section>
-
-
-        <!-- ENVIRONMENT & SAFETY -->
-        <section class="gv26a-card">
-
-          <div class="gv26a-card-title">
-            <div>
-              <span class="gv26a-number">02</span>
-              <h2>Environment & Safety</h2>
-            </div>
-
-            <span class="gv26a-badge gv26a-badge-warning">
-              TESTING MODE
-            </span>
-          </div>
-
-          <div class="gv26a-toggle-grid">
-
-            ${toggle(
-              "gv26a-maintenanceMode",
-              "Maintenance Mode",
-              config.maintenanceMode,
-              "Temporarily restrict normal system operations."
-            )}
-
-            ${toggle(
-              "gv26a-productionLock",
-              "Production Lock",
-              config.productionLock,
-              "Keep production-level operations protected."
-            )}
-
-            ${toggle(
-              "gv26a-testingMode",
-              "Testing Mode",
-              config.testingMode,
-              "Keep the frontend in controlled testing mode."
-            )}
-
-          </div>
-
-          <div class="gv26a-warning">
-            <strong>Safety Boundary</strong>
-            <p>
-              Real Money, Real Payment and Bank Transfer remain blocked.
-              Frontend configuration does not become financial authority.
-            </p>
-          </div>
-
-        </section>
-
-
-        <!-- API -->
-        <section class="gv26a-card">
-
-          <div class="gv26a-card-title">
-            <div>
-              <span class="gv26a-number">03</span>
-              <h2>API Configuration</h2>
-            </div>
-
-            <span class="gv26a-badge gv26a-badge-muted">
-              NOT CONFIGURED
-            </span>
-          </div>
-
-          <div class="gv26a-field">
-
-            <label>Consolidated API Endpoint</label>
+          <label
+            class="govara26a-toggle"
+            for="${id}"
+          >
 
             <input
-              id="gv26a-apiEndpoint"
-              placeholder="API endpoint will be configured later"
-              value="${escapeHtml(config.apiEndpoint)}"
+              type="checkbox"
+              id="${id}"
+              ${value ? "checked" : ""}
+              ${locked ? "disabled" : ""}
             >
 
-            <small class="gv26a-help">
-              Endpoint configuration is stored locally only.
-              No API connection is tested from 26A.
-            </small>
+            <span class="govara26a-switch"></span>
 
-          </div>
+            <span>
+              <strong>${esc(label)}</strong>
 
-        </section>
+              ${
+                description
+                  ? `<small>${esc(description)}</small>`
+                  : ""
+              }
 
-
-        <!-- REGIONAL -->
-        <section class="gv26a-card">
-
-          <div class="gv26a-card-title">
-            <div>
-              <span class="gv26a-number">04</span>
-              <h2>Regional Settings</h2>
-            </div>
-
-            <span class="gv26a-badge">INDIA</span>
-          </div>
-
-          <div class="gv26a-grid">
-
-            <div class="gv26a-field">
-              <label>Default Language</label>
-
-              <select id="gv26a-defaultLanguage">
-                <option value="English" ${config.defaultLanguage === "English" ? "selected" : ""}>
-                  English
-                </option>
-                <option value="Hindi" ${config.defaultLanguage === "Hindi" ? "selected" : ""}>
-                  Hindi
-                </option>
-              </select>
-            </div>
-
-            <div class="gv26a-field">
-              <label>Country</label>
-
-              <input
-                id="gv26a-country"
-                value="${escapeHtml(config.country)}"
-              >
-            </div>
-
-            <div class="gv26a-field">
-              <label>Currency</label>
-
-              <input
-                id="gv26a-currency"
-                value="${escapeHtml(config.currency)}"
-              >
-            </div>
-
-            <div class="gv26a-field">
-              <label>Timezone</label>
-
-              <input
-                id="gv26a-timezone"
-                value="${escapeHtml(config.timezone)}"
-              >
-            </div>
-
-            <div class="gv26a-field">
-              <label>Date Format</label>
-
-              <select id="gv26a-dateFormat">
-                <option value="DD-MM-YYYY" ${config.dateFormat === "DD-MM-YYYY" ? "selected" : ""}>
-                  DD-MM-YYYY
-                </option>
-                <option value="MM-DD-YYYY" ${config.dateFormat === "MM-DD-YYYY" ? "selected" : ""}>
-                  MM-DD-YYYY
-                </option>
-                <option value="YYYY-MM-DD" ${config.dateFormat === "YYYY-MM-DD" ? "selected" : ""}>
-                  YYYY-MM-DD
-                </option>
-              </select>
-            </div>
-
-            <div class="gv26a-field">
-              <label>Time Format</label>
-
-              <select id="gv26a-timeFormat">
-                <option value="12-hour" ${config.timeFormat === "12-hour" ? "selected" : ""}>
-                  12-hour
-                </option>
-                <option value="24-hour" ${config.timeFormat === "24-hour" ? "selected" : ""}>
-                  24-hour
-                </option>
-              </select>
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- REGISTRATION & SERVICES -->
-        <section class="gv26a-card">
-
-          <div class="gv26a-card-title">
-            <div>
-              <span class="gv26a-number">05</span>
-              <h2>Registration & Services</h2>
-            </div>
-
-            <span class="gv26a-badge">CONTROLLED</span>
-          </div>
-
-          <div class="gv26a-toggle-grid">
-
-            ${toggle(
-              "gv26a-customerRegistration",
-              "Customer Registration",
-              config.customerRegistration,
-              "Allow customer registration workflow."
-            )}
-
-            ${toggle(
-              "gv26a-vendorRegistration",
-              "Vendor Registration",
-              config.vendorRegistration,
-              "Allow vendor registration workflow."
-            )}
-
-            ${toggle(
-              "gv26a-driverRegistration",
-              "Driver Registration",
-              config.driverRegistration,
-              "Allow driver registration workflow."
-            )}
-
-            ${toggle(
-              "gv26a-bookingEnabled",
-              "Booking",
-              config.bookingEnabled,
-              "Enable the booking workflow."
-            )}
-
-            ${toggle(
-              "gv26a-fareEstimateEnabled",
-              "Fare Estimate",
-              config.fareEstimateEnabled,
-              "Enable customer fare estimation."
-            )}
-
-            ${toggle(
-              "gv26a-notificationsEnabled",
-              "Notifications",
-              config.notificationsEnabled,
-              "Enable notification-related frontend controls."
-            )}
-
-            ${toggle(
-              "gv26a-welfareEnabled",
-              "Welfare Services",
-              config.welfareEnabled,
-              "Enable welfare-related platform controls."
-            )}
-
-          </div>
-
-        </section>
-
-
-        <!-- FINANCIAL BOUNDARY -->
-        <section class="gv26a-card gv26a-financial">
-
-          <div class="gv26a-card-title">
-            <div>
-              <span class="gv26a-number">06</span>
-              <h2>Financial Safety Boundary</h2>
-            </div>
-
-            <span class="gv26a-badge gv26a-badge-danger">
-              BLOCKED
             </span>
-          </div>
 
-          <div class="gv26a-financial-grid">
+          </label>
 
-            <div class="gv26a-financial-item">
-              <strong>REAL MONEY</strong>
-              <span>BLOCKED</span>
-            </div>
+          ${
+            locked
+              ? `<span class="govara26a-lock">LOCKED</span>`
+              : ""
+          }
 
-            <div class="gv26a-financial-item">
-              <strong>REAL PAYMENT</strong>
-              <span>BLOCKED</span>
-            </div>
-
-            <div class="gv26a-financial-item">
-              <strong>BANK TRANSFER</strong>
-              <span>BLOCKED</span>
-            </div>
-
-            <div class="gv26a-financial-item">
-              <strong>FRONTEND AUTHORITY</strong>
-              <span>NO</span>
-            </div>
-
-            <div class="gv26a-financial-item">
-              <strong>BACKEND AUTHORITY</strong>
-              <span>YES</span>
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- ACTION BAR -->
-        <section class="gv26a-actions">
-
-          <div>
-            <strong>System Configuration</strong>
-            <small id="gv26a-saveStatus">
-              Changes are stored locally in the browser.
-            </small>
-          </div>
-
-          <div class="gv26a-action-buttons">
-
-            <button
-              type="button"
-              class="gv26a-btn gv26a-btn-secondary"
-              id="gv26a-reset"
-            >
-              Reset
-            </button>
-
-            <button
-              type="button"
-              class="gv26a-btn gv26a-btn-primary"
-              id="gv26a-save"
-            >
-              Save Configuration
-            </button>
-
-          </div>
-
-        </section>
+        </div>
 
       </div>
+    `;
+  }
 
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
+
+  function render() {
+
+    const c =
+      getConfig();
+
+    const health =
+      getSystemHealth(c);
+
+    const validation =
+      validateConfig(c);
+
+
+    const modules =
+      Object.keys(c.modules);
+
+
+    return `
 
       <style>
 
-        .gv26a {
-          max-width: 1250px;
-          margin: 0 auto;
-          padding: 10px 0 50px;
+        .govara26a-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
         }
 
-        .gv26a-header {
+        .govara26a-head {
           display: flex;
+          justify-content: space-between;
           align-items: flex-start;
-          justify-content: space-between;
-          gap: 24px;
-          margin-bottom: 22px;
+          gap: 16px;
+          flex-wrap: wrap;
         }
 
-        .gv26a-kicker {
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 1.6px;
-          opacity: .58;
-          margin-bottom: 6px;
+        .govara26a-head h1 {
+          margin: 0 0 6px;
         }
 
-        .gv26a-header h1 {
-          margin: 0 0 7px;
-          font-size: 28px;
-          letter-spacing: -.5px;
-        }
-
-        .gv26a-header p {
+        .govara26a-head p {
           margin: 0;
-          opacity: .68;
-          line-height: 1.5;
+          opacity: .72;
         }
 
-        .gv26a-status {
-          white-space: nowrap;
-          padding: 10px 14px;
-          border: 1px solid rgba(34,197,94,.25);
-          border-radius: 999px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: .7px;
-          background: rgba(34,197,94,.08);
-        }
-
-        .gv26a-dot {
-          display: inline-block;
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #22c55e;
-          margin-right: 7px;
-          vertical-align: 1px;
-        }
-
-        .gv26a-card {
-          background: rgba(255,255,255,.025);
-          border: 1px solid rgba(255,255,255,.09);
-          border-radius: 18px;
-          padding: 22px;
-          margin-bottom: 16px;
-          box-shadow: 0 12px 35px rgba(0,0,0,.08);
-        }
-
-        .gv26a-card-title {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 15px;
-          margin-bottom: 20px;
-        }
-
-        .gv26a-card-title > div {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .gv26a-card h2 {
-          margin: 0;
-          font-size: 17px;
-        }
-
-        .gv26a-number {
-          width: 32px;
-          height: 32px;
+        .govara26a-statusbar {
           display: grid;
-          place-items: center;
-          border-radius: 10px;
-          background: rgba(255,255,255,.07);
-          font-size: 11px;
-          font-weight: 800;
+          grid-template-columns:
+            repeat(auto-fit, minmax(145px, 1fr));
+          gap: 10px;
         }
 
-        .gv26a-badge {
-          padding: 6px 9px;
-          border-radius: 7px;
-          font-size: 9px;
-          font-weight: 900;
-          letter-spacing: .8px;
-          background: rgba(59,130,246,.12);
-          color: #93c5fd;
+        .govara26a-status {
+          padding: 14px;
+          border: 1px solid rgba(255,255,255,.08);
+          border-radius: 14px;
+          background: rgba(255,255,255,.035);
         }
 
-        .gv26a-badge-warning {
-          background: rgba(245,158,11,.12);
-          color: #fbbf24;
+        .govara26a-status strong {
+          display: block;
+          margin-bottom: 5px;
         }
 
-        .gv26a-badge-danger {
-          background: rgba(239,68,68,.12);
-          color: #f87171;
-        }
-
-        .gv26a-badge-muted {
+        .govara26a-status small {
           opacity: .65;
         }
 
-        .gv26a-grid {
+        .govara26a-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns:
+            repeat(auto-fit, minmax(280px, 1fr));
           gap: 16px;
         }
 
-        .gv26a-field {
+        .govara26a-section {
+          padding: 20px;
+          border: 1px solid rgba(255,255,255,.08);
+          border-radius: 16px;
+          background: rgba(255,255,255,.025);
+        }
+
+        .govara26a-section h2 {
+          margin: 0 0 6px;
+          font-size: 18px;
+        }
+
+        .govara26a-section-desc {
+          margin: 0 0 18px;
+          opacity: .62;
+          font-size: 13px;
+        }
+
+        .govara26a-fields {
+          display: grid;
+          grid-template-columns:
+            repeat(auto-fit, minmax(220px, 1fr));
+          gap: 14px;
+        }
+
+        .govara26a-field {
           display: flex;
           flex-direction: column;
           gap: 7px;
         }
 
-        .gv26a-field label {
+        .govara26a-field label {
           font-size: 12px;
-          font-weight: 750;
-          opacity: .78;
+          font-weight: 700;
+          opacity: .72;
         }
 
-        .gv26a-field input,
-        .gv26a-field select {
+        .govara26a-field input,
+        .govara26a-field select {
           width: 100%;
           box-sizing: border-box;
-          padding: 12px 13px;
+          padding: 11px 12px;
           border-radius: 10px;
-          border: 1px solid rgba(255,255,255,.1);
-          background: rgba(0,0,0,.16);
+          border: 1px solid rgba(255,255,255,.10);
+          background: rgba(0,0,0,.18);
           color: inherit;
           outline: none;
-          font: inherit;
         }
 
-        .gv26a-field input:focus,
-        .gv26a-field select:focus {
-          border-color: rgba(96,165,250,.65);
-          box-shadow: 0 0 0 3px rgba(96,165,250,.08);
+        .govara26a-field input:focus,
+        .govara26a-field select:focus {
+          border-color: rgba(120,170,255,.55);
         }
 
-        .gv26a-help {
-          font-size: 11px;
-          opacity: .55;
-          line-height: 1.4;
-        }
-
-        .gv26a-toggle-grid {
+        .govara26a-controls {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .govara26a-control {
+          padding: 12px;
+          border-radius: 12px;
+          background: rgba(255,255,255,.025);
+          border: 1px solid rgba(255,255,255,.06);
+        }
+
+        .govara26a-control-main {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           gap: 10px;
         }
 
-        .gv26a-toggle-row {
+        .govara26a-toggle {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          gap: 20px;
-          padding: 15px;
-          border-radius: 12px;
-          border: 1px solid rgba(255,255,255,.07);
-          background: rgba(0,0,0,.10);
+          gap: 10px;
           cursor: pointer;
         }
 
-        .gv26a-toggle-row span {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
+        .govara26a-toggle input {
+          display: none;
         }
 
-        .gv26a-toggle-row strong {
-          font-size: 12px;
+        .govara26a-switch {
+          width: 42px;
+          height: 23px;
+          border-radius: 20px;
+          background: rgba(255,255,255,.15);
+          position: relative;
+          flex-shrink: 0;
         }
 
-        .gv26a-toggle-row small {
+        .govara26a-switch::after {
+          content: "";
+          width: 17px;
+          height: 17px;
+          border-radius: 50%;
+          position: absolute;
+          left: 3px;
+          top: 3px;
+          background: white;
+          transition: .2s;
+        }
+
+        .govara26a-toggle input:checked
+        + .govara26a-switch {
+          background: rgba(70,190,120,.75);
+        }
+
+        .govara26a-toggle input:checked
+        + .govara26a-switch::after {
+          transform: translateX(19px);
+        }
+
+        .govara26a-toggle strong {
+          display: block;
+        }
+
+        .govara26a-toggle small {
+          display: block;
+          opacity: .58;
+          margin-top: 2px;
+        }
+
+        .govara26a-lock {
           font-size: 10px;
-          opacity: .52;
-          line-height: 1.35;
+          font-weight: 800;
+          opacity: .55;
         }
 
-        .gv26a-toggle-row input {
-          width: 18px;
-          height: 18px;
-          accent-color: #3b82f6;
-          flex: 0 0 auto;
-        }
-
-        .gv26a-warning {
-          margin-top: 17px;
-          padding: 15px 17px;
-          border-radius: 12px;
-          background: rgba(245,158,11,.07);
-          border: 1px solid rgba(245,158,11,.18);
-        }
-
-        .gv26a-warning strong {
-          font-size: 12px;
-        }
-
-        .gv26a-warning p {
-          margin: 5px 0 0;
-          font-size: 11px;
-          opacity: .65;
-          line-height: 1.5;
-        }
-
-        .gv26a-financial {
-          border-color: rgba(239,68,68,.14);
-        }
-
-        .gv26a-financial-grid {
+        .govara26a-module-grid {
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
+          grid-template-columns:
+            repeat(auto-fit, minmax(150px, 1fr));
           gap: 10px;
         }
 
-        .gv26a-financial-item {
-          padding: 15px;
-          border-radius: 12px;
-          background: rgba(239,68,68,.045);
-          border: 1px solid rgba(239,68,68,.09);
-        }
-
-        .gv26a-financial-item strong {
-          display: block;
-          font-size: 10px;
-          opacity: .62;
-          margin-bottom: 7px;
-        }
-
-        .gv26a-financial-item span {
-          font-size: 12px;
-          font-weight: 850;
-        }
-
-        .gv26a-actions {
+        .govara26a-module {
+          padding: 12px;
+          border-radius: 11px;
+          background: rgba(255,255,255,.035);
+          border: 1px solid rgba(255,255,255,.07);
           display: flex;
-          align-items: center;
           justify-content: space-between;
-          gap: 20px;
-          padding: 18px 20px;
-          border-radius: 16px;
-          border: 1px solid rgba(255,255,255,.1);
-          background: rgba(255,255,255,.025);
+          align-items: center;
+          gap: 8px;
         }
 
-        .gv26a-actions strong {
-          display: block;
+        .govara26a-module span {
+          font-weight: 700;
           font-size: 13px;
         }
 
-        .gv26a-actions small {
-          display: block;
-          margin-top: 4px;
+        .govara26a-badge {
           font-size: 10px;
-          opacity: .55;
-        }
-
-        .gv26a-action-buttons {
-          display: flex;
-          gap: 9px;
-        }
-
-        .gv26a-btn {
-          border: 0;
-          border-radius: 10px;
-          padding: 11px 16px;
-          font: inherit;
-          font-size: 11px;
+          padding: 4px 7px;
+          border-radius: 20px;
           font-weight: 800;
+        }
+
+        .govara26a-on {
+          background: rgba(70,190,120,.15);
+        }
+
+        .govara26a-off {
+          background: rgba(255,90,90,.12);
+        }
+
+        .govara26a-safe {
+          display: grid;
+          grid-template-columns:
+            repeat(auto-fit, minmax(190px, 1fr));
+          gap: 10px;
+        }
+
+        .govara26a-safe-card {
+          padding: 15px;
+          border-radius: 13px;
+          background: rgba(255,255,255,.025);
+          border: 1px solid rgba(255,255,255,.07);
+        }
+
+        .govara26a-safe-card strong {
+          display: block;
+          margin-bottom: 6px;
+        }
+
+        .govara26a-blocked {
+          font-weight: 900;
+          letter-spacing: .4px;
+        }
+
+        .govara26a-health-grid {
+          display: grid;
+          grid-template-columns:
+            repeat(auto-fit, minmax(160px, 1fr));
+          gap: 10px;
+        }
+
+        .govara26a-health {
+          padding: 14px;
+          border-radius: 12px;
+          background: rgba(255,255,255,.03);
+        }
+
+        .govara26a-health b {
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .govara26a-health small {
+          opacity: .58;
+        }
+
+        .govara26a-notice {
+          padding: 14px 16px;
+          border-radius: 12px;
+          background: rgba(255,190,70,.08);
+          border: 1px solid rgba(255,190,70,.16);
+          font-size: 13px;
+        }
+
+        .govara26a-error {
+          padding: 14px 16px;
+          border-radius: 12px;
+          background: rgba(255,80,80,.10);
+          border: 1px solid rgba(255,80,80,.18);
+        }
+
+        .govara26a-actions {
+          position: sticky;
+          bottom: 12px;
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          flex-wrap: wrap;
+          padding: 12px;
+          border-radius: 15px;
+          background: rgba(10,12,18,.92);
+          border: 1px solid rgba(255,255,255,.09);
+          backdrop-filter: blur(12px);
+        }
+
+        .govara26a-actions button {
+          padding: 11px 17px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,.10);
           cursor: pointer;
-        }
-
-        .gv26a-btn-primary {
-          background: #2563eb;
-          color: white;
-        }
-
-        .gv26a-btn-secondary {
-          background: rgba(255,255,255,.08);
+          background: rgba(255,255,255,.06);
           color: inherit;
+          font-weight: 800;
         }
 
-        .gv26a-btn:hover {
-          transform: translateY(-1px);
+        .govara26a-actions button:hover {
+          background: rgba(255,255,255,.11);
         }
 
-        @media (max-width: 850px) {
-
-          .gv26a-header,
-          .gv26a-actions {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
-          .gv26a-grid,
-          .gv26a-toggle-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .gv26a-financial-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-
-          .gv26a-action-buttons {
-            width: 100%;
-          }
-
-          .gv26a-btn {
-            flex: 1;
-          }
+        .govara26a-save {
+          background: rgba(70,150,255,.20) !important;
         }
 
-        @media (max-width: 520px) {
-
-          .gv26a-card {
-            padding: 16px;
-          }
-
-          .gv26a-header h1 {
-            font-size: 23px;
-          }
-
-          .gv26a-financial-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .gv26a-card-title {
-            align-items: flex-start;
-          }
-
+        .govara26a-meta {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          opacity: .55;
+          font-size: 12px;
         }
 
       </style>
+
+
+      <div
+        class="govara26a-wrap"
+        id="govara26a-root"
+      >
+
+        <!-- ============================================
+             HEADER
+        ============================================= -->
+
+        <div class="govara26a-head">
+
+          <div>
+
+            <h1>
+              26A — System Configuration
+            </h1>
+
+            <p>
+              Central frontend configuration and platform
+              safety control. Backend and database remain
+              authoritative.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- ============================================
+             HEALTH STATUS
+        ============================================= -->
+
+        <div class="govara26a-statusbar">
+
+          <div class="govara26a-status">
+            <strong>
+              ${esc(health.system)}
+            </strong>
+            <small>
+              Platform
+            </small>
+          </div>
+
+          <div class="govara26a-status">
+            <strong>
+              ${esc(health.configuration)}
+            </strong>
+            <small>
+              Configuration
+            </small>
+          </div>
+
+          <div class="govara26a-status">
+            <strong>
+              ${esc(health.environment)}
+            </strong>
+            <small>
+              Environment
+            </small>
+          </div>
+
+          <div class="govara26a-status">
+            <strong>
+              ${esc(health.api)}
+            </strong>
+            <small>
+              API
+            </small>
+          </div>
+
+          <div class="govara26a-status">
+            <strong>
+              ${esc(health.financial)}
+            </strong>
+            <small>
+              Financial Safety
+            </small>
+          </div>
+
+          <div class="govara26a-status">
+            <strong>
+              ${esc(health.audit)}
+            </strong>
+            <small>
+              Audit
+            </small>
+          </div>
+
+        </div>
+
+
+        <!-- ============================================
+             VALIDATION MESSAGE
+        ============================================= -->
+
+        ${
+          !validation.valid
+
+            ? `
+              <div class="govara26a-error">
+
+                <strong>
+                  Configuration Validation Error
+                </strong>
+
+                <ul>
+                  ${
+                    validation.errors
+                      .map(
+                        e => `<li>${esc(e)}</li>`
+                      )
+                      .join("")
+                  }
+                </ul>
+
+              </div>
+            `
+
+            : `
+              <div class="govara26a-notice">
+
+                <strong>
+                  Configuration Safe
+                </strong>
+
+                <div>
+                  26A is operating as a frontend
+                  configuration layer. No backend or
+                  database changes are performed here.
+                </div>
+
+              </div>
+            `
+        }
+
+
+        <div class="govara26a-grid">
+
+
+          <!-- ==========================================
+               SYSTEM IDENTITY
+          =========================================== -->
+
+          <section class="govara26a-section">
+
+            <h2>
+              1. System Identity
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Core platform identity and system lifecycle.
+            </p>
+
+            <div class="govara26a-fields">
+
+              <div class="govara26a-field">
+
+                <label>
+                  System Name
+                </label>
+
+                <input
+                  id="26a-systemName"
+                  value="${esc(c.systemName)}"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Platform Name
+                </label>
+
+                <input
+                  id="26a-platformName"
+                  value="${esc(c.platformName)}"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  System Version
+                </label>
+
+                <input
+                  id="26a-systemVersion"
+                  value="${esc(c.systemVersion)}"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  System Status
+                </label>
+
+                <select id="26a-systemStatus">
+
+                  ${option(
+                    "ACTIVE",
+                    "ACTIVE",
+                    c.systemStatus
+                  )}
+
+                  ${option(
+                    "MAINTENANCE",
+                    "MAINTENANCE",
+                    c.systemStatus
+                  )}
+
+                  ${option(
+                    "SUSPENDED",
+                    "SUSPENDED",
+                    c.systemStatus
+                  )}
+
+                  ${option(
+                    "INACTIVE",
+                    "INACTIVE",
+                    c.systemStatus
+                  )}
+
+                </select>
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Environment
+                </label>
+
+                <select id="26a-environment">
+
+                  ${option(
+                    "TESTING",
+                    "TESTING",
+                    c.environment
+                  )}
+
+                  ${option(
+                    "STAGING",
+                    "STAGING",
+                    c.environment
+                  )}
+
+                  ${option(
+                    "PRODUCTION",
+                    "PRODUCTION",
+                    c.environment
+                  )}
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               ENVIRONMENT & SAFETY
+          =========================================== -->
+
+          <section class="govara26a-section">
+
+            <h2>
+              2. Environment & Safety
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Operational lifecycle and production protection.
+            </p>
+
+            <div class="govara26a-controls">
+
+              ${boolControl(
+                "26a-maintenanceMode",
+                "Maintenance Mode",
+                c.maintenanceMode,
+                "Temporarily place platform into maintenance.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-suspendedMode",
+                "Suspended Mode",
+                c.suspendedMode,
+                "Suspend normal platform operations.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-productionLock",
+                "Production Lock",
+                c.productionLock,
+                "Production safety boundary.",
+                true
+              )}
+
+              ${boolControl(
+                "26a-testingMode",
+                "Testing Mode",
+                c.testingMode,
+                "Keeps current platform operation in testing mode.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-platformEnabled",
+                "Platform Enabled",
+                c.platformEnabled,
+                "Global platform availability.",
+                false
+              )}
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               CENTRAL CONFIGURATION / API
+          =========================================== -->
+
+          <section class="govara26a-section">
+
+            <h2>
+              3. Central Configuration & API
+            </h2>
+
+            <p class="govara26a-section-desc">
+              API endpoint is only a configuration placeholder.
+              No connection test is performed.
+            </p>
+
+            <div class="govara26a-fields">
+
+              <div class="govara26a-field">
+
+                <label>
+                  API Endpoint
+                </label>
+
+                <input
+                  id="26a-apiEndpoint"
+                  value="${esc(c.apiEndpoint)}"
+                  placeholder="API endpoint — not configured"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Configuration Version
+                </label>
+
+                <input
+                  value="${esc(c.configVersion)}"
+                  disabled
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Configuration Source
+                </label>
+
+                <input
+                  value="${esc(c.configSource)}"
+                  disabled
+                >
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="govara26a-notice"
+              style="margin-top:16px;"
+            >
+
+              <strong>
+                API STATUS: ${
+                  c.apiEndpoint
+                    ? "CONFIGURED"
+                    : "NOT CONFIGURED"
+                }
+              </strong>
+
+              <div>
+                API testConnection() is intentionally not
+                executed from 26A.
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               REGIONAL SETTINGS
+          =========================================== -->
+
+          <section class="govara26a-section">
+
+            <h2>
+              4. Regional Settings & i18n
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Admin-configurable regional defaults and
+              scalable language configuration.
+            </p>
+
+            <div class="govara26a-fields">
+
+              <div class="govara26a-field">
+
+                <label>
+                  Default Language
+                </label>
+
+                <select id="26a-defaultLanguage">
+
+                  ${option(
+                    "English",
+                    "English",
+                    c.defaultLanguage
+                  )}
+
+                  ${option(
+                    "Hindi",
+                    "Hindi",
+                    c.defaultLanguage
+                  )}
+
+                </select>
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Country
+                </label>
+
+                <input
+                  id="26a-country"
+                  value="${esc(c.country)}"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Currency
+                </label>
+
+                <input
+                  id="26a-currency"
+                  value="${esc(c.currency)}"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Timezone
+                </label>
+
+                <input
+                  id="26a-timezone"
+                  value="${esc(c.timezone)}"
+                >
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Date Format
+                </label>
+
+                <select id="26a-dateFormat">
+
+                  ${option(
+                    "DD-MM-YYYY",
+                    "DD-MM-YYYY",
+                    c.dateFormat
+                  )}
+
+                  ${option(
+                    "MM-DD-YYYY",
+                    "MM-DD-YYYY",
+                    c.dateFormat
+                  )}
+
+                  ${option(
+                    "YYYY-MM-DD",
+                    "YYYY-MM-DD",
+                    c.dateFormat
+                  )}
+
+                </select>
+
+              </div>
+
+
+              <div class="govara26a-field">
+
+                <label>
+                  Time Format
+                </label>
+
+                <select id="26a-timeFormat">
+
+                  ${option(
+                    "12-hour",
+                    "12-hour",
+                    c.timeFormat
+                  )}
+
+                  ${option(
+                    "24-hour",
+                    "24-hour",
+                    c.timeFormat
+                  )}
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="govara26a-notice"
+              style="margin-top:16px;"
+            >
+
+              <strong>
+                Enabled Languages
+              </strong>
+
+              <div>
+                ${c.enabledLanguages
+                  .map(esc)
+                  .join(" • ")}
+              </div>
+
+              <small>
+                Translation packs remain frontend-based.
+                No translation API/backend is used.
+              </small>
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               REGISTRATION & SERVICES
+          =========================================== -->
+
+          <section class="govara26a-section">
+
+            <h2>
+              5. Platform & Service Controls
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Global registration, booking and service
+              availability controls.
+            </p>
+
+            <div class="govara26a-controls">
+
+              ${boolControl(
+                "26a-customerRegistration",
+                "Customer Registration",
+                c.customerRegistration,
+                "Primary booking initiator.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-vendorRegistration",
+                "Vendor Registration",
+                c.vendorRegistration,
+                "Vendor/company onboarding.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-driverRegistration",
+                "Driver Registration",
+                c.driverRegistration,
+                "Driver onboarding.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-bookingEnabled",
+                "Booking Enabled",
+                c.bookingEnabled,
+                "Global booking capability.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-fareEstimateEnabled",
+                "Fare Estimate",
+                c.fareEstimateEnabled,
+                "Customer-side fare estimation.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-notificationsEnabled",
+                "Notifications",
+                c.notificationsEnabled,
+                "Platform notification capability.",
+                false
+              )}
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               SOCIAL WELFARE
+          =========================================== -->
+
+          <section class="govara26a-section">
+
+            <h2>
+              6. Social Welfare Master Control
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Global master switch for welfare-related
+              platform functionality.
+            </p>
+
+            <div class="govara26a-controls">
+
+              ${boolControl(
+                "26a-welfareEnabled",
+                "Welfare Module Enabled",
+                c.welfareEnabled,
+                "Enables welfare functionality.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-welfareMasterControl",
+                "Welfare Master Control",
+                c.welfareMasterControl,
+                "Administrator-level master control.",
+                false
+              )}
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               MODULE REGISTRY
+          =========================================== -->
+
+          <section
+            class="govara26a-section"
+            style="grid-column:1/-1;"
+          >
+
+            <h2>
+              7. Module Registry
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Current GoVara module availability registry.
+              This does not create or modify backend tables.
+            </p>
+
+            <div class="govara26a-module-grid">
+
+              ${
+                modules
+                  .map(function (moduleName) {
+
+                    const enabled =
+                      !!c.modules[moduleName];
+
+                    return `
+
+                      <div
+                        class="govara26a-module"
+                      >
+
+                        <span>
+                          ${esc(moduleName)}
+                        </span>
+
+                        <span
+                          class="
+                            govara26a-badge
+                            ${
+                              enabled
+                                ? "govara26a-on"
+                                : "govara26a-off"
+                            }
+                          "
+                        >
+                          ${
+                            enabled
+                              ? "ENABLED"
+                              : "DISABLED"
+                          }
+                        </span>
+
+                      </div>
+
+                    `;
+
+                  })
+                  .join("")
+              }
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               FINANCIAL SAFETY
+          =========================================== -->
+
+          <section
+            class="govara26a-section"
+            style="grid-column:1/-1;"
+          >
+
+            <h2>
+              8. Financial Safety Boundary
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Hard frontend safety boundary. Financial
+              authority remains with the backend.
+            </p>
+
+            <div class="govara26a-safe">
+
+
+              <div class="govara26a-safe-card">
+
+                <strong>
+                  REAL MONEY
+                </strong>
+
+                <span class="govara26a-blocked">
+                  BLOCKED
+                </span>
+
+              </div>
+
+
+              <div class="govara26a-safe-card">
+
+                <strong>
+                  REAL PAYMENT
+                </strong>
+
+                <span class="govara26a-blocked">
+                  BLOCKED
+                </span>
+
+              </div>
+
+
+              <div class="govara26a-safe-card">
+
+                <strong>
+                  BANK TRANSFER
+                </strong>
+
+                <span class="govara26a-blocked">
+                  BLOCKED
+                </span>
+
+              </div>
+
+
+              <div class="govara26a-safe-card">
+
+                <strong>
+                  FRONTEND AUTHORITY
+                </strong>
+
+                <span>
+                  NO
+                </span>
+
+              </div>
+
+
+              <div class="govara26a-safe-card">
+
+                <strong>
+                  BACKEND AUTHORITY
+                </strong>
+
+                <span>
+                  YES
+                </span>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <!-- ==========================================
+               AUDIT & HEALTH
+          =========================================== -->
+
+          <section
+            class="govara26a-section"
+            style="grid-column:1/-1;"
+          >
+
+            <h2>
+              9. Audit & Health Indicators
+            </h2>
+
+            <p class="govara26a-section-desc">
+              Frontend configuration monitoring and audit
+              visibility.
+            </p>
+
+            <div class="govara26a-controls">
+
+              ${boolControl(
+                "26a-auditLogging",
+                "Audit Logging",
+                c.auditLogging,
+                "Records configuration actions locally.",
+                false
+              )}
+
+              ${boolControl(
+                "26a-healthMonitoring",
+                "Health Monitoring",
+                c.healthMonitoring,
+                "Shows configuration health indicators.",
+                false
+              )}
+
+            </div>
+
+
+            <div
+              class="govara26a-health-grid"
+              style="margin-top:16px;"
+            >
+
+              <div class="govara26a-health">
+
+                <b>
+                  System
+                </b>
+
+                <small>
+                  ${esc(health.system)}
+                </small>
+
+              </div>
+
+
+              <div class="govara26a-health">
+
+                <b>
+                  Configuration
+                </b>
+
+                <small>
+                  ${esc(health.configuration)}
+                </small>
+
+              </div>
+
+
+              <div class="govara26a-health">
+
+                <b>
+                  API
+                </b>
+
+                <small>
+                  ${esc(health.api)}
+                </small>
+
+              </div>
+
+
+              <div class="govara26a-health">
+
+                <b>
+                  Financial
+                </b>
+
+                <small>
+                  ${esc(health.financial)}
+                </small>
+
+              </div>
+
+
+              <div class="govara26a-health">
+
+                <b>
+                  Backend
+                </b>
+
+                <small>
+                  AUTHORITATIVE
+                </small>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+        </div>
+
+
+        <!-- ============================================
+             ACTION BAR
+        ============================================= -->
+
+        <div class="govara26a-actions">
+
+          <button
+            type="button"
+            id="26a-reload"
+          >
+            Reload
+          </button>
+
+          <button
+            type="button"
+            id="26a-reset"
+          >
+            Reset Defaults
+          </button>
+
+          <button
+            type="button"
+            class="govara26a-save"
+            id="26a-save"
+          >
+            Save Configuration
+          </button>
+
+        </div>
+
+
+        <div class="govara26a-meta">
+
+          <span>
+            Config:
+            ${esc(c.configVersion)}
+          </span>
+
+          <span>
+            Last Action:
+            ${esc(c.lastAction)}
+          </span>
+
+          <span>
+            Last Updated:
+            ${
+              c.lastUpdated
+                ? esc(c.lastUpdated)
+                : "Not saved yet"
+            }
+          </span>
+
+        </div>
+
+
+      </div>
+
     `;
   }
 
 
-  function getValue(id) {
-    const element = document.getElementById(id);
-    return element ? element.value : "";
+  /* ==========================================================
+     READ FORM
+  ========================================================== */
+
+  function readForm() {
+
+    const current =
+      getConfig();
+
+
+    function value(id) {
+
+      const el =
+        document.getElementById(id);
+
+      return el
+        ? el.value
+        : "";
+    }
+
+
+    function checked(id) {
+
+      const el =
+        document.getElementById(id);
+
+      return el
+        ? !!el.checked
+        : false;
+    }
+
+
+    const config =
+      clone(current);
+
+
+    /* ---------- IDENTITY ---------- */
+
+    config.systemName =
+      value("26a-systemName");
+
+    config.platformName =
+      value("26a-platformName");
+
+    config.systemVersion =
+      value("26a-systemVersion");
+
+    config.systemStatus =
+      value("26a-systemStatus");
+
+    config.environment =
+      value("26a-environment");
+
+
+    /* ---------- SAFETY ---------- */
+
+    config.maintenanceMode =
+      checked("26a-maintenanceMode");
+
+    config.suspendedMode =
+      checked("26a-suspendedMode");
+
+    config.productionLock =
+      true;
+
+    config.testingMode =
+      checked("26a-testingMode");
+
+    config.platformEnabled =
+      checked("26a-platformEnabled");
+
+
+    /* ---------- API ---------- */
+
+    config.apiEndpoint =
+      value("26a-apiEndpoint");
+
+
+    /* ---------- REGIONAL ---------- */
+
+    config.defaultLanguage =
+      value("26a-defaultLanguage");
+
+    config.country =
+      value("26a-country");
+
+    config.currency =
+      value("26a-currency");
+
+    config.timezone =
+      value("26a-timezone");
+
+    config.dateFormat =
+      value("26a-dateFormat");
+
+    config.timeFormat =
+      value("26a-timeFormat");
+
+
+    /* ---------- SERVICES ---------- */
+
+    config.customerRegistration =
+      checked("26a-customerRegistration");
+
+    config.vendorRegistration =
+      checked("26a-vendorRegistration");
+
+    config.driverRegistration =
+      checked("26a-driverRegistration");
+
+    config.bookingEnabled =
+      checked("26a-bookingEnabled");
+
+    config.fareEstimateEnabled =
+      checked("26a-fareEstimateEnabled");
+
+    config.notificationsEnabled =
+      checked("26a-notificationsEnabled");
+
+
+    /* ---------- WELFARE ---------- */
+
+    config.welfareEnabled =
+      checked("26a-welfareEnabled");
+
+    config.welfareMasterControl =
+      checked("26a-welfareMasterControl");
+
+
+    /* ---------- AUDIT ---------- */
+
+    config.auditLogging =
+      checked("26a-auditLogging");
+
+    config.healthMonitoring =
+      checked("26a-healthMonitoring");
+
+
+    /* ---------- HARD SAFETY ---------- */
+
+    config.realMoney = false;
+    config.realPayment = false;
+    config.bankTransfer = false;
+
+    config.frontendAuthority = false;
+    config.backendAuthority = true;
+
+    config.productionLock = true;
+
+
+    return config;
   }
 
-  function getChecked(id) {
-    const element = document.getElementById(id);
-    return element ? element.checked : false;
-  }
 
-
-  function collect() {
-
-    return {
-
-      systemName: getValue("gv26a-systemName"),
-      platformName: getValue("gv26a-platformName"),
-      environment: getValue("gv26a-environment"),
-      systemStatus: getValue("gv26a-systemStatus"),
-
-      maintenanceMode: getChecked("gv26a-maintenanceMode"),
-      productionLock: getChecked("gv26a-productionLock"),
-      testingMode: getChecked("gv26a-testingMode"),
-
-      apiEndpoint: getValue("gv26a-apiEndpoint"),
-
-      defaultLanguage: getValue("gv26a-defaultLanguage"),
-      country: getValue("gv26a-country"),
-      currency: getValue("gv26a-currency"),
-      timezone: getValue("gv26a-timezone"),
-      dateFormat: getValue("gv26a-dateFormat"),
-      timeFormat: getValue("gv26a-timeFormat"),
-
-      customerRegistration:
-        getChecked("gv26a-customerRegistration"),
-
-      vendorRegistration:
-        getChecked("gv26a-vendorRegistration"),
-
-      driverRegistration:
-        getChecked("gv26a-driverRegistration"),
-
-      bookingEnabled:
-        getChecked("gv26a-bookingEnabled"),
-
-      fareEstimateEnabled:
-        getChecked("gv26a-fareEstimateEnabled"),
-
-      notificationsEnabled:
-        getChecked("gv26a-notificationsEnabled"),
-
-      welfareEnabled:
-        getChecked("gv26a-welfareEnabled"),
-
-      realMoney: false,
-      realPayment: false,
-      bankTransfer: false,
-
-      frontendAuthority: false,
-      backendAuthority: true
-    };
-  }
-
+  /* ==========================================================
+     BIND EVENTS
+  ========================================================== */
 
   function bind() {
 
     const saveButton =
-      document.getElementById("gv26a-save");
+      document.getElementById("26a-save");
 
     const resetButton =
-      document.getElementById("gv26a-reset");
+      document.getElementById("26a-reset");
 
-    const status =
-      document.getElementById("gv26a-saveStatus");
+    const reloadButton =
+      document.getElementById("26a-reload");
 
+
+    /* ---------- SAVE ---------- */
 
     if (saveButton) {
 
-      saveButton.addEventListener("click", function () {
+      saveButton.onclick =
+        function () {
 
-        const config = collect();
+          const config =
+            readForm();
 
-        save(config);
+          const result =
+            save(config);
 
-        if (status) {
-          status.textContent =
-            "Configuration saved successfully on this device.";
-        }
 
-        saveButton.textContent = "Saved ✓";
+          if (!result.success) {
 
-        setTimeout(function () {
-          saveButton.textContent = "Save Configuration";
-        }, 1500);
+            alert(
+              "Configuration validation failed:\n\n" +
+              result.validation.errors.join("\n")
+            );
 
-      });
+            return;
+          }
+
+
+          if (
+            result.validation.warnings &&
+            result.validation.warnings.length
+          ) {
+
+            console.warn(
+              "GoVara26A warnings:",
+              result.validation.warnings
+            );
+          }
+
+
+          saveButton.textContent =
+            "Saved ✓";
+
+
+          setTimeout(function () {
+
+            saveButton.textContent =
+              "Save Configuration";
+
+          }, 1600);
+
+
+          renderAndBind();
+        };
 
     }
 
+
+    /* ---------- RESET ---------- */
 
     if (resetButton) {
 
-      resetButton.addEventListener("click", function () {
+      resetButton.onclick =
+        function () {
 
-        const confirmed =
-          window.confirm(
-            "Reset 26A System Configuration to default values?"
-          );
+          const confirmed =
+            window.confirm(
+              "Reset 26A System Configuration to defaults?"
+            );
 
-        if (!confirmed) return;
 
-        localStorage.removeItem(STORAGE_KEY);
+          if (!confirmed) {
+            return;
+          }
 
-        const mount =
-          document.getElementById("module-26A");
 
-        if (mount) {
-          mount.innerHTML = render();
-          bind();
-        }
+          reset();
 
-      });
+
+          renderAndBind();
+
+        };
+
+    }
+
+
+    /* ---------- RELOAD ---------- */
+
+    if (reloadButton) {
+
+      reloadButton.onclick =
+        function () {
+
+          renderAndBind();
+
+        };
 
     }
 
   }
 
 
-  function getConfig() {
-    return load();
+  /* ==========================================================
+     RENDER + BIND
+  ========================================================== */
+
+  function renderAndBind() {
+
+    const mount =
+      document.getElementById("module-26A");
+
+    if (!mount) {
+
+      console.error(
+        "GoVara26A: #module-26A mount not found."
+      );
+
+      return;
+    }
+
+
+    mount.innerHTML =
+      render();
+
+    bind();
+
   }
 
 
+  /* ==========================================================
+     PUBLIC API
+  ========================================================== */
+
   return {
-    render,
-    bind,
-    getConfig,
-    save,
-    STORAGE_KEY
+
+    render:
+      render,
+
+    bind:
+      bind,
+
+    renderAndBind:
+      renderAndBind,
+
+    getConfig:
+      getConfig,
+
+    save:
+      save,
+
+    reset:
+      reset,
+
+    validateConfig:
+      validateConfig,
+
+    getSystemHealth:
+      getSystemHealth,
+
+    createAuditEvent:
+      createAuditEvent,
+
+    STORAGE_KEY:
+      STORAGE_KEY
+
   };
 
 })();

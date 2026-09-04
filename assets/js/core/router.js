@@ -1,0 +1,1 @@
+window.GoVaraRouter={pages:{dashboard:null,system:'GoVara26A',roles:'GoVara26B',policies:'GoVara26C',operations:'GoVara26D',financial:'GoVara26E',documents:'GoVara26F',audit:'GoVara26G',api:'GoVara27'},go(page){if(this.pages[page]!==undefined){GoVaraState.currentPage=page;GoVaraApp.render()}}};

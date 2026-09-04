@@ -1,1844 +1,1586 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoVara — Administrator Control Center</title>
-
-  <style>
-    :root {
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --text: #172033;
-      --muted: #6b7280;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --success: #15803d;
-      --warning: #b45309;
-      --danger: #b91c1c;
-      --border: #e5e7eb;
-      --sidebar: #111827;
-      --sidebar-hover: #1f2937;
-      --sidebar-active: #2563eb;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
-      --radius: 14px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .app-shell {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* =========================
-       SIDEBAR
-    ========================== */
-
-    .sidebar {
-      width: 270px;
-      background: var(--sidebar);
-      color: #fff;
-      position: fixed;
-      inset: 0 auto 0 0;
-      overflow-y: auto;
-      z-index: 100;
-    }
-
-    .brand {
-      padding: 22px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .brand-title {
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-    }
-
-    .brand-subtitle {
-      margin-top: 5px;
-      color: #9ca3af;
-      font-size: 12px;
-    }
-
-    .nav {
-      padding: 14px 10px 30px;
-    }
-
-    .nav-section {
-      color: #6b7280;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 12px 12px 7px;
-      letter-spacing: 0.7px;
-    }
-
-    .nav-btn {
-      width: 100%;
-      border: 0;
-      background: transparent;
-      color: #d1d5db;
-      padding: 11px 12px;
-      border-radius: 9px;
-      text-align: left;
-      margin-bottom: 3px;
-      transition: 0.15s ease;
-    }
-
-    .nav-btn:hover {
-      background: var(--sidebar-hover);
-      color: #fff;
-    }
-
-    .nav-btn.active {
-      background: var(--sidebar-active);
-      color: #fff;
-      font-weight: 700;
-    }
-
-    /* =========================
-       MAIN
-    ========================== */
-
-    .main {
-      margin-left: 270px;
-      width: calc(100% - 270px);
-      min-width: 0;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-    }
-
-    .topbar-title {
-      font-size: 19px;
-      font-weight: 800;
-    }
-
-    .topbar-subtitle {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 3px;
-    }
-
-    .topbar-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .content {
-      padding: 22px;
-      max-width: 1600px;
-      margin: auto;
-    }
-
-    /* =========================
-       BADGES
-    ========================== */
-
-    .badge-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 800;
-      border: 1px solid transparent;
-    }
-
-    .badge.success {
-      color: var(--success);
-      background: #ecfdf3;
-      border-color: #bbf7d0;
-    }
-
-    .badge.warning {
-      color: var(--warning);
-      background: #fffbeb;
-      border-color: #fde68a;
-    }
-
-    .badge.danger {
-      color: var(--danger);
-      background: #fef2f2;
-      border-color: #fecaca;
-    }
-
-    .badge.info {
-      color: #1d4ed8;
-      background: #eff6ff;
-      border-color: #bfdbfe;
-    }
-
-    /* =========================
-       CARDS
-    ========================== */
-
-    .grid {
-      display: grid;
-      gap: 16px;
-    }
-
-    .grid-2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .grid-4 {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 18px;
-    }
-
-    .card + .card {
-      margin-top: 16px;
-    }
-
-    .card-title {
-      font-size: 16px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .card-subtitle {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-      margin-bottom: 15px;
-    }
-
-    .stat-card {
-      padding: 17px;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .stat-value {
-      margin-top: 8px;
-      font-size: 24px;
-      font-weight: 900;
-    }
-
-    .stat-note {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    /* =========================
-       FORMS
-    ========================== */
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 13px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group.full {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #374151;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      border: 1px solid #d1d5db;
-      border-radius: 9px;
-      padding: 10px 11px;
-      outline: none;
-      background: #fff;
-      color: var(--text);
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.10);
-    }
-
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .checkbox-row input {
-      width: auto;
-    }
-
-    /* =========================
-       BUTTONS
-    ========================== */
-
-    .btn-row {
-      display: flex;
-      gap: 9px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 9px;
-      padding: 10px 14px;
-      font-weight: 800;
-      font-size: 12px;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-secondary {
-      background: #eef2f7;
-      color: #374151;
-    }
-
-    .btn-success {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .btn-warning {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .btn-danger {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    /* =========================
-       TABLE
-    ========================== */
-
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 650px;
-    }
-
-    th,
-    td {
-      padding: 11px 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      font-size: 12px;
-      vertical-align: top;
-    }
-
-    th {
-      background: #f8fafc;
-      font-weight: 800;
-      color: #374151;
-    }
-
-    /* =========================
-       TOGGLE
-    ========================== */
-
-    .toggle-line {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .toggle-line:last-child {
-      border-bottom: 0;
-    }
-
-    .toggle-text strong {
-      display: block;
-      font-size: 13px;
-    }
-
-    .toggle-text span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    .switch {
-      position: relative;
-      width: 44px;
-      height: 24px;
-      flex: 0 0 auto;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      inset: 0;
-      background: #d1d5db;
-      border-radius: 999px;
-      transition: 0.2s;
-    }
-
-    .slider::before {
-      content: "";
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      left: 3px;
-      top: 3px;
-      background: white;
-      border-radius: 50%;
-      transition: 0.2s;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
-
-    .switch input:checked + .slider {
-      background: var(--primary);
-    }
-
-    .switch input:checked + .slider::before {
-      transform: translateX(20px);
-    }
-
-    /* =========================
-       ALERTS
-    ========================== */
-
-    .alert {
-      border-radius: 11px;
-      padding: 13px 14px;
-      font-size: 12px;
-      line-height: 1.5;
-      margin-bottom: 16px;
-    }
-
-    .alert-info {
-      background: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
-    }
-
-    .alert-warning {
-      background: #fffbeb;
-      color: #92400e;
-      border: 1px solid #fde68a;
-    }
-
-    .alert-danger {
-      background: #fef2f2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-    }
-
-    .alert-success {
-      background: #f0fdf4;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-    }
-
-    /* =========================
-       PAGE
-    ========================== */
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .page-header {
-      margin-bottom: 18px;
-    }
-
-    .page-header h1 {
-      margin: 0;
-      font-size: 23px;
-    }
-
-    .page-header p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .section-gap {
-      margin-top: 16px;
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 11px;
-    }
-
-    .danger-text {
-      color: var(--danger);
-      font-weight: 800;
-    }
-
-    .success-text {
-      color: var(--success);
-      font-weight: 800;
-    }
-
-    .mono {
-      font-family: Consolas, monospace;
-      word-break: break-all;
-    }
-
-    /* =========================
-       RESPONSIVE
-    ========================== */
-
-    .mobile-menu {
-      display: none;
-      border: 0;
-      background: #eef2f7;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-weight: 800;
-    }
-
-    @media (max-width: 1100px) {
-      .grid-4 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .grid-3 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 800px) {
-      .sidebar {
-        transform: translateX(-100%);
-        transition: 0.2s ease;
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .main {
-        margin-left: 0;
-        width: 100%;
-      }
-
-      .mobile-menu {
-        display: inline-block;
-      }
-
-      .grid-2,
-      .grid-3,
-      .grid-4,
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .content {
-        padding: 15px;
-      }
-
-      .topbar {
-        padding: 12px 15px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoVara — Administrator Control Center</title>
+
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#667085;
+  --border:#e4e7ec;
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --success:#16a34a;
+  --warning:#d97706;
+  --danger:#dc2626;
+  --sidebar:#111827;
+  --sidebar-text:#d1d5db;
+  --shadow:0 8px 24px rgba(16,24,40,.07);
+  --radius:14px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.app{
+  min-height:100vh;
+  display:flex;
+}
+
+.sidebar{
+  width:270px;
+  background:var(--sidebar);
+  color:white;
+  padding:20px 14px;
+  position:fixed;
+  inset:0 auto 0 0;
+  overflow-y:auto;
+}
+
+.brand{
+  padding:8px 12px 22px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  margin-bottom:16px;
+}
+
+.brand h1{
+  margin:0;
+  font-size:23px;
+}
+
+.brand p{
+  margin:6px 0 0;
+  color:#9ca3af;
+  font-size:12px;
+}
+
+.nav-section{
+  margin:18px 8px 7px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:#6b7280;
+}
+
+.nav-btn{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:var(--sidebar-text);
+  text-align:left;
+  padding:11px 12px;
+  border-radius:9px;
+  margin:2px 0;
+}
+
+.nav-btn:hover,
+.nav-btn.active{
+  background:#1f2937;
+  color:white;
+}
+
+.main{
+  margin-left:270px;
+  width:calc(100% - 270px);
+  min-height:100vh;
+}
+
+.topbar{
+  height:70px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 26px;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.topbar-title{
+  font-size:19px;
+  font-weight:700;
+}
+
+.status-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.badge{
+  padding:6px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+  border:1px solid var(--border);
+}
+
+.badge.ready{
+  color:var(--success);
+  background:#ecfdf3;
+}
+
+.badge.warning{
+  color:var(--warning);
+  background:#fffbeb;
+}
+
+.badge.danger{
+  color:var(--danger);
+  background:#fef2f2;
+}
+
+.content{
+  padding:26px;
+  max-width:1500px;
+  margin:auto;
+}
+
+.page{
+  display:none;
+}
+
+.page.active{
+  display:block;
+}
+
+.page-header{
+  margin-bottom:20px;
+}
+
+.page-header h2{
+  margin:0 0 7px;
+  font-size:25px;
+}
+
+.page-header p{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+  margin-bottom:18px;
+}
+
+.card h3{
+  margin:0 0 5px;
+  font-size:17px;
+}
+
+.card-description{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:18px;
+}
+
+.field{
+  margin-bottom:15px;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.field small{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:5px;
+}
+
+input,select,textarea{
+  width:100%;
+  border:1px solid #d0d5dd;
+  border-radius:9px;
+  padding:10px 11px;
+  background:white;
+  color:var(--text);
+}
+
+textarea{
+  min-height:80px;
+  resize:vertical;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.row-3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+
+.switch-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:11px 0;
+  border-bottom:1px solid #f0f2f5;
+}
+
+.switch-row:last-child{
+  border-bottom:0;
+}
+
+.switch-info strong{
+  display:block;
+  font-size:13px;
+}
+
+.switch-info span{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+.switch{
+  position:relative;
+  width:44px;
+  height:24px;
+  flex:none;
+}
+
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.slider{
+  position:absolute;
+  inset:0;
+  background:#d0d5dd;
+  border-radius:999px;
+  transition:.2s;
+}
+
+.slider:before{
+  content:"";
+  position:absolute;
+  width:18px;
+  height:18px;
+  left:3px;
+  top:3px;
+  background:white;
+  border-radius:50%;
+  transition:.2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+
+.switch input:checked + .slider{
+  background:var(--primary);
+}
+
+.switch input:checked + .slider:before{
+  transform:translateX(20px);
+}
+
+.actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+
+.btn{
+  border:0;
+  border-radius:9px;
+  padding:10px 15px;
+  font-weight:700;
+  font-size:13px;
+}
+
+.btn-primary{
+  background:var(--primary);
+  color:white;
+}
+
+.btn-primary:hover{
+  background:var(--primary-dark);
+}
+
+.btn-secondary{
+  background:#eef2f6;
+  color:#344054;
+}
+
+.btn-danger{
+  background:#fee2e2;
+  color:#b42318;
+}
+
+.btn-success{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.info-box{
+  padding:13px 15px;
+  border-radius:10px;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  color:#1e40af;
+  font-size:12px;
+  line-height:1.55;
+  margin-bottom:16px;
+}
+
+.warning-box{
+  padding:13px 15px;
+  border-radius:10px;
+  background:#fffbeb;
+  border:1px solid #fde68a;
+  color:#92400e;
+  font-size:12px;
+  line-height:1.55;
+  margin-bottom:16px;
+}
+
+.danger-box{
+  padding:13px 15px;
+  border-radius:10px;
+  background:#fef2f2;
+  border:1px solid #fecaca;
+  color:#991b1b;
+  font-size:12px;
+  line-height:1.55;
+  margin-bottom:16px;
+}
+
+.stat{
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:white;
+}
+
+.stat .label{
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.stat .value{
+  font-size:22px;
+  font-weight:800;
+  margin-top:7px;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th,td{
+  border-bottom:1px solid var(--border);
+  padding:10px 8px;
+  text-align:left;
+  vertical-align:top;
+}
+
+th{
+  background:#f8fafc;
+  font-size:11px;
+}
+
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:20px;
+}
+
+.mobile-menu{
+  display:none;
+}
+
+@media(max-width:900px){
+  .sidebar{
+    transform:translateX(-100%);
+    transition:.2s;
+    z-index:30;
+  }
+
+  .sidebar.open{
+    transform:translateX(0);
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+  }
+
+  .mobile-menu{
+    display:block;
+    border:0;
+    background:#eef2f6;
+    border-radius:8px;
+    padding:8px 10px;
+    margin-right:10px;
+  }
+
+  .grid,
+  .grid-3,
+  .row,
+  .row-3{
+    grid-template-columns:1fr;
+  }
+
+  .content{
+    padding:16px;
+  }
+
+  .topbar{
+    padding:0 14px;
+  }
+
+  .status-row{
+    display:none;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<div class="app-shell">
-
-  <!-- =========================
-       SIDEBAR
-  ========================== -->
+<div class="app">
 
   <aside class="sidebar" id="sidebar">
 
     <div class="brand">
-      <div class="brand-title">GoVara</div>
-      <div class="brand-subtitle">Administrator Control Center</div>
+      <h1>GoVara</h1>
+      <p>Administrator Control Center</p>
     </div>
 
-    <nav class="nav">
+    <div class="nav-section">Control Center</div>
 
-      <div class="nav-section">Overview</div>
+    <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+    <button class="nav-btn" data-page="26A">26A — System Configuration</button>
+    <button class="nav-btn" data-page="26B">26B — User & Role Control</button>
+    <button class="nav-btn" data-page="26C">26C — Business Policies</button>
+    <button class="nav-btn" data-page="26D">26D — Operations Control</button>
+    <button class="nav-btn" data-page="26E">26E — Financial Control</button>
+    <button class="nav-btn" data-page="26F">26F — Documents & KYC</button>
+    <button class="nav-btn" data-page="26G">26G — Audit & Monitoring</button>
 
-      <button class="nav-btn active" data-page="dashboard">
-        Dashboard
-      </button>
+    <div class="nav-section">Integration</div>
 
-      <div class="nav-section">System Control</div>
+    <button class="nav-btn" data-page="27">STEP 27 — Consolidated API</button>
 
-      <button class="nav-btn" data-page="system">
-        26A — System Configuration
-      </button>
-
-      <button class="nav-btn" data-page="users">
-        26B — User & Role Control
-      </button>
-
-      <button class="nav-btn" data-page="policies">
-        26C — Business Policies
-      </button>
-
-      <button class="nav-btn" data-page="operations">
-        26D — Operations Control
-      </button>
-
-      <button class="nav-btn" data-page="financial">
-        26E — Financial Control
-      </button>
-
-      <button class="nav-btn" data-page="documents">
-        26F — Documents & KYC
-      </button>
-
-      <button class="nav-btn" data-page="audit">
-        26G — Audit & Monitoring
-      </button>
-
-      <div class="nav-section">Integration</div>
-
-      <button class="nav-btn" data-page="api">
-        STEP 27 — Consolidated API
-      </button>
-
-    </nav>
   </aside>
-
-  <!-- =========================
-       MAIN
-  ========================== -->
 
   <main class="main">
 
     <header class="topbar">
-
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button class="mobile-menu" id="mobileMenuBtn">☰</button>
-
-        <div>
-          <div class="topbar-title" id="topbarTitle">
-            Administrator Dashboard
-          </div>
-
-          <div class="topbar-subtitle">
-            GoVara Central Control Layer
-          </div>
+      <div style="display:flex;align-items:center;">
+        <button class="mobile-menu" id="mobileMenu">☰</button>
+        <div class="topbar-title" id="pageTitle">
+          Administrator Control Center
         </div>
       </div>
 
-      <div class="topbar-actions">
-
-        <span class="badge success">
-          FRONTEND READY
-        </span>
-
-        <span class="badge warning" id="apiTopBadge">
-          API NOT CONFIGURED
-        </span>
-
-        <span class="badge info">
-          TESTING MODE
-        </span>
-
+      <div class="status-row">
+        <span class="badge ready">FRONTEND READY</span>
+        <span class="badge warning">API NOT CONFIGURED</span>
+        <span class="badge warning">TESTING MODE ON</span>
+        <span class="badge danger">REAL MONEY BLOCKED</span>
       </div>
-
     </header>
 
     <section class="content">
 
-      <!-- =========================================================
-           DASHBOARD
-      ========================================================== -->
-
+      <!-- DASHBOARD -->
       <section class="page active" id="page-dashboard">
 
         <div class="page-header">
-          <h1>Administrator Dashboard</h1>
-          <p>
-            Central configuration and control layer for the GoVara platform.
-          </p>
+          <h2>Administrator Dashboard</h2>
+          <p>Central system configuration and control layer.</p>
         </div>
 
-        <div class="badge-row">
-          <span class="badge success">Frontend READY</span>
-          <span class="badge warning" id="dashboardApiStatus">
-            API NOT CONFIGURED
-          </span>
-          <span class="badge info">Testing Mode ON</span>
-          <span class="badge danger">Real Money BLOCKED</span>
+        <div class="grid-3">
+          <div class="stat">
+            <div class="label">Frontend</div>
+            <div class="value">READY</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">API</div>
+            <div class="value">NOT CONFIGURED</div>
+          </div>
+
+          <div class="stat">
+            <div class="label">Environment</div>
+            <div class="value" id="dashboardEnvironment">TESTING</div>
+          </div>
         </div>
 
-        <div class="grid grid-4">
-
-          <div class="card stat-card">
-            <div class="stat-label">Application</div>
-            <div class="stat-value">READY</div>
-            <div class="stat-note">
-              Frontend foundation active
-            </div>
+        <div class="card">
+          <h3>System Boundary</h3>
+          <div class="info-box">
+            Frontend is the administration and presentation layer.
+            Backend remains authoritative for business, financial and
+            database operations.
           </div>
 
-          <div class="card stat-card">
-            <div class="stat-label">API</div>
-            <div class="stat-value" id="dashboardApiValue">
-              NOT CONFIGURED
-            </div>
-            <div class="stat-note">
-              Connection will be added later
-            </div>
+          <div class="danger-box">
+            Real Money = BLOCKED<br>
+            Real Payment = BLOCKED<br>
+            Bank Transfer = BLOCKED
           </div>
-
-          <div class="card stat-card">
-            <div class="stat-label">Environment</div>
-            <div class="stat-value" id="dashboardEnvironment">
-              TESTING
-            </div>
-            <div class="stat-note">
-              Real financial operations blocked
-            </div>
-          </div>
-
-          <div class="card stat-card">
-            <div class="stat-label">Control Layer</div>
-            <div class="stat-value">ADMIN</div>
-            <div class="stat-note">
-              Central configuration authority
-            </div>
-          </div>
-
         </div>
 
-        <div class="section-gap"></div>
-
-        <div class="alert alert-info">
-          <strong>Current Architecture Boundary:</strong>
-          Frontend configuration is currently local only.
-          Backend and Database are intentionally not connected at this stage.
-          The backend will remain authoritative for business and financial truth.
-        </div>
-
-        <div class="grid grid-2">
-
-          <div class="card">
-            <div class="card-title">System Foundation</div>
-            <div class="card-subtitle">
-              Core administrator controls planned in the consolidated architecture.
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>System Configuration</strong>
-                <span>26A control layer</span>
-              </div>
-              <span class="badge success">READY</span>
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>User & Role Control</strong>
-                <span>26B role management</span>
-              </div>
-              <span class="badge success">READY</span>
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Business Policies</strong>
-                <span>26C configurable policies</span>
-              </div>
-              <span class="badge success">READY</span>
-            </div>
-
+        <div class="card">
+          <h3>Architecture</h3>
+          <div class="info-box">
+            Frontend → ONE Consolidated API Boundary → Backend → Database
           </div>
-
-          <div class="card">
-            <div class="card-title">Safety Boundary</div>
-            <div class="card-subtitle">
-              Financial operations remain backend-controlled.
-            </div>
-
-            <div class="alert alert-danger">
-              <strong>Real Money: BLOCKED</strong><br>
-              Frontend cannot authorize, settle, transfer, or independently
-              create financial truth.
-            </div>
-
-            <div class="alert alert-warning">
-              <strong>Payment / Bank Transfer: BLOCKED</strong><br>
-              These operations require the future authoritative backend/API layer.
-            </div>
-
-          </div>
-
         </div>
 
       </section>
 
-      <!-- =========================================================
-           26A SYSTEM CONFIGURATION
-      ========================================================== -->
 
-      <section class="page" id="page-system">
+      <!-- 26A -->
+      <section class="page" id="page-26A">
 
         <div class="page-header">
-          <h1>26A — System Configuration</h1>
+          <h2>26A — System Configuration</h2>
           <p>
-            Configure the frontend control-layer settings.
+            Global system-level configuration. Individual customer,
+            driver, vendor, vehicle, booking and financial records remain
+            outside this layer.
           </p>
         </div>
 
+        <div class="info-box">
+          26A controls global defaults and system-wide switches.
+          Backend will remain the final authority when the API is connected.
+        </div>
+
+
+        <!-- A System Identity -->
         <div class="card">
-
-          <div class="card-title">Core System Settings</div>
-          <div class="card-subtitle">
-            These values are stored locally in the frontend at this stage.
+          <h3>A. System Identity</h3>
+          <div class="card-description">
+            Official identity and internal system information.
           </div>
 
-          <div class="form-grid">
-
-            <div class="form-group">
-              <label for="systemName">System Name</label>
-              <input id="systemName" type="text" value="GoVara">
+          <div class="row">
+            <div class="field">
+              <label>System Name</label>
+              <input id="a_systemName" type="text">
             </div>
 
-            <div class="form-group">
-              <label for="environment">Environment</label>
-              <select id="environment">
-                <option value="TESTING">TESTING</option>
-                <option value="STAGING">STAGING</option>
-                <option value="PRODUCTION">PRODUCTION</option>
+            <div class="field">
+              <label>Platform Type</label>
+              <input id="a_platformType" type="text">
+            </div>
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>System Code</label>
+              <input id="a_systemCode" type="text">
+            </div>
+
+            <div class="field">
+              <label>Frontend Version</label>
+              <input id="a_frontendVersion" type="text">
+            </div>
+
+            <div class="field">
+              <label>Configuration Version</label>
+              <input id="a_configVersion" type="text">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>System Status</label>
+            <select id="a_systemStatus">
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="MAINTENANCE">MAINTENANCE</option>
+              <option value="SUSPENDED">SUSPENDED</option>
+            </select>
+          </div>
+        </div>
+
+
+        <!-- B Environment -->
+        <div class="card">
+          <h3>B. Environment</h3>
+          <div class="card-description">
+            Current execution environment.
+          </div>
+
+          <div class="field">
+            <label>Environment</label>
+            <select id="a_environment">
+              <option value="TESTING">TESTING</option>
+              <option value="STAGING">STAGING</option>
+              <option value="PRODUCTION">PRODUCTION</option>
+            </select>
+          </div>
+
+          <div class="warning-box">
+            TESTING mode remains the current default. Real-money operations
+            remain blocked independently of this frontend setting.
+          </div>
+        </div>
+
+
+        <!-- C Maintenance -->
+        <div class="card">
+          <h3>C. Maintenance Mode</h3>
+          <div class="card-description">
+            Global maintenance and access behavior.
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Maintenance Mode</strong>
+              <span>Place the system into maintenance state.</span>
+            </div>
+            <label class="switch">
+              <input id="a_maintenanceMode" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Maintenance Start</label>
+              <input id="a_maintenanceStart" type="datetime-local">
+            </div>
+
+            <div class="field">
+              <label>Expected End</label>
+              <input id="a_maintenanceEnd" type="datetime-local">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Maintenance Message</label>
+            <textarea id="a_maintenanceMessage"></textarea>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Allow Admin Access</strong>
+              <span>Allow administrators during maintenance.</span>
+            </div>
+            <label class="switch">
+              <input id="a_allowAdminMaintenance" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Allow Customer Login</strong>
+              <span>Global customer login availability.</span>
+            </div>
+            <label class="switch">
+              <input id="a_allowCustomerLoginMaintenance" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Allow New Booking</strong>
+              <span>Allow new bookings during maintenance.</span>
+            </div>
+            <label class="switch">
+              <input id="a_allowBookingMaintenance" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+
+        <!-- D Localization -->
+        <div class="card">
+          <h3>D. Regional & Localization</h3>
+          <div class="card-description">
+            Global regional defaults.
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Country</label>
+              <input id="a_country" type="text">
+            </div>
+
+            <div class="field">
+              <label>Currency</label>
+              <input id="a_currency" type="text">
+            </div>
+
+            <div class="field">
+              <label>Currency Symbol</label>
+              <input id="a_currencySymbol" type="text">
+            </div>
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Timezone</label>
+              <select id="a_timezone">
+                <option value="Asia/Kolkata">Asia/Kolkata</option>
+                <option value="UTC">UTC</option>
+                <option value="Asia/Dubai">Asia/Dubai</option>
+                <option value="Asia/Singapore">Asia/Singapore</option>
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="systemStatus">System Status</label>
-              <select id="systemStatus">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="MAINTENANCE">MAINTENANCE</option>
-                <option value="SUSPENDED">SUSPENDED</option>
+            <div class="field">
+              <label>Date Format</label>
+              <select id="a_dateFormat">
+                <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="systemVersion">Frontend Version</label>
-              <input id="systemVersion" type="text" value="ADMIN-CONTROL-26">
+            <div class="field">
+              <label>Time Format</label>
+              <select id="a_timeFormat">
+                <option value="12H">12 Hour</option>
+                <option value="24H">24 Hour</option>
+              </select>
             </div>
-
-            <div class="form-group full">
-              <label for="futureApiEndpoint">
-                Future Consolidated API Endpoint
-              </label>
-
-              <input
-                id="futureApiEndpoint"
-                type="text"
-                placeholder="Not configured"
-              >
-
-              <div class="small muted">
-                Do not enter an API URL until the consolidated API is actually created.
-              </div>
-            </div>
-
           </div>
 
-          <div class="btn-row">
-            <button class="btn btn-primary" id="saveSystemBtn">
-              Save System Configuration
+          <div class="field">
+            <label>Default Language</label>
+            <select id="a_language">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+            </select>
+          </div>
+        </div>
+
+
+        <!-- E Support -->
+        <div class="card">
+          <h3>E. Contact & Support</h3>
+          <div class="card-description">
+            Global support configuration.
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Support Phone</label>
+              <input id="a_supportPhone" type="text">
+            </div>
+
+            <div class="field">
+              <label>Support Email</label>
+              <input id="a_supportEmail" type="email">
+            </div>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Customer Support</strong>
+              <span>Enable customer support access.</span>
+            </div>
+            <label class="switch">
+              <input id="a_customerSupport" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Vendor Support</strong>
+              <span>Enable vendor support access.</span>
+            </div>
+            <label class="switch">
+              <input id="a_vendorSupport" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Driver Support</strong>
+              <span>Enable driver support access.</span>
+            </div>
+            <label class="switch">
+              <input id="a_driverSupport" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Emergency Contact</label>
+              <input id="a_emergencyContact" type="text">
+            </div>
+
+            <div class="field">
+              <label>Help Center URL / Reference</label>
+              <input id="a_helpCenter" type="text">
+            </div>
+          </div>
+        </div>
+
+
+        <!-- F Features -->
+        <div class="card">
+          <h3>F. Global Feature Controls</h3>
+          <div class="card-description">
+            Global availability switches. Detailed business rules remain in 26C.
+          </div>
+
+          <div id="featureControls"></div>
+        </div>
+
+
+        <!-- G Booking Defaults -->
+        <div class="card">
+          <h3>G. Booking System Defaults</h3>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Booking System Enabled</strong>
+              <span>Global booking availability.</span>
+            </div>
+            <label class="switch">
+              <input id="a_bookingEnabled" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Booking ID Generation</strong>
+              <span>Generate system booking references.</span>
+            </div>
+            <label class="switch">
+              <input id="a_bookingIdGeneration" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Booking Reference Prefix</label>
+              <input id="a_bookingPrefix" type="text">
+            </div>
+
+            <div class="field">
+              <label>Default Booking Status</label>
+              <select id="a_defaultBookingStatus">
+                <option value="PENDING">PENDING</option>
+                <option value="CONFIRMED">CONFIRMED</option>
+                <option value="REQUESTED">REQUESTED</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Guest Booking</strong>
+              <span>Allow bookings without registered customer account.</span>
+            </div>
+            <label class="switch">
+              <input id="a_guestBooking" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+
+        <!-- H Security -->
+        <div class="card">
+          <h3>H. Security & Access Defaults</h3>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Authentication Required</strong>
+              <span>Require authentication for protected operations.</span>
+            </div>
+            <label class="switch">
+              <input id="a_authRequired" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>OTP Login Available</strong>
+              <span>Make OTP authentication available.</span>
+            </div>
+            <label class="switch">
+              <input id="a_otpLogin" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Two-Factor Authentication Available</strong>
+              <span>Allow 2FA capability.</span>
+            </div>
+            <label class="switch">
+              <input id="a_2fa" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Session Timeout (minutes)</label>
+              <input id="a_sessionTimeout" type="number" min="1">
+            </div>
+
+            <div class="field">
+              <label>Maximum Login Attempts</label>
+              <input id="a_maxLoginAttempts" type="number" min="1">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Account Lock Duration (minutes)</label>
+            <input id="a_lockDuration" type="number" min="1">
+          </div>
+        </div>
+
+
+        <!-- I Notifications -->
+        <div class="card">
+          <h3>I. Notification Defaults</h3>
+
+          <div id="notificationControls"></div>
+        </div>
+
+
+        <!-- J Data -->
+        <div class="card">
+          <h3>J. Data, Logging & Record Controls</h3>
+
+          <div id="dataControls"></div>
+        </div>
+
+
+        <!-- K API -->
+        <div class="card">
+          <h3>K. API Configuration</h3>
+
+          <div class="warning-box">
+            API is intentionally not configured at this stage.
+            STEP 27 will handle the actual Consolidated API integration.
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Consolidated API Endpoint</label>
+              <input id="a_apiEndpoint" type="url" placeholder="Leave empty until STEP 27">
+            </div>
+
+            <div class="field">
+              <label>API Version</label>
+              <input id="a_apiVersion" type="text" readonly>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>API Status</label>
+            <input id="a_apiStatus" type="text" readonly>
+          </div>
+        </div>
+
+
+        <!-- L Safety -->
+        <div class="card">
+          <h3>L. System Safety Controls</h3>
+
+          <div class="warning-box">
+            These are frontend safety indicators only. Financial authority
+            will remain with the Backend.
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Testing Mode</strong>
+              <span>Keep development/testing behavior enabled.</span>
+            </div>
+            <label class="switch">
+              <input id="a_testingMode" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Demo Mode</strong>
+              <span>Enable non-production demonstration behavior.</span>
+            </div>
+            <label class="switch">
+              <input id="a_demoMode" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Real Money</strong>
+              <span>Must remain blocked at this frontend stage.</span>
+            </div>
+            <label class="switch">
+              <input id="a_realMoney" type="checkbox" disabled>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Real Payment</strong>
+              <span>Must remain blocked at this frontend stage.</span>
+            </div>
+            <label class="switch">
+              <input id="a_realPayment" type="checkbox" disabled>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Bank Transfer</strong>
+              <span>Must remain blocked at this frontend stage.</span>
+            </div>
+            <label class="switch">
+              <input id="a_bankTransfer" type="checkbox" disabled>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+
+        <!-- M Validation -->
+        <div class="card">
+          <h3>M. Configuration Rules</h3>
+
+          <div class="info-box">
+            The frontend validates obvious configuration errors before saving.
+            Backend validation will remain authoritative after API integration.
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Configuration Validation</strong>
+              <span>Validate required and dependent settings.</span>
+            </div>
+            <label class="switch">
+              <input id="a_validationEnabled" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Feature Dependency Checking</strong>
+              <span>Check global feature dependencies before save.</span>
+            </div>
+            <label class="switch">
+              <input id="a_dependencyChecking" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+
+        <!-- N Configuration History -->
+        <div class="card">
+          <h3>N. Configuration History</h3>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Version</th>
+                  <th>Action</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody id="configurationHistory"></tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <!-- O Actions -->
+        <div class="card">
+          <h3>O. Configuration Actions</h3>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="save26A">
+              Save Configuration
             </button>
 
-            <button class="btn btn-secondary" id="reloadSystemBtn">
+            <button class="btn btn-secondary" id="reload26A">
               Reload Saved Configuration
             </button>
+
+            <button class="btn btn-danger" id="reset26A">
+              Reset to Default
+            </button>
           </div>
-
-          <div id="systemMessage" style="margin-top:12px;"></div>
-
         </div>
 
       </section>
 
-      <!-- =========================================================
-           26B USER & ROLE CONTROL
-      ========================================================== -->
 
-      <section class="page" id="page-users">
+      <!-- 26B -->
+      <section class="page" id="page-26B">
 
         <div class="page-header">
-          <h1>26B — User & Role Control</h1>
-          <p>
-            Central role registry for the GoVara platform.
-          </p>
+          <h2>26B — User & Role Control</h2>
+          <p>Global roles and access control.</p>
         </div>
 
         <div class="card">
+          <h3>Role Registry</h3>
+          <div id="roleControls"></div>
 
-          <div class="card-title">Role Registry</div>
-          <div class="card-subtitle">
-            Customer remains the primary booking initiator.
+          <div class="actions">
+            <button class="btn btn-primary" id="save26B">
+              Save Roles
+            </button>
           </div>
+        </div>
+
+      </section>
+
+
+      <!-- 26C -->
+      <section class="page" id="page-26C">
+
+        <div class="page-header">
+          <h2>26C — Business Policies</h2>
+          <p>Global business rules and commercial defaults.</p>
+        </div>
+
+        <div class="card">
+          <h3>Fare & Pricing</h3>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Base Fare</label>
+              <input id="c_baseFare" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Per KM Rate</label>
+              <input id="c_perKm" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Per Minute Rate</label>
+              <input id="c_perMinute" type="number" min="0">
+            </div>
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Minimum Fare</label>
+              <input id="c_minFare" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Waiting Charge</label>
+              <input id="c_waitingCharge" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Night Charge %</label>
+              <input id="c_nightCharge" type="number" min="0">
+            </div>
+          </div>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Service Charge %</label>
+              <input id="c_serviceCharge" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Tax %</label>
+              <input id="c_tax" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Maximum Discount %</label>
+              <input id="c_discount" type="number" min="0">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Default Advance %</label>
+              <input id="c_advance" type="number" min="0" max="100">
+            </div>
+
+            <div class="field">
+              <label>Policy Status</label>
+              <select id="c_policyStatus">
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Additional Business Controls</h3>
+
+          <div class="row-3">
+            <div class="field">
+              <label>Cancellation Charge %</label>
+              <input id="c_cancelCharge" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Vendor Commission %</label>
+              <input id="c_vendorCommission" type="number" min="0">
+            </div>
+
+            <div class="field">
+              <label>Platform Commission %</label>
+              <input id="c_platformCommission" type="number" min="0">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Default KYC Policy</label>
+              <select id="c_kycPolicy">
+                <option value="REQUIRED">REQUIRED</option>
+                <option value="OPTIONAL">OPTIONAL</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Default Service Area</label>
+              <input id="c_serviceArea" type="text" value="India">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="save26C">
+              Save Policies
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- 26D -->
+      <section class="page" id="page-26D">
+
+        <div class="page-header">
+          <h2>26D — Operations Control</h2>
+          <p>Operational availability and workflow controls.</p>
+        </div>
+
+        <div class="card">
+          <div id="operationControls"></div>
+
+          <h3 style="margin-top:22px;">Services</h3>
+          <div id="serviceControls"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="save26D">
+              Save Operations
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- 26E -->
+      <section class="page" id="page-26E">
+
+        <div class="page-header">
+          <h2>26E — Financial Control</h2>
+          <p>Financial module visibility and safety boundary.</p>
+        </div>
+
+        <div class="danger-box">
+          Frontend is NOT the financial authority.
+          Wallet, transactions, ledger, settlement, billing and payment
+          truth must come from the Backend.
+        </div>
+
+        <div class="card">
+          <div id="financialControls"></div>
+        </div>
+
+        <div class="card">
+          <h3>Blocked Operations</h3>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Real Money</strong>
+              <span>BLOCKED</span>
+            </div>
+            <strong style="color:var(--danger)">BLOCKED</strong>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Real Payment</strong>
+              <span>BLOCKED</span>
+            </div>
+            <strong style="color:var(--danger)">BLOCKED</strong>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>Bank Transfer</strong>
+              <span>BLOCKED</span>
+            </div>
+            <strong style="color:var(--danger)">BLOCKED</strong>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- 26F -->
+      <section class="page" id="page-26F">
+
+        <div class="page-header">
+          <h2>26F — Documents & KYC</h2>
+          <p>Document requirements and verification controls.</p>
+        </div>
+
+        <div class="card">
+          <div id="documentControls"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="save26F">
+              Save Documents & KYC
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- 26G -->
+      <section class="page" id="page-26G">
+
+        <div class="page-header">
+          <h2>26G — Audit & Monitoring</h2>
+          <p>Local frontend activity monitoring until Backend integration.</p>
+        </div>
+
+        <div class="warning-box">
+          Current audit log is frontend-local. After API integration,
+          Backend audit records will become authoritative.
+        </div>
+
+        <div class="card">
+          <h3>Activity Log</h3>
 
           <div class="table-wrap">
-
             <table>
-
-              <thead>
-                <tr>
-                  <th>Role</th>
-                  <th>Purpose</th>
-                  <th>Booking</th>
-                  <th>Operational Access</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                <tr>
-                  <td><strong>Admin</strong></td>
-                  <td>Central system control</td>
-                  <td>Control</td>
-                  <td>Full control layer</td>
-                  <td>
-                    <span class="badge success">ACTIVE</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td><strong>Customer</strong></td>
-                  <td>Primary booking initiator</td>
-                  <td>Create / Manage</td>
-                  <td>Customer journey</td>
-                  <td>
-                    <span class="badge success">ACTIVE</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td><strong>Vendor</strong></td>
-                  <td>Service provider</td>
-                  <td>Service fulfilment</td>
-                  <td>Vendor operations</td>
-                  <td>
-                    <span class="badge success">ACTIVE</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td><strong>Driver</strong></td>
-                  <td>Trip execution</td>
-                  <td>Duty / Trip</td>
-                  <td>Driver operations</td>
-                  <td>
-                    <span class="badge success">ACTIVE</span>
-                  </td>
-                </tr>
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
-
-        <div class="card">
-
-          <div class="card-title">Role Controls</div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Admin Role</strong>
-              <span>Central configuration authority</span>
-            </div>
-
-            <label class="switch">
-              <input type="checkbox" checked data-role-toggle="Admin">
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Customer Role</strong>
-              <span>Primary booking initiator</span>
-            </div>
-
-            <label class="switch">
-              <input type="checkbox" checked data-role-toggle="Customer">
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Vendor Role</strong>
-              <span>Service provider operations</span>
-            </div>
-
-            <label class="switch">
-              <input type="checkbox" checked data-role-toggle="Vendor">
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Driver Role</strong>
-              <span>Trip and duty execution</span>
-            </div>
-
-            <label class="switch">
-              <input type="checkbox" checked data-role-toggle="Driver">
-              <span class="slider"></span>
-            </label>
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- =========================================================
-           26C BUSINESS POLICIES
-      ========================================================== -->
-
-      <section class="page" id="page-policies">
-
-        <div class="page-header">
-          <h1>26C — Business Policies</h1>
-          <p>
-            Admin-configurable business rules. Final enforcement belongs to backend.
-          </p>
-        </div>
-
-        <div class="alert alert-info">
-          These settings represent the intended policy configuration.
-          The frontend does not become the authoritative financial/business source.
-        </div>
-
-        <div class="grid grid-2">
-
-          <div class="card">
-
-            <div class="card-title">Fare & Charges</div>
-
-            <div class="form-grid">
-
-              <div class="form-group">
-                <label>Base Fare</label>
-                <input id="baseFare" type="number" min="0" value="100">
-              </div>
-
-              <div class="form-group">
-                <label>Per KM Rate</label>
-                <input id="perKmRate" type="number" min="0" value="12">
-              </div>
-
-              <div class="form-group">
-                <label>Service Charge %</label>
-                <input id="serviceCharge" type="number" min="0" value="5">
-              </div>
-
-              <div class="form-group">
-                <label>Tax %</label>
-                <input id="taxRate" type="number" min="0" value="5">
-              </div>
-
-            </div>
-
-          </div>
-
-          <div class="card">
-
-            <div class="card-title">Discount & Advance</div>
-
-            <div class="form-grid">
-
-              <div class="form-group">
-                <label>Maximum Discount %</label>
-                <input id="maxDiscount" type="number" min="0" value="20">
-              </div>
-
-              <div class="form-group">
-                <label>Default Advance %</label>
-                <input id="advancePercent" type="number" min="0" value="20">
-              </div>
-
-              <div class="form-group full">
-                <label>Policy Status</label>
-                <select id="policyStatus">
-                  <option value="ACTIVE">ACTIVE</option>
-                  <option value="DRAFT">DRAFT</option>
-                  <option value="DISABLED">DISABLED</option>
-                </select>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="card section-gap">
-
-          <div class="card-title">KYC Policy</div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Customer KYC Required</strong>
-              <span>Policy flag for future backend enforcement</span>
-            </div>
-
-            <label class="switch">
-              <input id="customerKycRequired" type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Vendor KYC Required</strong>
-              <span>Policy flag for future backend enforcement</span>
-            </div>
-
-            <label class="switch">
-              <input id="vendorKycRequired" type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Driver KYC Required</strong>
-              <span>Policy flag for future backend enforcement</span>
-            </div>
-
-            <label class="switch">
-              <input id="driverKycRequired" type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="btn-row">
-
-            <button class="btn btn-primary" id="savePoliciesBtn">
-              Save Business Policies
-            </button>
-
-          </div>
-
-          <div id="policyMessage" style="margin-top:12px;"></div>
-
-        </div>
-
-      </section>
-
-      <!-- =========================================================
-           26D OPERATIONS CONTROL
-      ========================================================== -->
-
-      <section class="page" id="page-operations">
-
-        <div class="page-header">
-          <h1>26D — Operations Control</h1>
-          <p>
-            Operational service, booking, vehicle and duty controls.
-          </p>
-        </div>
-
-        <div class="grid grid-2">
-
-          <div class="card">
-
-            <div class="card-title">Booking Controls</div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Booking Creation</strong>
-                <span>Allow customer booking flow</span>
-              </div>
-
-              <label class="switch">
-                <input id="bookingCreation" type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Booking Cancellation</strong>
-                <span>Allow cancellation workflow</span>
-              </div>
-
-              <label class="switch">
-                <input id="bookingCancellation" type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Fare Estimation</strong>
-                <span>Allow frontend estimate request</span>
-              </div>
-
-              <label class="switch">
-                <input id="fareEstimation" type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-          </div>
-
-          <div class="card">
-
-            <div class="card-title">Vehicle & Duty Controls</div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Vehicle Assignment</strong>
-                <span>Vehicle assignment workflow</span>
-              </div>
-
-              <label class="switch">
-                <input id="vehicleAssignment" type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Driver Duty</strong>
-                <span>Duty management workflow</span>
-              </div>
-
-              <label class="switch">
-                <input id="driverDuty" type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div class="toggle-line">
-              <div class="toggle-text">
-                <strong>Vendor Operations</strong>
-                <span>Vendor fulfilment workflow</span>
-              </div>
-
-              <label class="switch">
-                <input id="vendorOperations" type="checkbox" checked>
-                <span class="slider"></span>
-              </label>
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="card section-gap">
-
-          <div class="card-title">Service Catalogue</div>
-
-          <div class="form-grid">
-
-            <div class="form-group">
-              <label>City Ride</label>
-              <select id="cityRide">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Outstation</label>
-              <select id="outstation">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Airport</label>
-              <select id="airport">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Rental</label>
-              <select id="rental">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Corporate</label>
-              <select id="corporate">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Delivery</label>
-              <select id="delivery">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="DISABLED">DISABLED</option>
-              </select>
-            </div>
-
-          </div>
-
-          <div class="btn-row">
-
-            <button class="btn btn-primary" id="saveOperationsBtn">
-              Save Operations Configuration
-            </button>
-
-          </div>
-
-          <div id="operationsMessage" style="margin-top:12px;"></div>
-
-        </div>
-
-      </section>
-
-      <!-- =========================================================
-           26E FINANCIAL CONTROL
-      ========================================================== -->
-
-      <section class="page" id="page-financial">
-
-        <div class="page-header">
-          <h1>26E — Financial Control</h1>
-          <p>
-            Financial control boundary. Backend remains authoritative.
-          </p>
-        </div>
-
-        <div class="alert alert-danger">
-          <strong>IMPORTANT:</strong>
-          The frontend cannot independently authorize or create financial truth.
-          Real money operations remain blocked until the authoritative backend/API
-          contract is connected and verified.
-        </div>
-
-        <div class="grid grid-3">
-
-          <div class="card">
-            <div class="card-title">Wallet</div>
-            <div class="card-subtitle">
-              Balance must come from the authoritative backend.
-            </div>
-            <span class="badge danger">BACKEND REQUIRED</span>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Transaction</div>
-            <div class="card-subtitle">
-              Transaction records must be backend-authoritative.
-            </div>
-            <span class="badge danger">BACKEND REQUIRED</span>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Ledger</div>
-            <div class="card-subtitle">
-              Ledger truth cannot be independently generated by frontend.
-            </div>
-            <span class="badge danger">BACKEND REQUIRED</span>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Settlement</div>
-            <div class="card-subtitle">
-              Settlement remains backend-controlled.
-            </div>
-            <span class="badge danger">BLOCKED</span>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Billing</div>
-            <div class="card-subtitle">
-              Final bill must come from authoritative business rules.
-            </div>
-            <span class="badge warning">BACKEND REQUIRED</span>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Bank Transfer</div>
-            <div class="card-subtitle">
-              No direct bank transfer operation exists in frontend.
-            </div>
-            <span class="badge danger">BLOCKED</span>
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- =========================================================
-           26F DOCUMENTS & KYC
-      ========================================================== -->
-
-      <section class="page" id="page-documents">
-
-        <div class="page-header">
-          <h1>26F — Documents & KYC</h1>
-          <p>
-            Document categories and verification controls.
-          </p>
-        </div>
-
-        <div class="card">
-
-          <div class="card-title">Document Types</div>
-
-          <div class="table-wrap">
-
-            <table>
-
-              <thead>
-                <tr>
-                  <th>Document</th>
-                  <th>Applicable Role</th>
-                  <th>Verification</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                <tr>
-                  <td>Government ID</td>
-                  <td>Customer / Vendor / Driver</td>
-                  <td>Required</td>
-                  <td>
-                    <span class="badge success">ENABLED</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>Driving Licence</td>
-                  <td>Driver</td>
-                  <td>Required</td>
-                  <td>
-                    <span class="badge success">ENABLED</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>Vehicle RC</td>
-                  <td>Vendor / Driver</td>
-                  <td>Required</td>
-                  <td>
-                    <span class="badge success">ENABLED</span>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>Insurance</td>
-                  <td>Vehicle</td>
-                  <td>Required</td>
-                  <td>
-                    <span class="badge success">ENABLED</span>
-                  </td>
-                </tr>
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-        </div>
-
-        <div class="card">
-
-          <div class="card-title">KYC Verification Control</div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Document Verification</strong>
-              <span>Enable verification workflow</span>
-            </div>
-
-            <label class="switch">
-              <input id="documentVerification" type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Expiry Monitoring</strong>
-              <span>Monitor document expiry status</span>
-            </div>
-
-            <label class="switch">
-              <input id="expiryMonitoring" type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-          <div class="toggle-line">
-            <div class="toggle-text">
-              <strong>Manual Review</strong>
-              <span>Allow administrator review workflow</span>
-            </div>
-
-            <label class="switch">
-              <input id="manualReview" type="checkbox" checked>
-              <span class="slider"></span>
-            </label>
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- =========================================================
-           26G AUDIT & MONITORING
-      ========================================================== -->
-
-      <section class="page" id="page-audit">
-
-        <div class="page-header">
-          <h1>26G — Audit & Monitoring</h1>
-          <p>
-            Local control-layer activity log. Final audit authority belongs to backend.
-          </p>
-        </div>
-
-        <div class="grid grid-3">
-
-          <div class="card stat-card">
-            <div class="stat-label">Frontend Status</div>
-            <div class="stat-value">READY</div>
-          </div>
-
-          <div class="card stat-card">
-            <div class="stat-label">API Status</div>
-            <div class="stat-value" id="auditApiValue">
-              NOT CONFIGURED
-            </div>
-          </div>
-
-          <div class="card stat-card">
-            <div class="stat-label">Audit Mode</div>
-            <div class="stat-value">LOCAL</div>
-          </div>
-
-        </div>
-
-        <div class="card section-gap">
-
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-
-            <div>
-              <div class="card-title">Frontend Activity Log</div>
-              <div class="card-subtitle">
-                Temporary local activity record for this frontend control layer.
-              </div>
-            </div>
-
-            <button class="btn btn-danger" id="clearAuditBtn">
-              Clear Local Log
-            </button>
-
-          </div>
-
-          <div class="table-wrap">
-
-            <table>
-
               <thead>
                 <tr>
                   <th>Time</th>
                   <th>Action</th>
+                  <th>Module</th>
                   <th>Details</th>
                 </tr>
               </thead>
-
-              <tbody id="auditTableBody"></tbody>
-
+              <tbody id="auditTable"></tbody>
             </table>
-
           </div>
 
+          <div class="actions">
+            <button class="btn btn-danger" id="clearAudit">
+              Clear Local Log
+            </button>
+          </div>
         </div>
 
       </section>
 
-      <!-- =========================================================
-           STEP 27 CONSOLIDATED API
-      ========================================================== -->
 
-      <section class="page" id="page-api">
+      <!-- STEP 27 -->
+      <section class="page" id="page-27">
 
         <div class="page-header">
-          <h1>STEP 27 — Consolidated API</h1>
-          <p>
-            API boundary shell only. No backend endpoint is configured yet.
-          </p>
+          <h2>STEP 27 — Consolidated API</h2>
+          <p>Single API boundary for the future Backend integration.</p>
         </div>
 
-        <div class="alert alert-warning">
-          <strong>API is intentionally NOT CONFIGURED.</strong><br>
-          This stage does not connect to Apps Script Backend or Database.
-          Configure the API only after the frontend Administrator Control Center
-          architecture is finalized.
+        <div class="card">
+          <h3>API Status</h3>
+
+          <div class="grid-3">
+            <div class="stat">
+              <div class="label">API Object</div>
+              <div class="value" id="apiObjectStatus">AVAILABLE</div>
+            </div>
+
+            <div class="stat">
+              <div class="label">Endpoint</div>
+              <div class="value" id="apiEndpointStatus">NONE</div>
+            </div>
+
+            <div class="stat">
+              <div class="label">Connection</div>
+              <div class="value" id="apiConnectionStatus">NOT TESTED</div>
+            </div>
+          </div>
         </div>
 
-        <div class="grid grid-3">
+        <div class="card">
+          <h3>Future API Endpoint</h3>
 
-          <div class="card stat-card">
-            <div class="stat-label">API Object</div>
-            <div class="stat-value" id="apiObjectStatus">
-              AVAILABLE
-            </div>
-            <div class="stat-note">
-              window.GoVaraAPI
-            </div>
+          <div class="warning-box">
+            Do not configure or test the API until the Backend Consolidated
+            API Foundation is actually created.
           </div>
 
-          <div class="card stat-card">
-            <div class="stat-label">Endpoint</div>
-            <div class="stat-value" id="apiEndpointStatus">
-              NONE
-            </div>
-            <div class="stat-note">
-              No URL configured
-            </div>
+          <div class="field">
+            <label>Consolidated API Endpoint</label>
+            <input id="apiEndpointInput" type="url"
+                   placeholder="Leave empty for now">
           </div>
 
-          <div class="card stat-card">
-            <div class="stat-label">Connection</div>
-            <div class="stat-value" id="apiConnectionStatus">
-              NOT TESTED
-            </div>
-            <div class="stat-note">
-              Test only after endpoint exists
-            </div>
-          </div>
-
-        </div>
-
-        <div class="card section-gap">
-
-          <div class="card-title">Future API Configuration</div>
-
-          <div class="card-subtitle">
-            Leave this blank for the current frontend-only stage.
-          </div>
-
-          <div class="form-group">
-
-            <label for="apiEndpointInput">
-              Consolidated API URL
-            </label>
-
-            <input
-              id="apiEndpointInput"
-              type="url"
-              placeholder="https://script.google.com/macros/s/.../exec"
-            >
-
-          </div>
-
-          <div class="btn-row">
-
-            <button class="btn btn-primary" id="saveApiConfigBtn">
-              Save API Configuration
+          <div class="actions">
+            <button class="btn btn-primary" id="saveApi">
+              Save Endpoint
             </button>
 
-            <button class="btn btn-secondary" id="clearApiConfigBtn">
-              Clear API Configuration
+            <button class="btn btn-secondary" id="clearApi">
+              Clear Endpoint
             </button>
 
-            <button class="btn btn-warning" id="testApiBtn">
-              Test API Connection
+            <button class="btn btn-danger" id="testApi">
+              Test Connection
             </button>
-
           </div>
-
-          <div id="apiMessage" style="margin-top:12px;"></div>
-
         </div>
 
-        <div class="card section-gap">
+        <div class="card">
+          <h3>Consolidated Module Boundary</h3>
 
-          <div class="card-title">Consolidated Module Boundary</div>
-
-          <div class="card-subtitle">
-            These are contract-level module names only. No independent API is created
-            for each feature.
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  <th>Boundary</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Customer</td><td>GoVaraAPI</td></tr>
+                <tr><td>Vendor</td><td>GoVaraAPI</td></tr>
+                <tr><td>Driver</td><td>GoVaraAPI</td></tr>
+                <tr><td>Vehicle</td><td>GoVaraAPI</td></tr>
+                <tr><td>Booking</td><td>GoVaraAPI</td></tr>
+                <tr><td>Duty</td><td>GoVaraAPI</td></tr>
+                <tr><td>Fare</td><td>GoVaraAPI</td></tr>
+                <tr><td>Transaction</td><td>GoVaraAPI</td></tr>
+                <tr><td>Wallet</td><td>GoVaraAPI</td></tr>
+                <tr><td>Ledger</td><td>GoVaraAPI</td></tr>
+                <tr><td>Settlement</td><td>GoVaraAPI</td></tr>
+                <tr><td>Billing</td><td>GoVaraAPI</td></tr>
+                <tr><td>Documents</td><td>GoVaraAPI</td></tr>
+                <tr><td>Admin</td><td>GoVaraAPI</td></tr>
+                <tr><td>Audit</td><td>GoVaraAPI</td></tr>
+              </tbody>
+            </table>
           </div>
-
-          <div class="grid grid-3">
-
-            <span class="badge info">Customer</span>
-            <span class="badge info">Vendor</span>
-            <span class="badge info">Driver</span>
-            <span class="badge info">Vehicle</span>
-            <span class="badge info">Booking</span>
-            <span class="badge info">Duty</span>
-            <span class="badge info">Fare</span>
-            <span class="badge info">Transaction</span>
-            <span class="badge info">Wallet</span>
-            <span class="badge info">Ledger</span>
-            <span class="badge info">Settlement</span>
-            <span class="badge info">Billing</span>
-            <span class="badge info">Documents</span>
-            <span class="badge info">Admin</span>
-            <span class="badge info">Audit</span>
-
-          </div>
-
         </div>
 
-        <div class="card section-gap">
-
-          <div class="card-title">Financial Boundary</div>
-
-          <div class="alert alert-danger">
-            <strong>Frontend is NOT the financial authority.</strong><br>
-            Wallet, transaction, ledger, settlement, billing and payment truth
-            must be supplied and enforced by the authoritative backend.
-          </div>
-
+        <div class="danger-box">
+          Financial authority remains Backend-side.
+          Frontend must not create independent financial truth.
         </div>
 
       </section>
 
     </section>
-
   </main>
-
 </div>
 
-<!-- =============================================================
-     CONSOLIDATED API BOUNDARY
-     IMPORTANT: This script is intentionally FIRST.
-============================================================== -->
 
 <script>
-(function () {
+/* =========================================================
+   GoVara Consolidated API Boundary
+   Current status: NOT CONFIGURED
+   ========================================================= */
 
-  "use strict";
+(function(){
 
-  const VERSION = "GOVARA-CONSOLIDATED-API-V1";
-  const STORAGE_KEY = "GOVARA_API_CONFIG_V1";
-  const REQUEST_TIMEOUT = 15000;
+  const CONFIG = {
+    VERSION: "GOVARA-CONSOLIDATED-API-V1",
+    STORAGE_KEY: "GOVARA_API_CONFIG_V1",
+    REQUEST_TIMEOUT: 15000
+  };
 
-  let savedUrl = null;
-
-  try {
-    savedUrl = localStorage.getItem(STORAGE_KEY) || null;
-  } catch (e) {
-    savedUrl = null;
-  }
+  const savedUrl = localStorage.getItem(CONFIG.STORAGE_KEY) || "";
 
   const APIState = {
     configured: !!savedUrl,
@@ -1849,1468 +1591,1591 @@
     lastAction: null
   };
 
-  function normalizeUrl(url) {
-    if (!url) return null;
-
-    const value = String(url).trim();
-
-    if (!value) return null;
-
-    return value;
+  function getAPIUrl(){
+    return localStorage.getItem(CONFIG.STORAGE_KEY) || "";
   }
 
-  function configure(url) {
+  function configure(url){
+    const clean = String(url || "").trim();
 
-    const endpoint = normalizeUrl(url);
-
-    if (!endpoint) {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch (e) {}
-
-      savedUrl = null;
-      APIState.configured = false;
-      APIState.connected = false;
-      APIState.verified = false;
-
-      return null;
+    if(clean){
+      localStorage.setItem(CONFIG.STORAGE_KEY, clean);
+    }else{
+      localStorage.removeItem(CONFIG.STORAGE_KEY);
     }
 
-    try {
-      localStorage.setItem(STORAGE_KEY, endpoint);
-    } catch (e) {}
-
-    savedUrl = endpoint;
-
-    APIState.configured = true;
+    APIState.configured = !!clean;
     APIState.connected = false;
     APIState.verified = false;
-    APIState.lastError = null;
 
-    return endpoint;
+    return clean;
   }
 
-  function getAPIUrl() {
-    if (savedUrl) return savedUrl;
-
-    try {
-      if (
-        window.GOVARA_API_URL &&
-        String(window.GOVARA_API_URL).trim()
-      ) {
-        return String(window.GOVARA_API_URL).trim();
-      }
-    } catch (e) {}
-
-    return null;
-  }
-
-  async function request(action, payload, method) {
-
+  async function request(method, action, payload){
     const endpoint = getAPIUrl();
 
-    if (!endpoint) {
+    if(!endpoint){
       throw new Error("API endpoint is not configured.");
     }
 
     const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      CONFIG.REQUEST_TIMEOUT
+    );
 
-    const timeout = setTimeout(function () {
-      controller.abort();
-    }, REQUEST_TIMEOUT);
+    try{
+      const options = {
+        method,
+        signal:controller.signal
+      };
 
-    try {
+      if(method === "POST"){
+        options.headers = {
+          "Content-Type":"text/plain;charset=utf-8"
+        };
 
-      const body = JSON.stringify({
-        project: "GoVara",
-        version: VERSION,
-        action: action,
-        payload: payload || {}
-      });
+        options.body = JSON.stringify({
+          action,
+          payload:payload || {},
+          version:CONFIG.VERSION
+        });
+      }
 
-      const response = await fetch(endpoint, {
-        method: method || "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: body,
-        signal: controller.signal
-      });
-
+      const response = await fetch(endpoint, options);
       const text = await response.text();
 
-      let data = null;
+      let data;
 
-      try {
+      try{
         data = JSON.parse(text);
-      } catch (e) {
-        data = {
-          raw: text
-        };
+      }catch(e){
+        data = {raw:text};
       }
 
       APIState.lastResponse = data;
       APIState.lastAction = action;
 
-      if (!response.ok) {
-        throw new Error(
-          "HTTP " +
-          response.status +
-          " " +
-          response.statusText
-        );
-      }
-
       return data;
 
-    } finally {
+    }finally{
       clearTimeout(timeout);
     }
   }
 
-  async function testConnection() {
+  async function testConnection(){
 
     const endpoint = getAPIUrl();
 
-    if (!endpoint) {
-      APIState.connected = false;
-      APIState.verified = false;
-
-      throw new Error(
-        "API endpoint is not configured."
-      );
+    if(!endpoint){
+      throw new Error("API endpoint is not configured.");
     }
 
-    APIState.lastAction = "GET_HEALTH";
+    const data = await request("GET","GET_HEALTH");
 
-    const controller = new AbortController();
-
-    const timeout = setTimeout(function () {
-      controller.abort();
-    }, REQUEST_TIMEOUT);
-
-    try {
-
-      const url = endpoint +
-        (endpoint.indexOf("?") >= 0 ? "&" : "?") +
-        "action=GET_HEALTH";
-
-      const response = await fetch(url, {
-        method: "GET",
-        signal: controller.signal
-      });
-
-      const text = await response.text();
-
-      let data = null;
-
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        data = {
-          raw: text
-        };
-      }
-
-      APIState.lastResponse = data;
-
-      if (!response.ok) {
-        throw new Error(
-          "HTTP " +
-          response.status +
-          " " +
-          response.statusText
-        );
-      }
-
-      const verified =
-        data &&
-        data.project === "GoVara";
-
-      APIState.connected = true;
-      APIState.verified = !!verified;
-
-      if (!verified) {
-        throw new Error(
-          "Backend response received, but GoVara project verification failed."
-        );
-      }
-
-      return data;
-
-    } catch (error) {
-
-      APIState.connected = false;
-      APIState.verified = false;
-      APIState.lastError = error;
-
-      throw error;
-
-    } finally {
-      clearTimeout(timeout);
+    if(!data || data.project !== "GoVara"){
+      throw new Error("Invalid GoVara backend response.");
     }
+
+    APIState.connected = true;
+    APIState.verified = true;
+
+    return data;
   }
 
-  async function list(module) {
-    return request(
-      "LIST",
-      {
-        module: module
-      }
-    );
+  function list(module){
+    return request("POST","LIST",{
+      module
+    });
   }
 
-  async function save(module, data) {
-    return request(
-      "SAVE",
-      {
-        module: module,
-        data: data || {}
-      }
-    );
+  function save(module,data){
+    return request("POST","SAVE",{
+      module,
+      data
+    });
   }
 
-  async function fareCalculate(data) {
-    return request(
-      "FARE_CALCULATE",
-      data || {}
-    );
+  function fareCalculate(data){
+    return request("POST","FARE_CALCULATE",data);
   }
 
-  async function transactionCreate(data) {
-    return request(
-      "TRANSACTION_CREATE",
-      data || {}
-    );
+  function transactionCreate(data){
+    return request("POST","TRANSACTION_CREATE",data);
   }
 
-  async function walletGet(data) {
-    return request(
-      "WALLET_GET",
-      data || {}
-    );
+  function walletGet(data){
+    return request("POST","WALLET_GET",data);
   }
 
-  async function walletUpdate(data) {
-    return request(
-      "WALLET_UPDATE",
-      data || {}
-    );
+  function walletUpdate(data){
+    return request("POST","WALLET_UPDATE",data);
   }
 
-  async function adminGet(data) {
-    return request(
-      "ADMIN_GET",
-      data || {}
-    );
+  function adminGet(data){
+    return request("POST","ADMIN_GET",data);
   }
 
-  async function adminUpdate(data) {
-    return request(
-      "ADMIN_UPDATE",
-      data || {}
-    );
+  function adminUpdate(data){
+    return request("POST","ADMIN_UPDATE",data);
   }
 
-  async function auditList(data) {
-    return request(
-      "AUDIT_LIST",
-      data || {}
-    );
+  function auditList(data){
+    return request("POST","AUDIT_LIST",data);
   }
 
-  async function authentication(data) {
-    return request(
-      "AUTHENTICATION",
-      data || {}
-    );
+  function authentication(data){
+    return request("POST","AUTHENTICATION",data);
   }
-
-  const modules = {
-    Customer: "Customer",
-    Vendor: "Vendor",
-    Driver: "Driver",
-    Vehicle: "Vehicle",
-    Booking: "Booking",
-    Duty: "Duty",
-    Fare: "Fare",
-    Transaction: "Transaction",
-    Wallet: "Wallet",
-    Ledger: "Ledger",
-    Settlement: "Settlement",
-    Billing: "Billing",
-    Documents: "Documents",
-    Admin: "Admin",
-    Audit: "Audit"
-  };
 
   window.GoVaraAPI = {
-    version: VERSION,
-    state: APIState,
-
-    configure: configure,
-    getAPIUrl: getAPIUrl,
-    testConnection: testConnection,
-
-    list: list,
-    save: save,
-
-    fareCalculate: fareCalculate,
-    transactionCreate: transactionCreate,
-    walletGet: walletGet,
-    walletUpdate: walletUpdate,
-
-    adminGet: adminGet,
-    adminUpdate: adminUpdate,
-
-    auditList: auditList,
-    authentication: authentication,
-
-    modules: modules
+    version:CONFIG.VERSION,
+    configure,
+    getAPIUrl,
+    testConnection,
+    list,
+    save,
+    fareCalculate,
+    transactionCreate,
+    walletGet,
+    walletUpdate,
+    adminGet,
+    adminUpdate,
+    auditList,
+    authentication,
+    modules:[
+      "Customer",
+      "Vendor",
+      "Driver",
+      "Vehicle",
+      "Booking",
+      "Duty",
+      "Fare",
+      "Transaction",
+      "Wallet",
+      "Ledger",
+      "Settlement",
+      "Billing",
+      "Documents",
+      "Admin",
+      "Audit"
+    ],
+    state:APIState
   };
 
   console.log("GoVaraAPI: AVAILABLE");
-  console.log("GoVaraAPI Version:", VERSION);
+  console.log("GoVaraAPI Version:",CONFIG.VERSION);
 
 })();
-</script>
 
-<!-- =============================================================
-     ADMIN CONTROL CENTER APPLICATION
-============================================================== -->
 
-<script>
-(function () {
+/* =========================================================
+   Administrator Control Center
+   ========================================================= */
 
-  "use strict";
+(function(){
 
-  const STORAGE_KEY = "GOVARA_ADMIN_CONTROL_CENTER_V1";
-  const AUDIT_KEY = "GOVARA_ADMIN_AUDIT_V1";
-
-  const state = {
-    currentPage: "dashboard",
-    mobileSidebarOpen: false
+  const STORAGE = {
+    SYSTEM:"GOVARA_ADMIN_SYSTEM_CONFIG_V2",
+    ROLES:"GOVARA_ADMIN_ROLES_V1",
+    POLICIES:"GOVARA_ADMIN_POLICIES_V2",
+    OPERATIONS:"GOVARA_ADMIN_OPERATIONS_V1",
+    FINANCIAL:"GOVARA_ADMIN_FINANCIAL_V1",
+    DOCUMENTS:"GOVARA_ADMIN_DOCUMENTS_V1",
+    AUDIT:"GOVARA_ADMIN_AUDIT_V1"
   };
 
-  /* ============================================================
-     DEFAULT CONFIGURATION
-  ============================================================= */
 
-  const defaultConfig = {
+  const DEFAULT_SYSTEM = {
 
-    system: {
-      systemName: "GoVara",
-      environment: "TESTING",
-      systemStatus: "ACTIVE",
-      systemVersion: "ADMIN-CONTROL-26",
-      futureApiEndpoint: ""
+    systemName:"GoVara",
+    platformType:"Transport & Mobility",
+    systemCode:"GOVARA",
+    frontendVersion:"ADMIN-CONTROL-26",
+    configVersion:"1.0",
+    systemStatus:"ACTIVE",
+
+    environment:"TESTING",
+
+    maintenanceMode:false,
+    maintenanceStart:"",
+    maintenanceEnd:"",
+    maintenanceMessage:"GoVara is currently under maintenance.",
+    allowAdminMaintenance:true,
+    allowCustomerLoginMaintenance:false,
+    allowBookingMaintenance:false,
+
+    country:"India",
+    currency:"INR",
+    currencySymbol:"₹",
+    timezone:"Asia/Kolkata",
+    dateFormat:"DD-MM-YYYY",
+    timeFormat:"12H",
+    language:"English",
+
+    supportPhone:"",
+    supportEmail:"",
+    customerSupport:true,
+    vendorSupport:true,
+    driverSupport:true,
+    emergencyContact:"",
+    helpCenter:"",
+
+    features:{
+      customerRegistration:true,
+      customerLogin:true,
+      vendorRegistration:true,
+      driverRegistration:true,
+      booking:true,
+      fareEstimation:true,
+      wallet:true,
+      ratings:true,
+      notifications:true,
+      documentsKYC:true,
+      corporate:true,
+      delivery:true,
+      rental:true,
+      outstation:true,
+      airport:true,
+      referral:true,
+      coupons:true
     },
 
-    roles: {
-      Admin: true,
-      Customer: true,
-      Vendor: true,
-      Driver: true
+    bookingEnabled:true,
+    bookingIdGeneration:true,
+    bookingPrefix:"GV",
+    guestBooking:false,
+    defaultBookingStatus:"PENDING",
+
+    authRequired:true,
+    otpLogin:true,
+    twoFactor:false,
+    sessionTimeout:30,
+    maxLoginAttempts:5,
+    lockDuration:15,
+
+    notifications:{
+      enabled:true,
+      email:true,
+      sms:true,
+      push:true,
+      whatsapp:false,
+      systemAlerts:true,
+      booking:true,
+      cancellation:true,
+      payment:true,
+      document:true,
+      adminAlert:true
     },
 
-    policies: {
-      baseFare: 100,
-      perKmRate: 12,
-      serviceCharge: 5,
-      taxRate: 5,
-      maxDiscount: 20,
-      advancePercent: 20,
-      policyStatus: "ACTIVE",
-      customerKycRequired: true,
-      vendorKycRequired: true,
-      driverKycRequired: true
+    data:{
+      auditLogging:true,
+      activityLogging:true,
+      errorLogging:true,
+      validation:true,
+      duplicateProtection:true,
+      softDelete:true,
+      configBackup:true,
+      configVersioning:true
     },
 
-    operations: {
+    apiEndpoint:"",
+    apiVersion:"GOVARA-CONSOLIDATED-API-V1",
+    apiStatus:"NOT CONFIGURED",
 
-      bookingCreation: true,
-      bookingCancellation: true,
-      fareEstimation: true,
+    testingMode:true,
+    demoMode:true,
 
-      vehicleAssignment: true,
-      driverDuty: true,
-      vendorOperations: true,
+    realMoney:false,
+    realPayment:false,
+    bankTransfer:false,
 
-      services: {
-        "City Ride": true,
-        Outstation: true,
-        Airport: true,
-        Rental: true,
-        Corporate: true,
-        Delivery: true
-      }
-    },
+    validationEnabled:true,
+    dependencyChecking:true
+  };
 
-    documents: {
-      documentVerification: true,
-      expiryMonitoring: true,
-      manualReview: true
+
+  const DEFAULT_ROLES = {
+    Admin:true,
+    Customer:true,
+    Vendor:true,
+    Driver:true
+  };
+
+
+  const DEFAULT_POLICIES = {
+    baseFare:100,
+    perKm:12,
+    perMinute:0,
+    minFare:100,
+    waitingCharge:0,
+    nightCharge:0,
+    serviceCharge:5,
+    tax:5,
+    discount:20,
+    advance:20,
+    cancelCharge:0,
+    vendorCommission:0,
+    platformCommission:0,
+    kycPolicy:"REQUIRED",
+    serviceArea:"India",
+    policyStatus:"ACTIVE"
+  };
+
+
+  const DEFAULT_OPERATIONS = {
+    bookingCreation:true,
+    bookingCancellation:true,
+    fareEstimation:true,
+    vehicleAssignment:true,
+    driverDuty:true,
+    vendorOperations:true,
+
+    services:{
+      "City Ride":true,
+      "Outstation":true,
+      "Airport":true,
+      "Rental":true,
+      "Corporate":true,
+      "Delivery":true
     }
-
   };
 
-  let config = loadConfig();
 
-  /* ============================================================
-     STORAGE
-  ============================================================= */
+  const DEFAULT_FINANCIAL = {
+    Wallet:true,
+    Transaction:true,
+    Ledger:true,
+    Settlement:true,
+    Billing:true,
+    "Bank Transfer":false
+  };
 
-  function deepClone(obj) {
+
+  const DEFAULT_DOCUMENTS = {
+    governmentId:true,
+    drivingLicence:true,
+    vehicleRC:true,
+    insurance:true,
+    verification:true,
+    expiry:true,
+    manualReview:true
+  };
+
+
+  const featureLabels = {
+    customerRegistration:"Customer Registration",
+    customerLogin:"Customer Login",
+    vendorRegistration:"Vendor Registration",
+    driverRegistration:"Driver Registration",
+    booking:"Booking",
+    fareEstimation:"Fare Estimation",
+    wallet:"Wallet",
+    ratings:"Ratings",
+    notifications:"Notifications",
+    documentsKYC:"Documents & KYC",
+    corporate:"Corporate",
+    delivery:"Delivery",
+    rental:"Rental",
+    outstation:"Outstation",
+    airport:"Airport",
+    referral:"Referral",
+    coupons:"Coupons"
+  };
+
+
+  const notificationLabels = {
+    enabled:"Notifications Enabled",
+    email:"Email",
+    sms:"SMS",
+    push:"Push",
+    whatsapp:"WhatsApp",
+    systemAlerts:"System Alerts",
+    booking:"Booking Notification",
+    cancellation:"Cancellation Notification",
+    payment:"Payment Notification",
+    document:"Document Notification",
+    adminAlert:"Admin Alerts"
+  };
+
+
+  const dataLabels = {
+    auditLogging:"Audit Logging",
+    activityLogging:"Activity Logging",
+    errorLogging:"Error Logging",
+    validation:"Data Validation",
+    duplicateProtection:"Duplicate Record Protection",
+    softDelete:"Soft Delete",
+    configBackup:"Configuration Backup",
+    configVersioning:"Configuration Versioning"
+  };
+
+
+  const operationLabels = {
+    bookingCreation:"Booking Creation",
+    bookingCancellation:"Booking Cancellation",
+    fareEstimation:"Fare Estimation",
+    vehicleAssignment:"Vehicle Assignment",
+    driverDuty:"Driver Duty",
+    vendorOperations:"Vendor Operations"
+  };
+
+
+  const documentLabels = {
+    governmentId:"Government ID",
+    drivingLicence:"Driving Licence",
+    vehicleRC:"Vehicle RC",
+    insurance:"Insurance",
+    verification:"Verification Required",
+    expiry:"Expiry Tracking",
+    manualReview:"Manual Review"
+  };
+
+
+  const financialLabels = {
+    Wallet:"Wallet",
+    Transaction:"Transaction",
+    Ledger:"Ledger",
+    Settlement:"Settlement",
+    Billing:"Billing",
+    "Bank Transfer":"Bank Transfer"
+  };
+
+
+  function clone(obj){
     return JSON.parse(JSON.stringify(obj));
   }
 
-  function mergeDeep(target, source) {
 
-    Object.keys(source || {}).forEach(function (key) {
+  function load(key,defaults){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) return clone(defaults);
 
-      if (
-        source[key] &&
-        typeof source[key] === "object" &&
-        !Array.isArray(source[key])
-      ) {
-
-        if (
-          !target[key] ||
-          typeof target[key] !== "object"
-        ) {
-          target[key] = {};
-        }
-
-        mergeDeep(target[key], source[key]);
-
-      } else {
-
-        target[key] = source[key];
-
-      }
-
-    });
-
-    return target;
-  }
-
-  function loadConfig() {
-
-    let stored = null;
-
-    try {
-      stored = localStorage.getItem(STORAGE_KEY);
-    } catch (e) {}
-
-    if (!stored) {
-      return deepClone(defaultConfig);
-    }
-
-    try {
-
-      const parsed = JSON.parse(stored);
-
-      return mergeDeep(
-        deepClone(defaultConfig),
-        parsed
+      return Object.assign(
+        clone(defaults),
+        JSON.parse(raw)
       );
 
-    } catch (e) {
-
-      return deepClone(defaultConfig);
-
+    }catch(e){
+      return clone(defaults);
     }
   }
 
-  function saveConfig() {
 
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(config)
-      );
-
-      addAudit(
-        "CONFIG_SAVE",
-        "Administrator configuration saved locally."
-      );
-
-      return true;
-
-    } catch (error) {
-
-      console.error(error);
-
-      return false;
-    }
+  function save(key,data){
+    localStorage.setItem(key,JSON.stringify(data));
   }
 
-  /* ============================================================
-     AUDIT
-  ============================================================= */
 
-  function getAudit() {
-
-    try {
-
-      const raw = localStorage.getItem(AUDIT_KEY);
-
-      if (!raw) return [];
-
-      const data = JSON.parse(raw);
-
-      return Array.isArray(data)
-        ? data
-        : [];
-
-    } catch (e) {
-
-      return [];
-
-    }
-  }
-
-  function addAudit(action, details) {
-
-    const logs = getAudit();
+  function audit(action,module,details){
+    const logs = load(STORAGE.AUDIT,[]);
 
     logs.unshift({
-      time: new Date().toLocaleString(),
-      action: action,
-      details: details
+      time:new Date().toISOString(),
+      action,
+      module,
+      details
     });
 
-    const limited = logs.slice(0, 200);
-
-    try {
-      localStorage.setItem(
-        AUDIT_KEY,
-        JSON.stringify(limited)
-      );
-    } catch (e) {}
+    localStorage.setItem(
+      STORAGE.AUDIT,
+      JSON.stringify(logs.slice(0,200))
+    );
 
     renderAudit();
   }
 
-  function renderAudit() {
 
-    const tbody =
-      document.getElementById("auditTableBody");
+  let system = load(STORAGE.SYSTEM,DEFAULT_SYSTEM);
+  let roles = load(STORAGE.ROLES,DEFAULT_ROLES);
+  let policies = load(STORAGE.POLICIES,DEFAULT_POLICIES);
+  let operations = load(STORAGE.OPERATIONS,DEFAULT_OPERATIONS);
+  let financial = load(STORAGE.FINANCIAL,DEFAULT_FINANCIAL);
+  let documents = load(STORAGE.DOCUMENTS,DEFAULT_DOCUMENTS);
 
-    if (!tbody) return;
 
-    const logs = getAudit();
+  /* ---------------- Navigation ---------------- */
 
-    if (!logs.length) {
+  const titles = {
+    dashboard:"Administrator Control Center",
+    "26A":"26A — System Configuration",
+    "26B":"26B — User & Role Control",
+    "26C":"26C — Business Policies",
+    "26D":"26D — Operations Control",
+    "26E":"26E — Financial Control",
+    "26F":"26F — Documents & KYC",
+    "26G":"26G — Audit & Monitoring",
+    "27":"STEP 27 — Consolidated API"
+  };
 
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="3" class="muted">
-            No local audit entries yet.
-          </td>
-        </tr>
+
+  function showPage(page){
+
+    document.querySelectorAll(".page").forEach(el=>{
+      el.classList.remove("active");
+    });
+
+    document.querySelectorAll(".nav-btn").forEach(btn=>{
+      btn.classList.remove("active");
+    });
+
+    const pageEl = document.getElementById("page-"+page);
+
+    if(pageEl){
+      pageEl.classList.add("active");
+    }
+
+    const button = document.querySelector(
+      '.nav-btn[data-page="'+page+'"]'
+    );
+
+    if(button){
+      button.classList.add("active");
+    }
+
+    document.getElementById("pageTitle").textContent =
+      titles[page] || "Administrator Control Center";
+
+    document.getElementById("sidebar").classList.remove("open");
+  }
+
+
+  document.querySelectorAll(".nav-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      showPage(btn.dataset.page);
+    });
+  });
+
+
+  document.getElementById("mobileMenu").addEventListener("click",()=>{
+    document.getElementById("sidebar").classList.toggle("open");
+  });
+
+
+  /* ---------------- 26A Render ---------------- */
+
+  function renderSwitchList(containerId,object,prefix,labels){
+
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+
+    Object.keys(labels).forEach(key=>{
+
+      const row = document.createElement("div");
+      row.className = "switch-row";
+
+      row.innerHTML = `
+        <div class="switch-info">
+          <strong>${labels[key]}</strong>
+          <span>${object[key] ? "Enabled" : "Disabled"}</span>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox"
+                 id="${prefix}_${key}"
+                 ${object[key] ? "checked" : ""}>
+          <span class="slider"></span>
+        </label>
       `;
 
-      return;
-    }
+      container.appendChild(row);
 
-    tbody.innerHTML = logs
-      .map(function (item) {
-
-        return `
-          <tr>
-            <td>${escapeHtml(item.time)}</td>
-            <td><strong>${escapeHtml(item.action)}</strong></td>
-            <td>${escapeHtml(item.details)}</td>
-          </tr>
-        `;
-
-      })
-      .join("");
-  }
-
-  /* ============================================================
-     HELPERS
-  ============================================================= */
-
-  function escapeHtml(value) {
-
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function showMessage(elementId, message, type) {
-
-    const el =
-      document.getElementById(elementId);
-
-    if (!el) return;
-
-    const className =
-      type === "success"
-        ? "alert alert-success"
-        : type === "danger"
-          ? "alert alert-danger"
-          : type === "warning"
-            ? "alert alert-warning"
-            : "alert alert-info";
-
-    el.innerHTML =
-      `<div class="${className}">${escapeHtml(message)}</div>`;
-  }
-
-  function byId(id) {
-    return document.getElementById(id);
-  }
-
-  /* ============================================================
-     NAVIGATION
-  ============================================================= */
-
-  function navigate(pageName) {
-
-    state.currentPage = pageName;
-
-    document
-      .querySelectorAll(".page")
-      .forEach(function (page) {
-
-        page.classList.toggle(
-          "active",
-          page.id === "page-" + pageName
-        );
-
+      document.getElementById(
+        prefix+"_"+key
+      ).addEventListener("change",e=>{
+        object[key] = e.target.checked;
+        const span = row.querySelector(".switch-info span");
+        span.textContent = e.target.checked
+          ? "Enabled"
+          : "Disabled";
       });
 
-    document
-      .querySelectorAll(".nav-btn")
-      .forEach(function (button) {
+    });
+  }
 
-        button.classList.toggle(
-          "active",
-          button.dataset.page === pageName
-        );
 
-      });
+  function render26A(){
 
-    const titles = {
-
-      dashboard: "Administrator Dashboard",
-
-      system: "26A — System Configuration",
-
-      users: "26B — User & Role Control",
-
-      policies: "26C — Business Policies",
-
-      operations: "26D — Operations Control",
-
-      financial: "26E — Financial Control",
-
-      documents: "26F — Documents & KYC",
-
-      audit: "26G — Audit & Monitoring",
-
-      api: "STEP 27 — Consolidated API"
-
+    const textFields = {
+      a_systemName:system.systemName,
+      a_platformType:system.platformType,
+      a_systemCode:system.systemCode,
+      a_frontendVersion:system.frontendVersion,
+      a_configVersion:system.configVersion,
+      a_maintenanceStart:system.maintenanceStart,
+      a_maintenanceEnd:system.maintenanceEnd,
+      a_maintenanceMessage:system.maintenanceMessage,
+      a_country:system.country,
+      a_currency:system.currency,
+      a_currencySymbol:system.currencySymbol,
+      a_supportPhone:system.supportPhone,
+      a_supportEmail:system.supportEmail,
+      a_emergencyContact:system.emergencyContact,
+      a_helpCenter:system.helpCenter,
+      a_bookingPrefix:system.bookingPrefix
     };
 
-    byId("topbarTitle").textContent =
-      titles[pageName] || "GoVara";
-
-    if (state.mobileSidebarOpen) {
-      toggleMobileSidebar(false);
-    }
-
-    renderApiStatus();
-  }
-
-  function toggleMobileSidebar(force) {
-
-    const sidebar =
-      byId("sidebar");
-
-    if (!sidebar) return;
-
-    if (typeof force === "boolean") {
-      state.mobileSidebarOpen = force;
-    } else {
-      state.mobileSidebarOpen =
-        !state.mobileSidebarOpen;
-    }
-
-    sidebar.classList.toggle(
-      "open",
-      state.mobileSidebarOpen
-    );
-  }
-
-  /* ============================================================
-     SYSTEM CONFIGURATION
-  ============================================================= */
-
-  function renderSystem() {
-
-    byId("systemName").value =
-      config.system.systemName;
-
-    byId("environment").value =
-      config.system.environment;
-
-    byId("systemStatus").value =
-      config.system.systemStatus;
-
-    byId("systemVersion").value =
-      config.system.systemVersion;
-
-    byId("futureApiEndpoint").value =
-      config.system.futureApiEndpoint || "";
-  }
-
-  function saveSystem() {
-
-    config.system.systemName =
-      byId("systemName").value.trim() || "GoVara";
-
-    config.system.environment =
-      byId("environment").value;
-
-    config.system.systemStatus =
-      byId("systemStatus").value;
-
-    config.system.systemVersion =
-      byId("systemVersion").value.trim() ||
-      "ADMIN-CONTROL-26";
-
-    config.system.futureApiEndpoint =
-      byId("futureApiEndpoint").value.trim();
-
-    saveConfig();
-
-    renderDashboard();
-
-    showMessage(
-      "systemMessage",
-      "System configuration saved locally.",
-      "success"
-    );
-  }
-
-  /* ============================================================
-     ROLES
-  ============================================================= */
-
-  function renderRoles() {
-
-    document
-      .querySelectorAll("[data-role-toggle]")
-      .forEach(function (input) {
-
-        const role =
-          input.dataset.roleToggle;
-
-        input.checked =
-          !!config.roles[role];
-
-      });
-  }
-
-  function saveRoleChange(role, enabled) {
-
-    config.roles[role] = !!enabled;
-
-    saveConfig();
-
-    addAudit(
-      "ROLE_UPDATE",
-      role + " role set to " +
-      (enabled ? "ACTIVE" : "DISABLED")
-    );
-  }
-
-  /* ============================================================
-     POLICIES
-  ============================================================= */
-
-  function renderPolicies() {
-
-    byId("baseFare").value =
-      config.policies.baseFare;
-
-    byId("perKmRate").value =
-      config.policies.perKmRate;
-
-    byId("serviceCharge").value =
-      config.policies.serviceCharge;
-
-    byId("taxRate").value =
-      config.policies.taxRate;
-
-    byId("maxDiscount").value =
-      config.policies.maxDiscount;
-
-    byId("advancePercent").value =
-      config.policies.advancePercent;
-
-    byId("policyStatus").value =
-      config.policies.policyStatus;
-
-    byId("customerKycRequired").checked =
-      !!config.policies.customerKycRequired;
-
-    byId("vendorKycRequired").checked =
-      !!config.policies.vendorKycRequired;
-
-    byId("driverKycRequired").checked =
-      !!config.policies.driverKycRequired;
-  }
-
-  function savePolicies() {
-
-    config.policies.baseFare =
-      Number(byId("baseFare").value) || 0;
-
-    config.policies.perKmRate =
-      Number(byId("perKmRate").value) || 0;
-
-    config.policies.serviceCharge =
-      Number(byId("serviceCharge").value) || 0;
-
-    config.policies.taxRate =
-      Number(byId("taxRate").value) || 0;
-
-    config.policies.maxDiscount =
-      Number(byId("maxDiscount").value) || 0;
-
-    config.policies.advancePercent =
-      Number(byId("advancePercent").value) || 0;
-
-    config.policies.policyStatus =
-      byId("policyStatus").value;
-
-    config.policies.customerKycRequired =
-      byId("customerKycRequired").checked;
-
-    config.policies.vendorKycRequired =
-      byId("vendorKycRequired").checked;
-
-    config.policies.driverKycRequired =
-      byId("driverKycRequired").checked;
-
-    saveConfig();
-
-    showMessage(
-      "policyMessage",
-      "Business policies saved locally.",
-      "success"
-    );
-  }
-
-  /* ============================================================
-     OPERATIONS
-  ============================================================= */
-
-  function renderOperations() {
-
-    const fields = [
-      "bookingCreation",
-      "bookingCancellation",
-      "fareEstimation",
-      "vehicleAssignment",
-      "driverDuty",
-      "vendorOperations"
-    ];
-
-    fields.forEach(function (id) {
-
-      byId(id).checked =
-        !!config.operations[id];
-
+    Object.entries(textFields).forEach(([id,value])=>{
+      const el = document.getElementById(id);
+      if(el) el.value = value ?? "";
     });
 
-    byId("cityRide").value =
-      config.operations.services["City Ride"]
-        ? "ACTIVE"
-        : "DISABLED";
 
-    byId("outstation").value =
-      config.operations.services.Outstation
-        ? "ACTIVE"
-        : "DISABLED";
+    const selects = {
+      a_systemStatus:system.systemStatus,
+      a_environment:system.environment,
+      a_timezone:system.timezone,
+      a_dateFormat:system.dateFormat,
+      a_timeFormat:system.timeFormat,
+      a_language:system.language,
+      a_defaultBookingStatus:system.defaultBookingStatus
+    };
 
-    byId("airport").value =
-      config.operations.services.Airport
-        ? "ACTIVE"
-        : "DISABLED";
-
-    byId("rental").value =
-      config.operations.services.Rental
-        ? "ACTIVE"
-        : "DISABLED";
-
-    byId("corporate").value =
-      config.operations.services.Corporate
-        ? "ACTIVE"
-        : "DISABLED";
-
-    byId("delivery").value =
-      config.operations.services.Delivery
-        ? "ACTIVE"
-        : "DISABLED";
-  }
-
-  function saveOperations() {
-
-    const fields = [
-      "bookingCreation",
-      "bookingCancellation",
-      "fareEstimation",
-      "vehicleAssignment",
-      "driverDuty",
-      "vendorOperations"
-    ];
-
-    fields.forEach(function (id) {
-
-      config.operations[id] =
-        byId(id).checked;
-
+    Object.entries(selects).forEach(([id,value])=>{
+      const el = document.getElementById(id);
+      if(el) el.value = value;
     });
 
-    config.operations.services["City Ride"] =
-      byId("cityRide").value === "ACTIVE";
 
-    config.operations.services.Outstation =
-      byId("outstation").value === "ACTIVE";
+    const checks = {
+      a_maintenanceMode:system.maintenanceMode,
+      a_allowAdminMaintenance:system.allowAdminMaintenance,
+      a_allowCustomerLoginMaintenance:system.allowCustomerLoginMaintenance,
+      a_allowBookingMaintenance:system.allowBookingMaintenance,
 
-    config.operations.services.Airport =
-      byId("airport").value === "ACTIVE";
+      a_customerSupport:system.customerSupport,
+      a_vendorSupport:system.vendorSupport,
+      a_driverSupport:system.driverSupport,
 
-    config.operations.services.Rental =
-      byId("rental").value === "ACTIVE";
+      a_bookingEnabled:system.bookingEnabled,
+      a_bookingIdGeneration:system.bookingIdGeneration,
+      a_guestBooking:system.guestBooking,
 
-    config.operations.services.Corporate =
-      byId("corporate").value === "ACTIVE";
+      a_authRequired:system.authRequired,
+      a_otpLogin:system.otpLogin,
+      a_2fa:system.twoFactor,
 
-    config.operations.services.Delivery =
-      byId("delivery").value === "ACTIVE";
+      a_testingMode:system.testingMode,
+      a_demoMode:system.demoMode,
 
-    saveConfig();
+      a_validationEnabled:system.validationEnabled,
+      a_dependencyChecking:system.dependencyChecking
+    };
 
-    showMessage(
-      "operationsMessage",
-      "Operations configuration saved locally.",
-      "success"
+    Object.entries(checks).forEach(([id,value])=>{
+      const el = document.getElementById(id);
+      if(el) el.checked = !!value;
+    });
+
+
+    document.getElementById("a_sessionTimeout").value =
+      system.sessionTimeout;
+
+    document.getElementById("a_maxLoginAttempts").value =
+      system.maxLoginAttempts;
+
+    document.getElementById("a_lockDuration").value =
+      system.lockDuration;
+
+    document.getElementById("a_apiEndpoint").value =
+      system.apiEndpoint || "";
+
+    document.getElementById("a_apiVersion").value =
+      system.apiVersion;
+
+    document.getElementById("a_apiStatus").value =
+      system.apiEndpoint
+        ? "CONFIGURED"
+        : "NOT CONFIGURED";
+
+
+    renderSwitchList(
+      "featureControls",
+      system.features,
+      "feature",
+      featureLabels
     );
+
+    renderSwitchList(
+      "notificationControls",
+      system.notifications,
+      "notification",
+      notificationLabels
+    );
+
+    renderSwitchList(
+      "dataControls",
+      system.data,
+      "data",
+      dataLabels
+    );
+
+    renderHistory();
+
+    document.getElementById("dashboardEnvironment").textContent =
+      system.environment;
   }
 
-  /* ============================================================
-     DOCUMENTS
-  ============================================================= */
 
-  function renderDocuments() {
+  function read26A(){
 
-    byId("documentVerification").checked =
-      !!config.documents.documentVerification;
+    const val = id => document.getElementById(id).value;
+    const checked = id => document.getElementById(id).checked;
 
-    byId("expiryMonitoring").checked =
-      !!config.documents.expiryMonitoring;
 
-    byId("manualReview").checked =
-      !!config.documents.manualReview;
+    system.systemName = val("a_systemName").trim();
+    system.platformType = val("a_platformType").trim();
+    system.systemCode = val("a_systemCode").trim();
+    system.frontendVersion = val("a_frontendVersion").trim();
+    system.configVersion = val("a_configVersion").trim();
+    system.systemStatus = val("a_systemStatus");
+
+    system.environment = val("a_environment");
+
+    system.maintenanceMode = checked("a_maintenanceMode");
+    system.maintenanceStart = val("a_maintenanceStart");
+    system.maintenanceEnd = val("a_maintenanceEnd");
+    system.maintenanceMessage = val("a_maintenanceMessage");
+
+    system.allowAdminMaintenance =
+      checked("a_allowAdminMaintenance");
+
+    system.allowCustomerLoginMaintenance =
+      checked("a_allowCustomerLoginMaintenance");
+
+    system.allowBookingMaintenance =
+      checked("a_allowBookingMaintenance");
+
+
+    system.country = val("a_country").trim();
+    system.currency = val("a_currency").trim();
+    system.currencySymbol = val("a_currencySymbol").trim();
+    system.timezone = val("a_timezone");
+    system.dateFormat = val("a_dateFormat");
+    system.timeFormat = val("a_timeFormat");
+    system.language = val("a_language");
+
+
+    system.supportPhone = val("a_supportPhone").trim();
+    system.supportEmail = val("a_supportEmail").trim();
+    system.customerSupport = checked("a_customerSupport");
+    system.vendorSupport = checked("a_vendorSupport");
+    system.driverSupport = checked("a_driverSupport");
+    system.emergencyContact = val("a_emergencyContact").trim();
+    system.helpCenter = val("a_helpCenter").trim();
+
+
+    Object.keys(featureLabels).forEach(key=>{
+      system.features[key] =
+        document.getElementById("feature_"+key).checked;
+    });
+
+
+    system.bookingEnabled = checked("a_bookingEnabled");
+    system.bookingIdGeneration =
+      checked("a_bookingIdGeneration");
+    system.bookingPrefix = val("a_bookingPrefix").trim();
+    system.guestBooking = checked("a_guestBooking");
+    system.defaultBookingStatus =
+      val("a_defaultBookingStatus");
+
+
+    system.authRequired = checked("a_authRequired");
+    system.otpLogin = checked("a_otpLogin");
+    system.twoFactor = checked("a_2fa");
+
+    system.sessionTimeout =
+      Number(val("a_sessionTimeout"));
+
+    system.maxLoginAttempts =
+      Number(val("a_maxLoginAttempts"));
+
+    system.lockDuration =
+      Number(val("a_lockDuration"));
+
+
+    Object.keys(notificationLabels).forEach(key=>{
+      system.notifications[key] =
+        document.getElementById(
+          "notification_"+key
+        ).checked;
+    });
+
+
+    Object.keys(dataLabels).forEach(key=>{
+      system.data[key] =
+        document.getElementById(
+          "data_"+key
+        ).checked;
+    });
+
+
+    system.apiEndpoint =
+      val("a_apiEndpoint").trim();
+
+    system.apiVersion =
+      "GOVARA-CONSOLIDATED-API-V1";
+
+    system.testingMode =
+      checked("a_testingMode");
+
+    system.demoMode =
+      checked("a_demoMode");
+
+    /* Financial safety is immutable in frontend. */
+    system.realMoney = false;
+    system.realPayment = false;
+    system.bankTransfer = false;
+
+    system.validationEnabled =
+      checked("a_validationEnabled");
+
+    system.dependencyChecking =
+      checked("a_dependencyChecking");
   }
 
-  /* ============================================================
-     DASHBOARD
-  ============================================================= */
 
-  function renderDashboard() {
+  function validate26A(){
 
-    byId("dashboardEnvironment").textContent =
-      config.system.environment;
+    if(!system.systemName){
+      throw new Error("System Name cannot be empty.");
+    }
 
-    renderApiStatus();
-  }
+    if(!system.systemCode){
+      throw new Error("System Code cannot be empty.");
+    }
 
-  /* ============================================================
-     API STATUS
-  ============================================================= */
+    if(!system.currency){
+      throw new Error("Currency cannot be empty.");
+    }
 
-  function renderApiStatus() {
+    if(!system.timezone){
+      throw new Error("Timezone must be selected.");
+    }
 
-    const api =
-      window.GoVaraAPI;
+    if(system.sessionTimeout < 1){
+      throw new Error("Session Timeout must be at least 1 minute.");
+    }
 
-    const configured =
-      !!(
-        api &&
-        typeof api.getAPIUrl === "function" &&
-        api.getAPIUrl()
+    if(system.maxLoginAttempts < 1){
+      throw new Error("Maximum Login Attempts must be at least 1.");
+    }
+
+    if(system.lockDuration < 1){
+      throw new Error("Lock Duration must be at least 1 minute.");
+    }
+
+    if(
+      system.maintenanceStart &&
+      system.maintenanceEnd &&
+      new Date(system.maintenanceEnd) <
+      new Date(system.maintenanceStart)
+    ){
+      throw new Error(
+        "Maintenance End cannot be before Maintenance Start."
       );
+    }
 
-    const apiState =
-      api && api.state
-        ? api.state
-        : null;
+    if(system.apiEndpoint){
+      try{
+        new URL(system.apiEndpoint);
+      }catch(e){
+        throw new Error("API Endpoint is not a valid URL.");
+      }
+    }
 
-    let connectionText = "NOT TESTED";
+    if(
+      system.notifications.enabled === false &&
+      (
+        system.notifications.email ||
+        system.notifications.sms ||
+        system.notifications.push ||
+        system.notifications.whatsapp
+      )
+    ){
+      system.notifications.email = false;
+      system.notifications.sms = false;
+      system.notifications.push = false;
+      system.notifications.whatsapp = false;
+    }
 
-    if (apiState) {
+    if(
+      system.features.booking === false
+    ){
+      system.bookingEnabled = false;
+    }
+  }
 
-      if (
-        apiState.connected &&
-        apiState.verified
-      ) {
-        connectionText = "VERIFIED";
-      } else if (
-        apiState.connected
-      ) {
-        connectionText = "CONNECTED";
+
+  function save26A(){
+
+    try{
+
+      read26A();
+      validate26A();
+
+      save(STORAGE.SYSTEM,system);
+
+      if(system.apiEndpoint){
+        window.GoVaraAPI.configure(
+          system.apiEndpoint
+        );
+      }else{
+        window.GoVaraAPI.configure("");
       }
 
-    }
+      const history =
+        load(STORAGE.SYSTEM+"_HISTORY",[]);
 
-    const apiLabel =
-      configured
-        ? connectionText
-        : "NOT CONFIGURED";
+      history.unshift({
+        time:new Date().toISOString(),
+        version:system.configVersion,
+        action:"SAVE_CONFIGURATION",
+        source:"Administrator Control Center"
+      });
 
-    byId("dashboardApiValue").textContent =
-      configured
-        ? connectionText
-        : "NOT CONFIGURED";
+      localStorage.setItem(
+        STORAGE.SYSTEM+"_HISTORY",
+        JSON.stringify(history.slice(0,50))
+      );
 
-    byId("apiEndpointStatus").textContent =
-      configured
-        ? "CONFIGURED"
-        : "NONE";
+      audit(
+        "SAVE_CONFIGURATION",
+        "26A",
+        "System configuration saved."
+      );
 
-    byId("apiConnectionStatus").textContent =
-      apiLabel;
+      render26A();
 
-    byId("auditApiValue").textContent =
-      apiLabel;
+      alert("26A System Configuration saved successfully.");
 
-    byId("apiObjectStatus").textContent =
-      api
-        ? "AVAILABLE"
-        : "MISSING";
-
-    byId("apiTopBadge").textContent =
-      configured
-        ? "API " + connectionText
-        : "API NOT CONFIGURED";
-
-    byId("dashboardApiStatus").textContent =
-      configured
-        ? "API " + connectionText
-        : "API NOT CONFIGURED";
-
-    const endpointInput =
-      byId("apiEndpointInput");
-
-    if (
-      endpointInput &&
-      !endpointInput.value
-    ) {
-      endpointInput.value =
-        api && typeof api.getAPIUrl === "function"
-          ? api.getAPIUrl() || ""
-          : "";
+    }catch(error){
+      alert(error.message);
     }
   }
 
-  /* ============================================================
-     API CONFIG
-  ============================================================= */
 
-  function saveApiConfig() {
+  function reset26A(){
 
-    const input =
-      byId("apiEndpointInput");
-
-    const url =
-      input.value.trim();
-
-    if (!url) {
-
-      showMessage(
-        "apiMessage",
-        "No API URL entered. API remains NOT CONFIGURED.",
-        "warning"
-      );
-
-      renderApiStatus();
-
-      return;
-    }
-
-    if (
-      !window.GoVaraAPI ||
-      typeof window.GoVaraAPI.configure !== "function"
-    ) {
-
-      showMessage(
-        "apiMessage",
-        "GoVaraAPI object is unavailable.",
-        "danger"
-      );
-
-      return;
-    }
-
-    window.GoVaraAPI.configure(url);
-
-    addAudit(
-      "API_CONFIG_SAVE",
-      "Consolidated API endpoint configured in frontend."
+    const confirmed = confirm(
+      "Reset all 26A System Configuration settings to default values?"
     );
 
-    showMessage(
-      "apiMessage",
-      "API endpoint saved. Connection has not been tested.",
-      "success"
+    if(!confirmed) return;
+
+    system = clone(DEFAULT_SYSTEM);
+
+    save(STORAGE.SYSTEM,system);
+
+    window.GoVaraAPI.configure("");
+
+    audit(
+      "RESET_CONFIGURATION",
+      "26A",
+      "System configuration restored to defaults."
     );
 
-    renderApiStatus();
+    render26A();
+
+    alert("26A configuration reset to default.");
   }
 
-  function clearApiConfig() {
 
-    if (
-      window.GoVaraAPI &&
-      typeof window.GoVaraAPI.configure === "function"
-    ) {
-      window.GoVaraAPI.configure("");
-    }
+  function renderHistory(){
 
-    byId("apiEndpointInput").value = "";
+    const tbody =
+      document.getElementById("configurationHistory");
 
-    addAudit(
-      "API_CONFIG_CLEAR",
-      "Consolidated API endpoint removed from frontend."
-    );
+    const history =
+      load(STORAGE.SYSTEM+"_HISTORY",[]);
 
-    showMessage(
-      "apiMessage",
-      "API configuration cleared. Status is now NOT CONFIGURED.",
-      "success"
-    );
-
-    renderApiStatus();
-  }
-
-  async function testApiConnection() {
-
-    if (
-      !window.GoVaraAPI ||
-      typeof window.GoVaraAPI.testConnection !== "function"
-    ) {
-
-      showMessage(
-        "apiMessage",
-        "GoVaraAPI testConnection() is unavailable.",
-        "danger"
-      );
-
+    if(!history.length){
+      tbody.innerHTML =
+        `<tr><td colspan="4" class="empty">
+          No configuration history yet.
+        </td></tr>`;
       return;
     }
+
+    tbody.innerHTML = history.map(item=>`
+      <tr>
+        <td>${new Date(item.time).toLocaleString()}</td>
+        <td>${item.version}</td>
+        <td>${item.action}</td>
+        <td>${item.source}</td>
+      </tr>
+    `).join("");
+  }
+
+
+  /* ---------------- 26B ---------------- */
+
+  function renderRoles(){
+
+    const container =
+      document.getElementById("roleControls");
+
+    container.innerHTML = "";
+
+    Object.keys(roles).forEach(role=>{
+
+      const row = document.createElement("div");
+      row.className = "switch-row";
+
+      row.innerHTML = `
+        <div class="switch-info">
+          <strong>${role}</strong>
+          <span>${roles[role] ? "Active" : "Inactive"}</span>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox"
+                 id="role_${role}"
+                 ${roles[role] ? "checked" : ""}>
+          <span class="slider"></span>
+        </label>
+      `;
+
+      container.appendChild(row);
+
+      document.getElementById("role_"+role)
+        .addEventListener("change",e=>{
+          roles[role] = e.target.checked;
+          row.querySelector("span").textContent =
+            e.target.checked ? "Active" : "Inactive";
+        });
+
+    });
+  }
+
+
+  document.getElementById("save26B")
+    .addEventListener("click",()=>{
+
+      save(STORAGE.ROLES,roles);
+
+      audit(
+        "SAVE_ROLES",
+        "26B",
+        "Role configuration saved."
+      );
+
+      alert("26B roles saved successfully.");
+    });
+
+
+  /* ---------------- 26C ---------------- */
+
+  function renderPolicies(){
+
+    const map = {
+      c_baseFare:policies.baseFare,
+      c_perKm:policies.perKm,
+      c_perMinute:policies.perMinute,
+      c_minFare:policies.minFare,
+      c_waitingCharge:policies.waitingCharge,
+      c_nightCharge:policies.nightCharge,
+      c_serviceCharge:policies.serviceCharge,
+      c_tax:policies.tax,
+      c_discount:policies.discount,
+      c_advance:policies.advance,
+      c_cancelCharge:policies.cancelCharge,
+      c_vendorCommission:policies.vendorCommission,
+      c_platformCommission:policies.platformCommission,
+      c_kycPolicy:policies.kycPolicy,
+      c_serviceArea:policies.serviceArea,
+      c_policyStatus:policies.policyStatus
+    };
+
+    Object.entries(map).forEach(([id,value])=>{
+      document.getElementById(id).value = value;
+    });
+  }
+
+
+  document.getElementById("save26C")
+    .addEventListener("click",()=>{
+
+      const num = id =>
+        Number(document.getElementById(id).value);
+
+      policies.baseFare = num("c_baseFare");
+      policies.perKm = num("c_perKm");
+      policies.perMinute = num("c_perMinute");
+      policies.minFare = num("c_minFare");
+      policies.waitingCharge = num("c_waitingCharge");
+      policies.nightCharge = num("c_nightCharge");
+      policies.serviceCharge = num("c_serviceCharge");
+      policies.tax = num("c_tax");
+      policies.discount = num("c_discount");
+      policies.advance = num("c_advance");
+      policies.cancelCharge = num("c_cancelCharge");
+      policies.vendorCommission = num("c_vendorCommission");
+      policies.platformCommission = num("c_platformCommission");
+
+      policies.kycPolicy =
+        document.getElementById("c_kycPolicy").value;
+
+      policies.serviceArea =
+        document.getElementById("c_serviceArea").value.trim();
+
+      policies.policyStatus =
+        document.getElementById("c_policyStatus").value;
+
+      if(policies.advance < 0 || policies.advance > 100){
+        alert("Advance percentage must be between 0 and 100.");
+        return;
+      }
+
+      save(STORAGE.POLICIES,policies);
+
+      audit(
+        "SAVE_POLICIES",
+        "26C",
+        "Business policies saved."
+      );
+
+      alert("26C Business Policies saved successfully.");
+    });
+
+
+  /* ---------------- 26D ---------------- */
+
+  function renderOperations(){
+
+    const container =
+      document.getElementById("operationControls");
+
+    container.innerHTML = "";
+
+    Object.keys(operationLabels).forEach(key=>{
+
+      const row = document.createElement("div");
+      row.className = "switch-row";
+
+      row.innerHTML = `
+        <div class="switch-info">
+          <strong>${operationLabels[key]}</strong>
+          <span>${operations[key] ? "Enabled" : "Disabled"}</span>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox"
+                 id="op_${key}"
+                 ${operations[key] ? "checked" : ""}>
+          <span class="slider"></span>
+        </label>
+      `;
+
+      container.appendChild(row);
+
+      document.getElementById("op_"+key)
+        .addEventListener("change",e=>{
+          operations[key] = e.target.checked;
+          row.querySelector("span").textContent =
+            e.target.checked ? "Enabled" : "Disabled";
+        });
+
+    });
+
+
+    const serviceContainer =
+      document.getElementById("serviceControls");
+
+    serviceContainer.innerHTML = "";
+
+    Object.keys(operations.services).forEach(service=>{
+
+      const id =
+        "service_"+service.replace(/\s+/g,"_");
+
+      const row = document.createElement("div");
+      row.className = "switch-row";
+
+      row.innerHTML = `
+        <div class="switch-info">
+          <strong>${service}</strong>
+          <span>${operations.services[service]
+            ? "Enabled"
+            : "Disabled"}</span>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox"
+                 id="${id}"
+                 ${operations.services[service]
+                   ? "checked"
+                   : ""}>
+          <span class="slider"></span>
+        </label>
+      `;
+
+      serviceContainer.appendChild(row);
+
+      document.getElementById(id)
+        .addEventListener("change",e=>{
+          operations.services[service] =
+            e.target.checked;
+
+          row.querySelector("span").textContent =
+            e.target.checked
+              ? "Enabled"
+              : "Disabled";
+        });
+    });
+  }
+
+
+  document.getElementById("save26D")
+    .addEventListener("click",()=>{
+
+      save(STORAGE.OPERATIONS,operations);
+
+      audit(
+        "SAVE_OPERATIONS",
+        "26D",
+        "Operations configuration saved."
+      );
+
+      alert("26D Operations saved successfully.");
+    });
+
+
+  /* ---------------- 26E ---------------- */
+
+  function renderFinancial(){
+
+    const container =
+      document.getElementById("financialControls");
+
+    container.innerHTML = "";
+
+    Object.keys(financialLabels).forEach(key=>{
+
+      const row = document.createElement("div");
+      row.className = "switch-row";
+
+      row.innerHTML = `
+        <div class="switch-info">
+          <strong>${financialLabels[key]}</strong>
+          <span>Backend authoritative</span>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox"
+                 id="financial_${key.replace(/\s+/g,"_")}"
+                 ${financial[key] ? "checked" : ""}
+                 ${key === "Bank Transfer" ? "disabled" : ""}>
+          <span class="slider"></span>
+        </label>
+      `;
+
+      container.appendChild(row);
+
+      if(key !== "Bank Transfer"){
+        document.getElementById(
+          "financial_"+key.replace(/\s+/g,"_")
+        ).addEventListener("change",e=>{
+          financial[key] = e.target.checked;
+        });
+      }
+    });
+  }
+
+
+  /* ---------------- 26F ---------------- */
+
+  function renderDocuments(){
+
+    const container =
+      document.getElementById("documentControls");
+
+    container.innerHTML = "";
+
+    Object.keys(documentLabels).forEach(key=>{
+
+      const row = document.createElement("div");
+      row.className = "switch-row";
+
+      row.innerHTML = `
+        <div class="switch-info">
+          <strong>${documentLabels[key]}</strong>
+          <span>${documents[key] ? "Enabled" : "Disabled"}</span>
+        </div>
+
+        <label class="switch">
+          <input type="checkbox"
+                 id="doc_${key}"
+                 ${documents[key] ? "checked" : ""}>
+          <span class="slider"></span>
+        </label>
+      `;
+
+      container.appendChild(row);
+
+      document.getElementById("doc_"+key)
+        .addEventListener("change",e=>{
+          documents[key] = e.target.checked;
+
+          row.querySelector("span").textContent =
+            e.target.checked
+              ? "Enabled"
+              : "Disabled";
+        });
+    });
+  }
+
+
+  document.getElementById("save26F")
+    .addEventListener("click",()=>{
+
+      save(STORAGE.DOCUMENTS,documents);
+
+      audit(
+        "SAVE_DOCUMENT_KYC",
+        "26F",
+        "Documents and KYC configuration saved."
+      );
+
+      alert("26F Documents & KYC saved successfully.");
+    });
+
+
+  /* ---------------- 26G ---------------- */
+
+  function renderAudit(){
+
+    const tbody =
+      document.getElementById("auditTable");
+
+    const logs =
+      load(STORAGE.AUDIT,[]);
+
+    if(!logs.length){
+      tbody.innerHTML =
+        `<tr><td colspan="4" class="empty">
+          No audit activity yet.
+        </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = logs.map(item=>`
+      <tr>
+        <td>${new Date(item.time).toLocaleString()}</td>
+        <td>${item.action}</td>
+        <td>${item.module}</td>
+        <td>${item.details}</td>
+      </tr>
+    `).join("");
+  }
+
+
+  document.getElementById("clearAudit")
+    .addEventListener("click",()=>{
+
+      if(!confirm(
+        "Clear all local frontend audit records?"
+      )) return;
+
+      localStorage.removeItem(STORAGE.AUDIT);
+
+      audit(
+        "CLEAR_AUDIT",
+        "26G",
+        "Local audit log cleared."
+      );
+
+      renderAudit();
+    });
+
+
+  /* ---------------- STEP 27 ---------------- */
+
+  function renderAPI(){
 
     const endpoint =
       window.GoVaraAPI.getAPIUrl();
 
-    if (!endpoint) {
+    document.getElementById("apiEndpointInput").value =
+      endpoint || "";
 
-      showMessage(
-        "apiMessage",
-        "API is not configured. This test is intentionally blocked.",
-        "warning"
-      );
+    document.getElementById("apiEndpointStatus")
+      .textContent =
+        endpoint ? "CONFIGURED" : "NONE";
 
-      renderApiStatus();
-
-      return;
-    }
-
-    showMessage(
-      "apiMessage",
-      "Testing consolidated API connection...",
-      "info"
-    );
-
-    try {
-
-      const result =
-        await window.GoVaraAPI.testConnection();
-
-      addAudit(
-        "API_TEST",
-        "Consolidated API connection verified."
-      );
-
-      showMessage(
-        "apiMessage",
-        "API connection verified successfully.",
-        "success"
-      );
-
-      console.log(
-        "GoVara API verification response:",
-        result
-      );
-
-    } catch (error) {
-
-      addAudit(
-        "API_TEST_FAILED",
-        error.message || String(error)
-      );
-
-      showMessage(
-        "apiMessage",
-        "API test failed: " +
-        (error.message || String(error)),
-        "danger"
-      );
-
-      console.error(
-        "GoVara API test failed:",
-        error
-      );
-
-    }
-
-    renderApiStatus();
+    document.getElementById("apiConnectionStatus")
+      .textContent =
+        window.GoVaraAPI.state.verified
+          ? "VERIFIED"
+          : window.GoVaraAPI.state.connected
+            ? "CONNECTED"
+            : "NOT TESTED";
   }
 
-  /* ============================================================
-     EVENT BINDINGS
-  ============================================================= */
 
-  function bindNavigation() {
+  document.getElementById("saveApi")
+    .addEventListener("click",()=>{
 
-    document
-      .querySelectorAll(".nav-btn")
-      .forEach(function (button) {
+      const endpoint =
+        document.getElementById(
+          "apiEndpointInput"
+        ).value.trim();
 
-        button.addEventListener(
-          "click",
-          function () {
-
-            navigate(
-              button.dataset.page
-            );
-
-          }
-        );
-
-      });
-
-    byId("mobileMenuBtn")
-      .addEventListener(
-        "click",
-        function () {
-          toggleMobileSidebar();
+      if(endpoint){
+        try{
+          new URL(endpoint);
+        }catch(e){
+          alert("Please enter a valid API URL.");
+          return;
         }
+      }
+
+      window.GoVaraAPI.configure(endpoint);
+
+      system.apiEndpoint = endpoint;
+      system.apiStatus =
+        endpoint ? "CONFIGURED" : "NOT CONFIGURED";
+
+      save(STORAGE.SYSTEM,system);
+
+      audit(
+        "SAVE_API_ENDPOINT",
+        "STEP 27",
+        endpoint
+          ? "API endpoint configured."
+          : "API endpoint cleared."
       );
-  }
 
-  function bindSystem() {
+      renderAPI();
+      render26A();
 
-    byId("saveSystemBtn")
-      .addEventListener(
-        "click",
-        saveSystem
+      alert(
+        endpoint
+          ? "API endpoint saved."
+          : "API endpoint cleared."
       );
-
-    byId("reloadSystemBtn")
-      .addEventListener(
-        "click",
-        function () {
-
-          config = loadConfig();
-
-          renderSystem();
-          renderPolicies();
-          renderOperations();
-          renderDocuments();
-          renderDashboard();
-
-          showMessage(
-            "systemMessage",
-            "Saved configuration reloaded.",
-            "success"
-          );
-
-        }
-      );
-  }
-
-  function bindRoles() {
-
-    document
-      .querySelectorAll("[data-role-toggle]")
-      .forEach(function (input) {
-
-        input.addEventListener(
-          "change",
-          function () {
-
-            saveRoleChange(
-              input.dataset.roleToggle,
-              input.checked
-            );
-
-          }
-        );
-
-      });
-  }
-
-  function bindPolicies() {
-
-    byId("savePoliciesBtn")
-      .addEventListener(
-        "click",
-        savePolicies
-      );
-  }
-
-  function bindOperations() {
-
-    byId("saveOperationsBtn")
-      .addEventListener(
-        "click",
-        saveOperations
-      );
-  }
-
-  function bindDocuments() {
-
-    [
-      "documentVerification",
-      "expiryMonitoring",
-      "manualReview"
-    ].forEach(function (id) {
-
-      byId(id)
-        .addEventListener(
-          "change",
-          function () {
-
-            config.documents[id] =
-              byId(id).checked;
-
-            saveConfig();
-
-            addAudit(
-              "DOCUMENT_CONTROL",
-              id +
-              " set to " +
-              (
-                byId(id).checked
-                  ? "ACTIVE"
-                  : "DISABLED"
-              )
-            );
-
-          }
-        );
-
     });
-  }
 
-  function bindAudit() {
 
-    byId("clearAuditBtn")
-      .addEventListener(
-        "click",
-        function () {
+  document.getElementById("clearApi")
+    .addEventListener("click",()=>{
 
-          try {
-            localStorage.removeItem(AUDIT_KEY);
-          } catch (e) {}
+      window.GoVaraAPI.configure("");
 
-          renderAudit();
+      system.apiEndpoint = "";
+      system.apiStatus = "NOT CONFIGURED";
 
-        }
-      );
-  }
+      save(STORAGE.SYSTEM,system);
 
-  function bindApi() {
+      document.getElementById(
+        "apiEndpointInput"
+      ).value = "";
 
-    byId("saveApiConfigBtn")
-      .addEventListener(
-        "click",
-        saveApiConfig
+      audit(
+        "CLEAR_API_ENDPOINT",
+        "STEP 27",
+        "API endpoint removed."
       );
 
-    byId("clearApiConfigBtn")
-      .addEventListener(
-        "click",
-        clearApiConfig
+      renderAPI();
+      render26A();
+
+      alert("API endpoint cleared.");
+    });
+
+
+  document.getElementById("testApi")
+    .addEventListener("click",async()=>{
+
+      const endpoint =
+        window.GoVaraAPI.getAPIUrl();
+
+      if(!endpoint){
+        alert(
+          "API endpoint is not configured yet. " +
+          "Do not test the API until the Backend Consolidated API exists."
+        );
+        return;
+      }
+
+      try{
+
+        const result =
+          await window.GoVaraAPI.testConnection();
+
+        renderAPI();
+
+        audit(
+          "API_TEST",
+          "STEP 27",
+          "Consolidated API health verification completed."
+        );
+
+        alert(
+          "API connection verified successfully."
+        );
+
+        console.log("GoVara API Health:",result);
+
+      }catch(error){
+
+        renderAPI();
+
+        audit(
+          "API_TEST_FAILED",
+          "STEP 27",
+          error.message
+        );
+
+        alert(
+          "API connection failed: " +
+          error.message
+        );
+      }
+    });
+
+
+  /* ---------------- 26A Buttons ---------------- */
+
+  document.getElementById("save26A")
+    .addEventListener("click",save26A);
+
+  document.getElementById("reload26A")
+    .addEventListener("click",()=>{
+
+      system = load(
+        STORAGE.SYSTEM,
+        DEFAULT_SYSTEM
       );
 
-    byId("testApiBtn")
-      .addEventListener(
-        "click",
-        testApiConnection
+      render26A();
+
+      audit(
+        "RELOAD_CONFIGURATION",
+        "26A",
+        "Saved configuration reloaded."
       );
-  }
+    });
 
-  /* ============================================================
-     INITIALIZATION
-  ============================================================= */
+  document.getElementById("reset26A")
+    .addEventListener("click",reset26A);
 
-  function init() {
 
-    bindNavigation();
-    bindSystem();
-    bindRoles();
-    bindPolicies();
-    bindOperations();
-    bindDocuments();
-    bindAudit();
-    bindApi();
+  /* ---------------- Initialization ---------------- */
 
-    renderSystem();
-    renderRoles();
-    renderPolicies();
-    renderOperations();
-    renderDocuments();
-    renderDashboard();
-    renderAudit();
-    renderApiStatus();
+  render26A();
+  renderRoles();
+  renderPolicies();
+  renderOperations();
+  renderFinancial();
+  renderDocuments();
+  renderAudit();
+  renderAPI();
 
-    addAudit(
-      "FRONTEND_INIT",
-      "GoVara Administrator Control Center initialized."
-    );
-
-    console.log(
-      "GoVara Administrator Control Center: READY"
-    );
-
-  }
-
-  if (
-    document.readyState === "loading"
-  ) {
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      init
-    );
-
-  } else {
-
-    init();
-
-  }
+  console.log(
+    "GoVara Administrator Control Center: READY"
+  );
 
 })();
 </script>

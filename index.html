@@ -1,10 +1,23 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="GoVara Administrator Control Center" />
-  <meta name="theme-color" content="#111827" />
-  <title>GoVara — Administrator Control Center</title>  <style>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <meta
+    name="description"
+    content="GoVara Administrator Control Center"
+  />
+  <meta
+    name="theme-color"
+    content="#111827"
+  />
+
+  <title>GoVara — Administrator Control Center</title>
+
+  <style>
     :root {
       --bg: #0f172a;
       --bg-deep: #0b1120;
@@ -22,10 +35,13 @@
       --warning: #fbbf24;
       --danger: #fb7185;
       --info: #67e8f9;
+
       --sidebar-width: 285px;
       --topbar-height: 72px;
       --radius: 14px;
-      --shadow: 0 12px 35px rgba(0, 0, 0, 0.30);
+
+      --shadow:
+        0 12px 35px rgba(0, 0, 0, 0.30);
     }
 
     * {
@@ -81,18 +97,24 @@
       left: 0;
       right: 0;
       height: var(--topbar-height);
+
       display: flex;
       align-items: center;
       justify-content: space-between;
+
       padding: 0 22px;
+
       background:
         linear-gradient(
           180deg,
           #182337 0%,
           #141e30 100%
         );
+
       border-bottom: 1px solid var(--border);
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.28);
+
+      box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.28);
     }
 
     .brand {
@@ -105,18 +127,23 @@
     .brand-mark {
       width: 40px;
       height: 40px;
+
       display: grid;
       place-items: center;
+
       border-radius: 12px;
+
       background:
         linear-gradient(
           135deg,
           var(--primary-strong),
           #2563eb
         );
+
       color: #ffffff;
       font-weight: 900;
       font-size: 18px;
+
       box-shadow:
         0 7px 18px rgba(37, 99, 235, 0.35);
     }
@@ -150,15 +177,21 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+
       min-height: 30px;
+
       padding: 5px 10px;
+
       border-radius: 999px;
       border: 1px solid var(--border-light);
+
       background: #202d42;
       color: var(--text-2);
+
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.25px;
+
       white-space: nowrap;
     }
 
@@ -203,27 +236,36 @@
     .sidebar {
       position: fixed;
       z-index: 900;
+
       top: var(--topbar-height);
       bottom: 0;
       left: 0;
+
       width: var(--sidebar-width);
+
       overflow-y: auto;
+
       padding: 18px 14px 24px;
+
       background:
         linear-gradient(
           180deg,
           #121c2d 0%,
           #0f1728 100%
         );
+
       border-right: 1px solid var(--border);
     }
 
     .sidebar-section-title {
       margin: 8px 10px 9px;
+
       color: #9fb0c7;
+
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 1px;
+
       text-transform: uppercase;
     }
 
@@ -235,15 +277,22 @@
 
     .nav-btn {
       width: 100%;
+
       display: flex;
       align-items: center;
+
       gap: 10px;
+
       padding: 11px 12px;
+
       border: 1px solid transparent;
       border-radius: 11px;
+
       background: transparent;
       color: #d9e2ef;
+
       text-align: left;
+
       transition:
         background 0.16s ease,
         border-color 0.16s ease,
@@ -265,20 +314,28 @@
           #1d4f91,
           #193d70
         );
+
       border-color: #3973b8;
+
       color: #ffffff;
+
       box-shadow:
         inset 3px 0 0 #60a5fa;
     }
 
     .nav-code {
       min-width: 34px;
+
       padding: 3px 6px;
+
       border-radius: 7px;
+
       background: #27364c;
       color: #c8d5e6;
+
       font-size: 10px;
       font-weight: 900;
+
       text-align: center;
     }
 
@@ -299,7 +356,9 @@
 
     .nav-description {
       margin-top: 2px;
+
       color: #9eacc0;
+
       font-size: 10px;
       line-height: 1.35;
     }
@@ -310,9 +369,12 @@
 
     .future-card {
       margin-top: 18px;
+
       padding: 14px;
+
       border: 1px solid #35465d;
       border-radius: 13px;
+
       background:
         linear-gradient(
           145deg,
@@ -323,10 +385,14 @@
 
     .future-badge {
       display: inline-block;
+
       padding: 4px 7px;
+
       border-radius: 7px;
+
       background: #29384e;
       color: #bcd0e8;
+
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 0.7px;
@@ -334,13 +400,16 @@
 
     .future-title {
       margin-top: 9px;
+
       font-size: 14px;
       font-weight: 800;
     }
 
     .future-text {
       margin-top: 6px;
+
       color: #aebbd0;
+
       font-size: 11px;
       line-height: 1.5;
     }
@@ -351,9 +420,14 @@
 
     .main {
       width: calc(100% - var(--sidebar-width));
+
       margin-left: var(--sidebar-width);
-      min-height: calc(100vh - var(--topbar-height));
+
+      min-height:
+        calc(100vh - var(--topbar-height));
+
       padding: 24px;
+
       background:
         radial-gradient(
           circle at top right,
@@ -382,66 +456,86 @@
 
     .page-kicker {
       color: #93c5fd;
+
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 1px;
+
       text-transform: uppercase;
     }
 
     .page-title {
       margin: 6px 0 0;
-      font-size: clamp(24px, 3vw, 34px);
+
+      font-size:
+        clamp(24px, 3vw, 34px);
+
       line-height: 1.15;
       font-weight: 850;
     }
 
     .page-description {
       max-width: 850px;
+
       margin-top: 8px;
+
       color: var(--muted);
+
       font-size: 14px;
       line-height: 1.6;
     }
 
     .dashboard-grid {
       display: grid;
+
       grid-template-columns:
         repeat(4, minmax(0, 1fr));
+
       gap: 14px;
+
       margin-bottom: 18px;
     }
 
     .dashboard-card {
       min-height: 125px;
+
       padding: 18px;
+
       border: 1px solid var(--border);
       border-radius: var(--radius);
+
       background:
         linear-gradient(
           145deg,
           var(--surface-2),
           var(--surface)
         );
+
       box-shadow: var(--shadow);
     }
 
     .dashboard-card-label {
       color: #aab8ca;
+
       font-size: 11px;
       font-weight: 800;
+
       text-transform: uppercase;
       letter-spacing: 0.6px;
     }
 
     .dashboard-card-value {
       margin-top: 12px;
+
       font-size: 22px;
       font-weight: 850;
     }
 
     .dashboard-card-note {
       margin-top: 6px;
+
       color: #aebbd0;
+
       font-size: 11px;
       line-height: 1.4;
     }
@@ -464,14 +558,17 @@
 
     .overview-card {
       padding: 20px;
+
       border: 1px solid var(--border);
       border-radius: var(--radius);
+
       background:
         linear-gradient(
           145deg,
           #1a2639,
           #151f31
         );
+
       box-shadow: var(--shadow);
     }
 
@@ -482,36 +579,48 @@
 
     .overview-text {
       margin-top: 9px;
+
       color: var(--muted);
+
       font-size: 13px;
       line-height: 1.65;
     }
 
     .overview-list {
       display: grid;
+
       grid-template-columns:
         repeat(2, minmax(0, 1fr));
+
       gap: 10px;
+
       margin-top: 16px;
     }
 
     .overview-item {
       padding: 12px;
+
       border: 1px solid #34445b;
       border-radius: 11px;
+
       background: #1d2a3d;
     }
 
     .overview-item strong {
       display: block;
+
       color: #eef5ff;
+
       font-size: 12px;
     }
 
     .overview-item span {
       display: block;
+
       margin-top: 4px;
+
       color: #aebcd0;
+
       font-size: 11px;
       line-height: 1.45;
     }
@@ -527,14 +636,17 @@
 
     .module-placeholder {
       padding: 28px;
+
       border: 1px solid var(--border);
       border-radius: var(--radius);
+
       background:
         linear-gradient(
           145deg,
           #1a2639,
           #151f31
         );
+
       box-shadow: var(--shadow);
     }
 
@@ -545,7 +657,9 @@
 
     .module-placeholder .muted {
       margin-top: 8px;
+
       color: var(--muted);
+
       line-height: 1.6;
     }
 
@@ -555,15 +669,19 @@
 
     .govara-customer-module {
       width: 100%;
+
       padding: 24px;
+
       border: 1px solid var(--border);
       border-radius: var(--radius);
+
       background:
         linear-gradient(
           145deg,
           #1a2639,
           #151f31
         );
+
       box-shadow: var(--shadow);
     }
 
@@ -571,30 +689,39 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
+
       gap: 18px;
+
       margin-bottom: 22px;
     }
 
     .govara-module-header h2 {
       margin: 0;
+
       font-size: 25px;
       font-weight: 850;
     }
 
     .govara-module-header p {
       margin: 7px 0 0;
+
       color: var(--muted);
+
       font-size: 13px;
       line-height: 1.55;
     }
 
     .govara-status-badge {
       flex-shrink: 0;
+
       padding: 7px 10px;
+
       border: 1px solid #256579;
       border-radius: 999px;
+
       background: #102c38;
       color: #bae6fd;
+
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 0.5px;
@@ -602,25 +729,30 @@
 
     .govara-form-grid {
       display: grid;
+
       grid-template-columns:
         repeat(2, minmax(0, 1fr));
+
       gap: 16px;
     }
 
     .govara-form-group {
       display: flex;
       flex-direction: column;
+
       gap: 7px;
     }
 
     .govara-form-group label {
       color: #e2e8f0;
+
       font-size: 12px;
       font-weight: 800;
     }
 
     .govara-form-group small {
       color: #94a3b8;
+
       font-size: 10px;
     }
 
@@ -631,36 +763,47 @@
     .govara-id-note {
       display: flex;
       align-items: center;
+
       gap: 10px;
+
       margin-top: 18px;
       padding: 12px 14px;
+
       border: 1px solid #34445b;
       border-radius: 10px;
+
       background: #111b2b;
     }
 
     .govara-id-note strong {
       color: #93c5fd;
+
       font-size: 11px;
     }
 
     .govara-id-note span {
       color: #aebbd0;
+
       font-size: 11px;
     }
 
     .govara-form-actions {
       display: flex;
+
       gap: 10px;
+
       margin-top: 18px;
     }
 
     .govara-form-actions button {
       border: 1px solid #3973b8;
       border-radius: 9px;
+
       padding: 10px 16px;
+
       background: #1d4f91;
       color: #ffffff;
+
       font-weight: 800;
     }
 
@@ -675,32 +818,39 @@
 
     .govara-form-actions button:last-child {
       border-color: #45566f;
+
       background: #202d42;
       color: #d9e2ef;
     }
 
     .govara-message {
       margin-bottom: 16px;
+
       padding: 12px 14px;
+
       border-radius: 10px;
+
       font-size: 12px;
       line-height: 1.5;
     }
 
     .govara-message-error {
       border: 1px solid #7f3040;
+
       background: #351923;
       color: #fecdd3;
     }
 
     .govara-message-success {
       border: 1px solid #347a4b;
+
       background: #153321;
       color: #bbf7d0;
     }
 
     .govara-message-info {
       border: 1px solid #2c6070;
+
       background: #102c38;
       color: #bae6fd;
     }
@@ -708,23 +858,31 @@
     .govara-success-card {
       margin-bottom: 18px;
       padding: 18px;
+
       border: 1px solid #347a4b;
       border-radius: 12px;
+
       background: #13291c;
     }
 
     .govara-success-card h3 {
       margin: 0 0 14px;
+
       color: #bbf7d0;
+
       font-size: 17px;
     }
 
     .govara-id-row {
       display: flex;
       justify-content: space-between;
+
       gap: 15px;
+
       padding: 9px 0;
+
       border-bottom: 1px solid #284b35;
+
       font-size: 12px;
     }
 
@@ -738,7 +896,9 @@
 
     .govara-id-row strong {
       color: #f0fff4;
+
       text-align: right;
+
       word-break: break-all;
     }
 
@@ -750,11 +910,15 @@
     select,
     textarea {
       width: 100%;
+
       border: 1px solid #45566f;
       border-radius: 9px;
+
       background: #111b2b;
       color: #f8fafc;
+
       padding: 10px 11px;
+
       outline: none;
     }
 
@@ -767,6 +931,7 @@
     select:focus,
     textarea:focus {
       border-color: #60a5fa;
+
       box-shadow:
         0 0 0 3px
         rgba(96, 165, 250, 0.14);
@@ -775,6 +940,37 @@
     option {
       background: #172033;
       color: #ffffff;
+    }
+
+    /* =========================================================
+       MOBILE VALIDATION
+       ========================================================= */
+
+    .govara-mobile-error {
+      display: none;
+
+      margin-top: 3px;
+
+      color: #fda4af;
+
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .govara-mobile-error.show {
+      display: block;
+    }
+
+    input.govara-input-error {
+      border-color: #fb7185 !important;
+
+      box-shadow:
+        0 0 0 3px
+        rgba(251, 113, 133, 0.12) !important;
+    }
+
+    input.govara-input-valid {
+      border-color: #4ade80 !important;
     }
 
     /* =========================================================
@@ -852,15 +1048,21 @@
 
       .topbar {
         position: relative;
+
         min-height: 70px;
+
         align-items: flex-start;
+
         padding: 12px;
+
         gap: 10px;
+
         flex-direction: column;
       }
 
       .status-badges {
         max-width: none;
+
         justify-content: flex-start;
       }
 
@@ -870,11 +1072,15 @@
 
       .sidebar {
         position: relative;
+
         top: auto;
         bottom: auto;
         left: auto;
+
         width: 100%;
+
         max-height: none;
+
         border-right: 0;
         border-bottom: 1px solid var(--border);
       }
@@ -886,6 +1092,7 @@
 
       .nav-list {
         display: grid;
+
         grid-template-columns:
           repeat(2, minmax(0, 1fr));
       }
@@ -932,771 +1139,1235 @@
         padding: 16px;
       }
     }
-  </style></head><body>  <!-- =======================================================
+  </style>
+</head>
+
+<body>
+
+  <!-- =======================================================
        TOPBAR
-       ======================================================= -->  <header class="topbar"><div class="brand">
-  <div class="brand-mark">G</div>
+       ======================================================= -->
 
-  <div class="brand-text">
-    <div class="brand-title">
-      GoVara Administrator Control Center
-    </div>
+  <header class="topbar">
 
-    <div class="brand-subtitle">
-      New Transport & Mobility Platform
-    </div>
-  </div>
-</div>
+    <div class="brand">
 
-<div class="status-badges">
-
-  <div
-    id="status-frontend"
-    class="status-badge ready"
-  >
-    ● FRONTEND READY
-  </div>
-
-  <div
-    id="status-api"
-    class="status-badge api"
-  >
-    ● API NOT CONFIGURED
-  </div>
-
-  <div
-    id="status-testing"
-    class="status-badge testing"
-  >
-    ● TESTING MODE
-  </div>
-
-  <div
-    id="status-money"
-    class="status-badge blocked"
-  >
-    ● REAL MONEY BLOCKED
-  </div>
-
-</div>
-
-  </header>  <!-- =======================================================
-       APP SHELL
-       ======================================================= -->  <div class="app-shell"><!-- =====================================================
-     SIDEBAR
-     ===================================================== -->
-
-<aside class="sidebar">
-
-  <div class="sidebar-section-title">
-    Main
-  </div>
-
-  <nav
-    id="govara-sidebar"
-    class="nav-list"
-    aria-label="GoVara Navigation"
-  >
-
-    <button
-      type="button"
-      class="nav-btn active"
-      data-page="dashboard"
-    >
-      <span class="nav-code">HOME</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Dashboard
-        </span>
-
-        <span class="nav-description">
-          Platform overview
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26A"
-    >
-      <span class="nav-code">26A</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          System Configuration
-        </span>
-
-        <span class="nav-description">
-          Platform identity & system controls
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26B"
-    >
-      <span class="nav-code">26B</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          User & Role Control
-        </span>
-
-        <span class="nav-description">
-          Roles, users & permissions
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26C"
-    >
-      <span class="nav-code">26C</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Business Policies
-        </span>
-
-        <span class="nav-description">
-          Fare, charges & business rules
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26D"
-    >
-      <span class="nav-code">26D</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Operations Control
-        </span>
-
-        <span class="nav-description">
-          Booking, duty & operations
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26E"
-    >
-      <span class="nav-code">26E</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Financial Control
-        </span>
-
-        <span class="nav-description">
-          Financial safety & controls
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26F"
-    >
-      <span class="nav-code">26F</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Documents & KYC
-        </span>
-
-        <span class="nav-description">
-          Documents, KYC & verification
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26G"
-    >
-      <span class="nav-code">26G</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Audit & Monitoring
-        </span>
-
-        <span class="nav-description">
-          Audit events & system monitoring
-        </span>
-      </span>
-    </button>
-
-
-    <!-- =================================================
-         NEW CUSTOMER MODULE
-         ================================================= -->
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="28"
-    >
-      <span class="nav-code">28</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Customer
-        </span>
-
-        <span class="nav-description">
-          Customer registration & profile
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="27"
-    >
-      <span class="nav-code">27</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Consolidated API
-        </span>
-
-        <span class="nav-description">
-          Single API boundary
-        </span>
-      </span>
-    </button>
-
-  </nav>
-
-
-  <div class="future-card">
-
-    <span class="future-badge">
-      NEXT
-    </span>
-
-    <div class="future-title">
-      Modular Expansion
-    </div>
-
-    <div class="future-text">
-      New modules can be added without
-      rebuilding the entire frontend.
-    </div>
-
-  </div>
-
-</aside>
-
-
-<!-- =====================================================
-     MAIN CONTENT
-     ===================================================== -->
-
-<main class="main">
-
-  <!-- ===================================================
-       DASHBOARD
-       =================================================== -->
-
-  <section
-    id="page-dashboard"
-    class="page active"
-  >
-
-    <div class="page-header">
-
-      <div class="page-kicker">
-        GoVara Platform
+      <div class="brand-mark">
+        G
       </div>
 
-      <h1 class="page-title">
-        Administrator Control Center
-      </h1>
+      <div class="brand-text">
 
-      <div class="page-description">
-        Central frontend control surface for
-        GoVara system configuration, roles,
-        business policies, operations,
-        financial safety, documents, audit,
-        customer management and the consolidated
-        API boundary.
+        <div class="brand-title">
+          GoVara Administrator Control Center
+        </div>
+
+        <div class="brand-subtitle">
+          New Transport & Mobility Platform
+        </div>
+
       </div>
 
     </div>
 
-
-    <div class="dashboard-grid">
-
-      <div class="dashboard-card success">
-        <div class="dashboard-card-label">
-          Frontend
-        </div>
-
-        <div class="dashboard-card-value">
-          READY
-        </div>
-
-        <div class="dashboard-card-note">
-          Master frontend loaded successfully.
-        </div>
-      </div>
-
+    <div class="status-badges">
 
       <div
-        id="dashboard-api-card"
-        class="dashboard-card warning"
+        id="status-frontend"
+        class="status-badge ready"
       >
-        <div class="dashboard-card-label">
-          Backend API
+        ● FRONTEND READY
+      </div>
+
+      <div
+        id="status-api"
+        class="status-badge api"
+      >
+        ● API NOT CONFIGURED
+      </div>
+
+      <div
+        id="status-testing"
+        class="status-badge testing"
+      >
+        ● TESTING MODE
+      </div>
+
+      <div
+        id="status-money"
+        class="status-badge blocked"
+      >
+        ● REAL MONEY BLOCKED
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =======================================================
+       APP SHELL
+       ======================================================= -->
+
+  <div class="app-shell">
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside class="sidebar">
+
+      <div class="sidebar-section-title">
+        Main
+      </div>
+
+      <nav
+        id="govara-sidebar"
+        class="nav-list"
+        aria-label="GoVara Navigation"
+      >
+
+        <button
+          type="button"
+          class="nav-btn active"
+          data-page="dashboard"
+        >
+          <span class="nav-code">
+            HOME
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Dashboard
+            </span>
+
+            <span class="nav-description">
+              Platform overview
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26A"
+        >
+          <span class="nav-code">
+            26A
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              System Configuration
+            </span>
+
+            <span class="nav-description">
+              Platform identity & system controls
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26B"
+        >
+          <span class="nav-code">
+            26B
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              User & Role Control
+            </span>
+
+            <span class="nav-description">
+              Roles, users & permissions
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26C"
+        >
+          <span class="nav-code">
+            26C
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Business Policies
+            </span>
+
+            <span class="nav-description">
+              Fare, charges & business rules
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26D"
+        >
+          <span class="nav-code">
+            26D
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Operations Control
+            </span>
+
+            <span class="nav-description">
+              Booking, duty & operations
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26E"
+        >
+          <span class="nav-code">
+            26E
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Financial Control
+            </span>
+
+            <span class="nav-description">
+              Financial safety & controls
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26F"
+        >
+          <span class="nav-code">
+            26F
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Documents & KYC
+            </span>
+
+            <span class="nav-description">
+              Documents, KYC & verification
+            </span>
+          </span>
+        </button>
+
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26G"
+        >
+          <span class="nav-code">
+            26G
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Audit & Monitoring
+            </span>
+
+            <span class="nav-description">
+              Audit events & system monitoring
+            </span>
+          </span>
+        </button>
+
+
+        <!-- =================================================
+             STEP 28 CUSTOMER
+             ================================================= -->
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="28"
+        >
+          <span class="nav-code">
+            28
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Customer
+            </span>
+
+            <span class="nav-description">
+              Customer registration & profile
+            </span>
+          </span>
+        </button>
+
+
+        <!-- =================================================
+             STEP 27 API
+             ================================================= -->
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="27"
+        >
+          <span class="nav-code">
+            27
+          </span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Consolidated API
+            </span>
+
+            <span class="nav-description">
+              Single API boundary
+            </span>
+          </span>
+        </button>
+
+      </nav>
+
+
+      <div class="future-card">
+
+        <span class="future-badge">
+          NEXT
+        </span>
+
+        <div class="future-title">
+          Modular Expansion
         </div>
+
+        <div class="future-text">
+          New modules can be added without
+          rebuilding the entire frontend.
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <main class="main">
+
+
+      <!-- ===================================================
+           DASHBOARD
+           =================================================== -->
+
+      <section
+        id="page-dashboard"
+        class="page active"
+      >
+
+        <div class="page-header">
+
+          <div class="page-kicker">
+            GoVara Platform
+          </div>
+
+          <h1 class="page-title">
+            Administrator Control Center
+          </h1>
+
+          <div class="page-description">
+            Central frontend control surface for
+            GoVara system configuration, roles,
+            business policies, operations,
+            financial safety, documents, audit,
+            customer management and the consolidated
+            API boundary.
+          </div>
+
+        </div>
+
+
+        <div class="dashboard-grid">
+
+          <div class="dashboard-card success">
+
+            <div class="dashboard-card-label">
+              Frontend
+            </div>
+
+            <div class="dashboard-card-value">
+              READY
+            </div>
+
+            <div class="dashboard-card-note">
+              Master frontend loaded successfully.
+            </div>
+
+          </div>
+
+
+          <div
+            id="dashboard-api-card"
+            class="dashboard-card warning"
+          >
+
+            <div class="dashboard-card-label">
+              Backend API
+            </div>
+
+            <div
+              id="dashboard-api-status"
+              class="dashboard-card-value"
+            >
+              NOT CONFIGURED
+            </div>
+
+            <div
+              id="dashboard-api-note"
+              class="dashboard-card-note"
+            >
+              API boundary is not configured.
+            </div>
+
+          </div>
+
+
+          <div class="dashboard-card danger">
+
+            <div class="dashboard-card-label">
+              Financial Safety
+            </div>
+
+            <div class="dashboard-card-value">
+              BLOCKED
+            </div>
+
+            <div class="dashboard-card-note">
+              Real money, real payment and
+              bank transfer remain blocked.
+            </div>
+
+          </div>
+
+
+          <div class="dashboard-card info">
+
+            <div class="dashboard-card-label">
+              Environment
+            </div>
+
+            <div class="dashboard-card-value">
+              TESTING
+            </div>
+
+            <div class="dashboard-card-note">
+              Frontend remains in controlled
+              testing mode.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="overview-card">
+
+          <div class="overview-title">
+            Platform Overview
+          </div>
+
+          <div class="overview-text">
+            The current frontend architecture uses
+            modular control sections while keeping
+            Backend and Database authority separate.
+            STEP 27 provides the single consolidated
+            API boundary. Customer registration is
+            exposed through STEP 28 and communicates
+            only through the consolidated API.
+          </div>
+
+
+          <div class="overview-list">
+
+            <div class="overview-item">
+
+              <strong>
+                26A — System Configuration
+              </strong>
+
+              <span>
+                Platform identity and system-level
+                configuration controls.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                26B — User & Role Control
+              </strong>
+
+              <span>
+                Roles, permissions and access
+                control configuration.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                26C — Business Policies
+              </strong>
+
+              <span>
+                Fare, charges, discounts,
+                KYC and business policies.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                26D — Operations Control
+              </strong>
+
+              <span>
+                Booking lifecycle, duty,
+                dispatch and operational controls.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                26E — Financial Control
+              </strong>
+
+              <span>
+                Financial safety boundary and
+                controlled financial configuration.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                26F — Documents & KYC
+              </strong>
+
+              <span>
+                Document handling, KYC workflow,
+                validation and verification controls.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                26G — Audit & Monitoring
+              </strong>
+
+              <span>
+                Audit events, monitoring,
+                security and integrity controls.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                28 — Customer
+              </strong>
+
+              <span>
+                Customer registration using
+                backend-generated identity.
+              </span>
+
+            </div>
+
+
+            <div class="overview-item">
+
+              <strong>
+                27 — Consolidated API
+              </strong>
+
+              <span>
+                One API boundary for communication
+                with the authoritative backend.
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           26A
+           =================================================== -->
+
+      <section
+        id="page-26A"
+        class="page"
+      >
 
         <div
-          id="dashboard-api-status"
-          class="dashboard-card-value"
+          id="module-26A"
+          class="module-container"
         >
-          NOT CONFIGURED
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26A — System Configuration
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
         </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           26B
+           =================================================== -->
+
+      <section
+        id="page-26B"
+        class="page"
+      >
 
         <div
-          id="dashboard-api-note"
-          class="dashboard-card-note"
+          id="module-26B"
+          class="module-container"
         >
-          API boundary is not configured.
-        </div>
-      </div>
 
+          <div class="module-placeholder">
 
-      <div class="dashboard-card danger">
-        <div class="dashboard-card-label">
-          Financial Safety
-        </div>
+            <h2>
+              STEP 26B — User & Role Control
+            </h2>
 
-        <div class="dashboard-card-value">
-          BLOCKED
-        </div>
+            <div class="muted">
+              Loading module...
+            </div>
 
-        <div class="dashboard-card-note">
-          Real money, real payment and
-          bank transfer remain blocked.
-        </div>
-      </div>
+          </div>
 
-
-      <div class="dashboard-card info">
-        <div class="dashboard-card-label">
-          Environment
         </div>
 
-        <div class="dashboard-card-value">
-          TESTING
+      </section>
+
+
+      <!-- ===================================================
+           26C
+           =================================================== -->
+
+      <section
+        id="page-26C"
+        class="page"
+      >
+
+        <div
+          id="module-26C"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26C — Business Policies
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
         </div>
 
-        <div class="dashboard-card-note">
-          Frontend remains in controlled
-          testing mode.
-        </div>
-      </div>
-
-    </div>
+      </section>
 
 
-    <div class="overview-card">
+      <!-- ===================================================
+           26D
+           =================================================== -->
 
-      <div class="overview-title">
-        Platform Overview
-      </div>
+      <section
+        id="page-26D"
+        class="page"
+      >
 
-      <div class="overview-text">
-        The current frontend architecture uses
-        modular control sections while keeping
-        Backend and Database authority separate.
-        STEP 27 provides the single consolidated
-        API boundary. Customer registration is
-        exposed through STEP 28 and communicates
-        only through the consolidated API.
-      </div>
+        <div
+          id="module-26D"
+          class="module-container"
+        >
 
+          <div class="module-placeholder">
 
-      <div class="overview-list">
+            <h2>
+              STEP 26D — Operations Control
+            </h2>
 
-        <div class="overview-item">
-          <strong>
-            26A — System Configuration
-          </strong>
+            <div class="muted">
+              Loading module...
+            </div>
 
-          <span>
-            Platform identity and system-level
-            configuration controls.
-          </span>
+          </div>
+
         </div>
 
+      </section>
 
-        <div class="overview-item">
-          <strong>
-            26B — User & Role Control
-          </strong>
 
-          <span>
-            Roles, permissions and access
-            control configuration.
-          </span>
+      <!-- ===================================================
+           26E
+           =================================================== -->
+
+      <section
+        id="page-26E"
+        class="page"
+      >
+
+        <div
+          id="module-26E"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26E — Financial Control
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
         </div>
 
+      </section>
 
-        <div class="overview-item">
-          <strong>
-            26C — Business Policies
-          </strong>
 
-          <span>
-            Fare, charges, discounts,
-            KYC and business policies.
-          </span>
+      <!-- ===================================================
+           26F
+           =================================================== -->
+
+      <section
+        id="page-26F"
+        class="page"
+      >
+
+        <div
+          id="module-26F"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26F — Documents & KYC
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
         </div>
 
+      </section>
 
-        <div class="overview-item">
-          <strong>
-            26D — Operations Control
-          </strong>
 
-          <span>
-            Booking lifecycle, duty,
-            dispatch and operational controls.
-          </span>
+      <!-- ===================================================
+           26G
+           =================================================== -->
+
+      <section
+        id="page-26G"
+        class="page"
+      >
+
+        <div
+          id="module-26G"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26G — Audit & Monitoring
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
         </div>
 
+      </section>
 
-        <div class="overview-item">
-          <strong>
-            26E — Financial Control
-          </strong>
 
-          <span>
-            Financial safety boundary and
-            controlled financial configuration.
-          </span>
+      <!-- ===================================================
+           STEP 28 — CUSTOMER
+           =================================================== -->
+
+      <section
+        id="page-28"
+        class="page"
+      >
+
+        <div
+          id="module-28"
+          class="module-container"
+        >
+
+          <!--
+            IMPORTANT:
+            28-Customer.js looks for #customer-page
+            or #main-content.
+          -->
+
+          <div id="customer-page"></div>
+
         </div>
 
+      </section>
 
-        <div class="overview-item">
-          <strong>
-            26F — Documents & KYC
-          </strong>
 
-          <span>
-            Document handling, KYC workflow,
-            validation and verification controls.
-          </span>
+      <!-- ===================================================
+           STEP 27 — CONSOLIDATED API
+           =================================================== -->
+
+      <section
+        id="page-27"
+        class="page"
+      >
+
+        <div
+          id="module-27"
+          class="module-container"
+        >
         </div>
 
-
-        <div class="overview-item">
-          <strong>
-            26G — Audit & Monitoring
-          </strong>
-
-          <span>
-            Audit events, monitoring,
-            security and integrity controls.
-          </span>
-        </div>
+      </section>
 
 
-        <div class="overview-item">
-          <strong>
-            28 — Customer
-          </strong>
+    </main>
 
-          <span>
-            Customer registration using
-            backend-generated identity.
-          </span>
-        </div>
+  </div>
 
 
-        <div class="overview-item">
-          <strong>
-            27 — Consolidated API
-          </strong>
-
-          <span>
-            One API boundary for communication
-            with the authoritative backend.
-          </span>
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ===================================================
-       26A
-       =================================================== -->
-
-  <section
-    id="page-26A"
-    class="page"
-  >
-    <div
-      id="module-26A"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26A — System Configuration
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26B
-       =================================================== -->
-
-  <section
-    id="page-26B"
-    class="page"
-  >
-    <div
-      id="module-26B"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26B — User & Role Control
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26C
-       =================================================== -->
-
-  <section
-    id="page-26C"
-    class="page"
-  >
-    <div
-      id="module-26C"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26C — Business Policies
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26D
-       =================================================== -->
-
-  <section
-    id="page-26D"
-    class="page"
-  >
-    <div
-      id="module-26D"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26D — Operations Control
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26E
-       =================================================== -->
-
-  <section
-    id="page-26E"
-    class="page"
-  >
-    <div
-      id="module-26E"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26E — Financial Control
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26F
-       =================================================== -->
-
-  <section
-    id="page-26F"
-    class="page"
-  >
-    <div
-      id="module-26F"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26F — Documents & KYC
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26G
-       =================================================== -->
-
-  <section
-    id="page-26G"
-    class="page"
-  >
-    <div
-      id="module-26G"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26G — Audit & Monitoring
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       STEP 28 — CUSTOMER
-       =================================================== -->
-
-  <section
-    id="page-28"
-    class="page"
-  >
-
-    <div
-      id="module-28"
-      class="module-container"
-    >
-
-      <!--
-        IMPORTANT:
-        28-Customer.js looks for #customer-page
-        or #main-content.
-      -->
-
-      <div id="customer-page"></div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ===================================================
-       STEP 27
-       =================================================== -->
-
-  <section
-    id="page-27"
-    class="page"
-  >
-
-    <div
-      id="module-27"
-      class="module-container"
-    >
-
-      <div class="module-placeholder">
-
-        <h2>
-          STEP 27 — Consolidated API
-        </h2>
-
-        <div class="muted">
-          API boundary is currently not configured.
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-</main>
-  </div>  <!-- =======================================================
+  <!-- =======================================================
        GOVARA MODULES
-       ======================================================= -->  <script src="assets/js/modules/26A-System.js"></script>  <script src="assets/js/modules/26B-Roles.js"></script>  <script src="assets/js/modules/26C-policies.js"></script>  <script src="assets/js/modules/26D-operations.js"></script>  <script src="assets/js/modules/26E-financial.js"></script>  <script src="assets/js/modules/26F-documents.js"></script>  <script src="assets/js/modules/26G-audit.js"></script>  <!-- STEP 27 -->  <script src="assets/js/modules/27-api.js"></script>  <!-- STEP 28 CUSTOMER -->  <script src="assets/js/modules/28-Customer.js"></script>  <!-- =======================================================
+       ======================================================= -->
+
+  <script src="assets/js/modules/26A-System.js"></script>
+
+  <script src="assets/js/modules/26B-Roles.js"></script>
+
+  <script src="assets/js/modules/26C-policies.js"></script>
+
+  <script src="assets/js/modules/26D-operations.js"></script>
+
+  <script src="assets/js/modules/26E-financial.js"></script>
+
+  <script src="assets/js/modules/26F-documents.js"></script>
+
+  <script src="assets/js/modules/26G-audit.js"></script>
+
+
+  <!-- STEP 27 -->
+
+  <script src="assets/js/modules/27-api.js"></script>
+
+
+  <!-- STEP 28 CUSTOMER -->
+
+  <script src="assets/js/modules/28-Customer.js"></script>
+
+
+  <!-- =======================================================
+       FRONTEND MOBILE VALIDATION
+       ======================================================= -->
+
+  <script>
+    (function () {
+      "use strict";
+
+      /*
+       * GoVara Mobile Utility
+       *
+       * Rules:
+       * - Final mobile number = exactly 10 digits.
+       * - Valid Indian mobile series = 6, 7, 8 or 9.
+       * - +91 / 91 prefix is normalized.
+       * - Backend remains authoritative.
+       */
+
+      window.GoVaraMobile = {
+
+        normalize: function (value) {
+
+          var raw =
+            String(
+              value == null
+                ? ""
+                : value
+            ).trim();
+
+          raw =
+            raw.replace(
+              /[^\d+]/g,
+              ""
+            );
+
+          if (
+            raw.indexOf("+91") === 0
+          ) {
+            raw =
+              raw.substring(3);
+          } else if (
+            raw.indexOf("91") === 0 &&
+            raw.length === 12
+          ) {
+            raw =
+              raw.substring(2);
+          }
+
+          raw =
+            raw.replace(
+              /\D/g,
+              ""
+            );
+
+          if (
+            raw.length > 10 &&
+            raw.indexOf("91") === 0
+          ) {
+            raw =
+              raw.substring(2);
+          }
+
+          return raw.substring(
+            0,
+            10
+          );
+        },
+
+
+        isValid: function (value) {
+
+          var mobile =
+            this.normalize(value);
+
+          return /^[6-9]\d{9}$/.test(
+            mobile
+          );
+        },
+
+
+        getError: function (value) {
+
+          var mobile =
+            this.normalize(value);
+
+          if (!mobile) {
+            return "Mobile number is required.";
+          }
+
+          if (
+            mobile.length !== 10
+          ) {
+            return "Enter exactly 10 digits.";
+          }
+
+          if (
+            !/^[6-9]/.test(mobile)
+          ) {
+            return (
+              "Mobile number must start with 6, 7, 8 or 9."
+            );
+          }
+
+          return "";
+        }
+
+      };
+
+
+      /*
+       * Customer mobile field binding.
+       *
+       * This does not submit anything.
+       * It only normalizes and validates
+       * the frontend field.
+       */
+
+      function bindCustomerMobileValidation() {
+
+        var mobileInput =
+          document.getElementById(
+            "customer-mobile"
+          );
+
+        if (!mobileInput) {
+          return;
+        }
+
+        if (
+          mobileInput.dataset.govaraMobileBound ===
+          "true"
+        ) {
+          return;
+        }
+
+        mobileInput.dataset.govaraMobileBound =
+          "true";
+
+
+        var errorElement =
+          document.getElementById(
+            "customer-mobile-error"
+          );
+
+        mobileInput.setAttribute(
+          "inputmode",
+          "numeric"
+        );
+
+        mobileInput.setAttribute(
+          "autocomplete",
+          "tel"
+        );
+
+        mobileInput.setAttribute(
+          "maxlength",
+          "10"
+        );
+
+
+        mobileInput.addEventListener(
+          "input",
+          function () {
+
+            var normalized =
+              window.GoVaraMobile.normalize(
+                mobileInput.value
+              );
+
+            mobileInput.value =
+              normalized;
+
+            var error =
+              window.GoVaraMobile.getError(
+                normalized
+              );
+
+            if (error) {
+
+              mobileInput.classList.remove(
+                "govara-input-valid"
+              );
+
+              mobileInput.classList.add(
+                "govara-input-error"
+              );
+
+              if (errorElement) {
+
+                errorElement.textContent =
+                  error;
+
+                errorElement.classList.add(
+                  "show"
+                );
+              }
+
+            } else {
+
+              mobileInput.classList.remove(
+                "govara-input-error"
+              );
+
+              mobileInput.classList.add(
+                "govara-input-valid"
+              );
+
+              if (errorElement) {
+
+                errorElement.textContent =
+                  "";
+
+                errorElement.classList.remove(
+                  "show"
+                );
+              }
+
+            }
+
+          }
+        );
+
+
+        mobileInput.addEventListener(
+          "blur",
+          function () {
+
+            var error =
+              window.GoVaraMobile.getError(
+                mobileInput.value
+              );
+
+            if (error) {
+
+              mobileInput.classList.add(
+                "govara-input-error"
+              );
+
+              mobileInput.classList.remove(
+                "govara-input-valid"
+              );
+
+              if (errorElement) {
+
+                errorElement.textContent =
+                  error;
+
+                errorElement.classList.add(
+                  "show"
+                );
+              }
+
+            } else {
+
+              mobileInput.classList.remove(
+                "govara-input-error"
+              );
+
+              mobileInput.classList.add(
+                "govara-input-valid"
+              );
+
+              if (errorElement) {
+
+                errorElement.textContent =
+                  "";
+
+                errorElement.classList.remove(
+                  "show"
+                );
+              }
+
+            }
+
+          }
+        );
+
+      }
+
+
+      /*
+       * STEP 28 can render dynamically.
+       * A small observer waits for the
+       * customer form to appear.
+       */
+
+      function observeCustomerForm() {
+
+        bindCustomerMobileValidation();
+
+        var observer =
+          new MutationObserver(
+            function () {
+              bindCustomerMobileValidation();
+            }
+          );
+
+        observer.observe(
+          document.body,
+          {
+            childList: true,
+            subtree: true
+          }
+        );
+
+      }
+
+
+      if (
+        document.readyState ===
+        "loading"
+      ) {
+
+        document.addEventListener(
+          "DOMContentLoaded",
+          observeCustomerForm
+        );
+
+      } else {
+
+        observeCustomerForm();
+
+      }
+
+    })();
+  </script>
+
+
+  <!-- =======================================================
        MASTER ROUTER
-       ======================================================= -->  <script>
+       ======================================================= -->
+
+  <script>
     (function () {
 
       "use strict";
@@ -1707,9 +2378,13 @@
          ====================================================== */
 
       const GoVaraAppState = {
+
         loggedIn: true,
+
         role: "Admin",
+
         currentPage: "dashboard"
+
       };
 
 
@@ -1727,6 +2402,7 @@
         }
 
         return String(value);
+
       }
 
 
@@ -1740,7 +2416,10 @@
       ) {
 
         const mount =
-          document.getElementById(mountId);
+          document.getElementById(
+            mountId
+          );
+
 
         if (!mount) {
 
@@ -1750,13 +2429,16 @@
           );
 
           return;
+
         }
 
 
         if (!moduleObject) {
 
           mount.innerHTML = `
+
             <div class="module-placeholder">
+
               <h2>
                 Module Not Loaded
               </h2>
@@ -1765,7 +2447,9 @@
                 The requested module JavaScript
                 is not available.
               </div>
+
             </div>
+
           `;
 
           console.error(
@@ -1774,6 +2458,7 @@
           );
 
           return;
+
         }
 
 
@@ -1787,6 +2472,7 @@
             moduleObject.renderAndBind();
 
             return;
+
           }
 
 
@@ -1804,7 +2490,9 @@
             ) {
 
               mount.innerHTML =
-                safeText(rendered);
+                safeText(
+                  rendered
+                );
 
             }
 
@@ -1827,7 +2515,9 @@
             error
           );
 
+
           mount.innerHTML = `
+
             <div class="module-placeholder">
 
               <h2>
@@ -1844,7 +2534,9 @@
               </div>
 
             </div>
+
           `;
+
         }
 
       }
@@ -1861,6 +2553,7 @@
             "module-28"
           );
 
+
         if (!mount) {
 
           console.error(
@@ -1868,6 +2561,7 @@
           );
 
           return;
+
         }
 
 
@@ -1878,6 +2572,7 @@
         ) {
 
           mount.innerHTML = `
+
             <div class="module-placeholder">
 
               <h2>
@@ -1890,6 +2585,7 @@
               </div>
 
             </div>
+
           `;
 
           console.error(
@@ -1897,6 +2593,7 @@
           );
 
           return;
+
         }
 
 
@@ -1911,7 +2608,9 @@
             error
           );
 
+
           mount.innerHTML = `
+
             <div class="module-placeholder">
 
               <h2>
@@ -1928,6 +2627,7 @@
               </div>
 
             </div>
+
           `;
 
         }
@@ -1968,7 +2668,8 @@
 
         const targetPage =
           document.getElementById(
-            "page-" + requestedPage
+            "page-" +
+            requestedPage
           );
 
 
@@ -1980,6 +2681,7 @@
           );
 
           return;
+
         }
 
 
@@ -2014,7 +2716,9 @@
            Module Routing
            ==================================================== */
 
-        switch (requestedPage) {
+        switch (
+          requestedPage
+        ) {
 
           case "dashboard":
 
@@ -2142,10 +2846,12 @@
             "dashboard-api-status"
           );
 
+
         const apiNote =
           document.getElementById(
             "dashboard-api-note"
           );
+
 
         const topApi =
           document.getElementById(
@@ -2205,6 +2911,7 @@
           }
 
           return;
+
         }
 
 
@@ -2261,7 +2968,9 @@
                 const page =
                   button.dataset.page;
 
-                showGoVaraPage(page);
+                showGoVaraPage(
+                  page
+                );
 
               }
             );
@@ -2284,11 +2993,26 @@
         current:
           function () {
 
-            return GoVaraAppState.currentPage;
+            return
+              GoVaraAppState.currentPage;
 
           }
 
       };
+
+
+      /*
+       * Fix for the current-property function.
+       * Kept separate so it returns the actual
+       * application state reliably.
+       */
+
+      window.GoVaraRouter.current =
+        function () {
+
+          return GoVaraAppState.currentPage;
+
+        };
 
 
       /* ======================================================
@@ -2355,7 +3079,7 @@
       );
 
     })();
-  </script></body>
+  </script>
+
+</body>
 </html>
-
-

@@ -1,220 +1,63 @@
-/************************************************************
- * GoVara — 28-Customer.js
- * Customer Registration Module
- *
- * PURPOSE:
- * - Customer registration UI
- * - Frontend validation
- * - Profile photo preview
- * - Aadhaar / PAN basic validation
- * - Admin document policy display
- * - Consolidated API registration
- *
- * AUTHORITY:
- * - Frontend does NOT write database directly
- * - Backend generates Customer_ID / User_ID
- * - Backend remains authoritative
- * - CUSTOMER_REGISTER is handled by GoVaraAPI
- *
- * IMPORTANT:
- * - Registration payload contains only fields currently
- *   supported by backend Customer Registration Service:
- *
- *   name
- *   mobile
- *   email
- *   address
- *
- * - Documents are NOT falsely persisted from frontend.
- ************************************************************/
+/* =========================================================
+   GoVara — 28-Customer.js
+   CUSTOMER MODULE — STABLE REGISTRATION UI
+
+   CURRENT SCOPE
+   ---------------------------------------------------------
+   ✓ Customer registration UI
+   ✓ Name
+   ✓ Mobile
+   ✓ Email
+   ✓ Address
+   ✓ Profile Photo UI
+   ✓ Aadhaar UI
+   ✓ PAN UI
+   ✓ Other Document UI
+   ✓ Frontend validation
+   ✓ Consolidated API CUSTOMER_REGISTER
+   ✓ Backend-generated Customer ID / User ID
+   ✓ Registration response display
+
+   DOCUMENTS
+   ---------------------------------------------------------
+   Document selection UI is available.
+   Actual document persistence is intentionally NOT connected
+   yet. Existing Document Service will be integrated later.
+
+   AUTHORITY
+   ---------------------------------------------------------
+   Frontend does NOT write database directly.
+   Backend remains authoritative.
+   ========================================================= */
 
 (function () {
   'use strict';
 
-  /* ========================================================
-     1. MODULE CONFIGURATION
-     ======================================================== */
-
-  var MODULE_NAME = 'CUSTOMER';
+  var MODULE = 'CUSTOMER';
   var ACTION = 'CUSTOMER_REGISTER';
 
   var state = {
     submitting: false,
-    lastResponse: null,
-    profilePhotoData: '',
-    documentPolicy: {
-      aadhaar: 'OPTIONAL',
-      pan: 'OPTIONAL',
-      other: 'OPTIONAL'
-    }
+    initialized: false,
+    lastResponse: null
   };
 
-  /* ========================================================
-     2. SAFE HELPERS
-     ======================================================== */
+  /* =========================================================
+     1. BASIC HELPERS
+     ========================================================= */
 
-  function byId(id) {
+  function el(id) {
     return document.getElementById(id);
   }
 
-  function valueByIds(ids) {
-    for (var i = 0; i < ids.length; i++) {
-      var el = byId(ids[i]);
-
-      if (el && typeof el.value !== 'undefined') {
-        var value = String(el.value || '').trim();
-
-        if (value !== '') {
-          return value;
-        }
-      }
-    }
-
-    return '';
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
-
-  function setText(ids, value) {
-    for (var i = 0; i < ids.length; i++) {
-      var el = byId(ids[i]);
-
-      if (el) {
-        el.textContent = value;
-        return;
-      }
-    }
-  }
-
-  function showMessage(message, type) {
-    var box =
-      byId('customer-message') ||
-      byId('customer-status') ||
-      byId('customerResult') ||
-      byId('customer-result');
-
-    if (!box) {
-      console.log('[GoVara Customer]', message);
-      return;
-    }
-
-    box.textContent = message;
-
-    box.dataset.type = type || 'info';
-
-    if (type === 'success') {
-      box.className = 'customer-message success';
-    } else if (type === 'error') {
-      box.className = 'customer-message error';
-    } else {
-      box.className = 'customer-message info';
-    }
-  }
-
-  function stringifyResponse(response) {
-    try {
-      return JSON.stringify(response, null, 2);
-    } catch (error) {
-      return String(response || '');
-    }
-  }
-
-  function showResponse(response) {
-    var output =
-      byId('customer-api-response') ||
-      byId('customer-response') ||
-      byId('customerResult') ||
-      byId('customer-result');
-
-    if (!output) {
-      return;
-    }
-
-    output.textContent = stringifyResponse(response);
-  }
-
-  /* ========================================================
-     3. FIELD READERS
-     ======================================================== */
-
-  function getName() {
-    return valueByIds([
-      'customer-name',
-      'customerName',
-      'full-name',
-      'fullName',
-      'name'
-    ]);
-  }
-
-  function getMobile() {
-    return valueByIds([
-      'customer-mobile',
-      'customerMobile',
-      'mobile-number',
-      'mobileNumber',
-      'mobile',
-      'phone'
-    ]);
-  }
-
-  function getEmail() {
-    return valueByIds([
-      'customer-email',
-      'customerEmail',
-      'email-address',
-      'emailAddress',
-      'email'
-    ]);
-  }
-
-  function getAddress() {
-    return valueByIds([
-      'customer-address',
-      'customerAddress',
-      'address'
-    ]);
-  }
-
-  function getProfilePhotoElement() {
-    return (
-      byId('customer-profile-photo') ||
-      byId('profile-photo') ||
-      byId('profilePhoto') ||
-      byId('customerPhoto')
-    );
-  }
-
-  function getAadhaar() {
-    return valueByIds([
-      'customer-aadhaar',
-      'customerAadhaar',
-      'aadhaar-number',
-      'aadhaarNumber',
-      'aadhaar'
-    ]);
-  }
-
-  function getPAN() {
-    return valueByIds([
-      'customer-pan',
-      'customerPAN',
-      'pan-number',
-      'panNumber',
-      'pan'
-    ]);
-  }
-
-  function getOtherDocument() {
-    return valueByIds([
-      'customer-other-document',
-      'customerOtherDocument',
-      'other-document',
-      'otherDocument'
-    ]);
-  }
-
-  /* ========================================================
-     4. NORMALIZATION
-     ======================================================== */
 
   function normalizeName(value) {
     return String(value || '')
@@ -223,17 +66,17 @@
   }
 
   function normalizeMobile(value) {
-    var mobile = String(value || '')
+    var v = String(value || '')
       .trim()
       .replace(/[\s()-]/g, '');
 
-    if (mobile.indexOf('+91') === 0) {
-      mobile = mobile.substring(3);
-    } else if (mobile.indexOf('91') === 0 && mobile.length === 12) {
-      mobile = mobile.substring(2);
+    if (v.indexOf('+91') === 0) {
+      v = v.substring(3);
+    } else if (v.indexOf('91') === 0 && v.length === 12) {
+      v = v.substring(2);
     }
 
-    return mobile;
+    return v;
   }
 
   function normalizeEmail(value) {
@@ -248,211 +91,637 @@
       .replace(/\s+/g, ' ');
   }
 
-  /* ========================================================
-     5. VALIDATION
-     ======================================================== */
+  function message(text, type) {
+    var box = el('customer-message');
 
-  function validateName(name) {
-    if (!name) {
-      return 'Full Name is required.';
+    if (!box) return;
+
+    box.textContent = text || '';
+    box.style.display = text ? 'block' : 'none';
+
+    if (type === 'success') {
+      box.style.borderColor = '#22c55e';
+      box.style.color = '#22c55e';
+    } else if (type === 'error') {
+      box.style.borderColor = '#ef4444';
+      box.style.color = '#ef4444';
+    } else {
+      box.style.borderColor = '#64748b';
+      box.style.color = '#cbd5e1';
     }
-
-    if (name.length < 2) {
-      return 'Full Name must contain at least 2 characters.';
-    }
-
-    if (name.length > 150) {
-      return 'Full Name is too long.';
-    }
-
-    return '';
   }
 
-  function validateMobile(mobile) {
-    if (!mobile) {
-      return 'Mobile number is required.';
-    }
+  function responseBox(data) {
+    var box = el('customer-api-response');
 
-    if (!/^[6-9][0-9]{9}$/.test(mobile)) {
-      return 'Enter a valid Indian mobile number.';
-    }
+    if (!box) return;
 
-    return '';
+    try {
+      box.textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      box.textContent = String(data || '');
+    }
   }
 
-  function validateEmail(email) {
-    if (!email) {
-      return 'Email is required.';
+  /* =========================================================
+     2. RENDER CUSTOMER PAGE
+     ========================================================= */
+
+  function render() {
+    var page = el('customer-page');
+
+    if (!page) {
+      console.warn(
+        '[GoVara Customer] #customer-page not found.'
+      );
+      return false;
+    }
+
+    page.innerHTML = `
+      <div style="
+        width:100%;
+        max-width:1100px;
+        margin:0 auto;
+        padding:20px;
+        box-sizing:border-box;
+      ">
+
+        <div style="
+          margin-bottom:20px;
+          padding:20px;
+          border:1px solid rgba(148,163,184,.20);
+          border-radius:16px;
+          background:rgba(15,23,42,.55);
+        ">
+          <div style="
+            font-size:24px;
+            font-weight:700;
+            margin-bottom:6px;
+          ">
+            Customer Registration
+          </div>
+
+          <div style="
+            color:#94a3b8;
+            font-size:14px;
+          ">
+            Create a new GoVara customer account.
+            Customer ID and User ID are generated by the backend.
+          </div>
+        </div>
+
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+          gap:16px;
+        ">
+
+          <div style="
+            padding:18px;
+            border:1px solid rgba(148,163,184,.20);
+            border-radius:16px;
+            background:rgba(15,23,42,.45);
+          ">
+
+            <div style="
+              font-size:18px;
+              font-weight:700;
+              margin-bottom:16px;
+            ">
+              Basic Information
+            </div>
+
+            <label style="display:block;margin-bottom:6px;">
+              Full Name *
+            </label>
+
+            <input
+              id="customer-name"
+              type="text"
+              autocomplete="name"
+              placeholder="Enter full name"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                margin-bottom:14px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#0f172a;
+                color:#f8fafc;
+              "
+            >
+
+            <label style="display:block;margin-bottom:6px;">
+              Mobile Number *
+            </label>
+
+            <input
+              id="customer-mobile"
+              type="tel"
+              inputmode="numeric"
+              autocomplete="tel"
+              maxlength="13"
+              placeholder="10 digit Indian mobile"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                margin-bottom:14px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#0f172a;
+                color:#f8fafc;
+              "
+            >
+
+            <label style="display:block;margin-bottom:6px;">
+              Email *
+            </label>
+
+            <input
+              id="customer-email"
+              type="email"
+              autocomplete="email"
+              placeholder="Enter email address"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                margin-bottom:14px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#0f172a;
+                color:#f8fafc;
+              "
+            >
+
+            <label style="display:block;margin-bottom:6px;">
+              Address *
+            </label>
+
+            <textarea
+              id="customer-address"
+              rows="5"
+              autocomplete="street-address"
+              placeholder="Enter address"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                margin-bottom:4px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#0f172a;
+                color:#f8fafc;
+                resize:vertical;
+              "
+            ></textarea>
+
+            <div style="
+              color:#64748b;
+              font-size:12px;
+              margin-top:4px;
+            ">
+              Maximum 500 characters.
+            </div>
+
+          </div>
+
+
+          <div style="
+            padding:18px;
+            border:1px solid rgba(148,163,184,.20);
+            border-radius:16px;
+            background:rgba(15,23,42,.45);
+          ">
+
+            <div style="
+              font-size:18px;
+              font-weight:700;
+              margin-bottom:16px;
+            ">
+              Profile & Documents
+            </div>
+
+            <label style="display:block;margin-bottom:6px;">
+              Profile Photo
+            </label>
+
+            <input
+              id="customer-profile-photo"
+              type="file"
+              accept="image/*"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                margin-bottom:10px;
+              "
+            >
+
+            <div
+              id="customer-photo-preview"
+              style="
+                display:none;
+                width:90px;
+                height:90px;
+                margin-bottom:18px;
+                border-radius:50%;
+                overflow:hidden;
+                border:1px solid #334155;
+              "
+            >
+              <img
+                id="customer-photo-image"
+                alt="Profile preview"
+                style="
+                  width:100%;
+                  height:100%;
+                  object-fit:cover;
+                "
+              >
+            </div>
+
+
+            <label style="display:block;margin-bottom:6px;">
+              Aadhaar
+              <span style="color:#94a3b8;font-size:12px;">
+                (Optional)
+              </span>
+            </label>
+
+            <input
+              id="customer-aadhaar"
+              type="text"
+              inputmode="numeric"
+              maxlength="14"
+              placeholder="XXXX XXXX XXXX"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                margin-bottom:14px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#0f172a;
+                color:#f8fafc;
+              "
+            >
+
+
+            <label style="display:block;margin-bottom:6px;">
+              PAN
+              <span style="color:#94a3b8;font-size:12px;">
+                (Optional)
+              </span>
+            </label>
+
+            <input
+              id="customer-pan"
+              type="text"
+              maxlength="10"
+              placeholder="ABCDE1234F"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                margin-bottom:14px;
+                border-radius:10px;
+                border:1px solid #334155;
+                background:#0f172a;
+                color:#f8fafc;
+                text-transform:uppercase;
+              "
+            >
+
+
+            <label style="display:block;margin-bottom:6px;">
+              Other Document
+              <span style="color:#94a3b8;font-size:12px;">
+                (Optional)
+              </span>
+            </label>
+
+            <input
+              id="customer-other-document"
+              type="file"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                margin-bottom:10px;
+              "
+            >
+
+            <div style="
+              margin-top:14px;
+              padding:12px;
+              border-radius:10px;
+              background:rgba(30,41,59,.55);
+              color:#94a3b8;
+              font-size:12px;
+              line-height:1.5;
+            ">
+              Document upload/persistence will be connected to
+              the existing GoVara Document Service in the next phase.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="customer-message"
+          style="
+            display:none;
+            margin-top:16px;
+            padding:13px 15px;
+            border:1px solid;
+            border-radius:10px;
+            background:rgba(15,23,42,.70);
+            font-size:14px;
+          "
+        ></div>
+
+
+        <div style="
+          margin-top:16px;
+          padding:18px;
+          border:1px solid rgba(148,163,184,.20);
+          border-radius:16px;
+          background:rgba(15,23,42,.45);
+        ">
+
+          <button
+            id="customer-register-btn"
+            type="button"
+            style="
+              width:100%;
+              padding:14px 18px;
+              border:0;
+              border-radius:10px;
+              background:#2563eb;
+              color:white;
+              font-size:15px;
+              font-weight:700;
+              cursor:pointer;
+            "
+          >
+            Register Customer
+          </button>
+
+        </div>
+
+
+        <div
+          id="customer-registration-result"
+          style="
+            display:none;
+            margin-top:16px;
+            padding:18px;
+            border:1px solid rgba(34,197,94,.30);
+            border-radius:16px;
+            background:rgba(15,23,42,.45);
+          "
+        >
+
+          <div style="
+            font-size:18px;
+            font-weight:700;
+            margin-bottom:14px;
+          ">
+            Registration Result
+          </div>
+
+          <div style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:10px;
+          ">
+
+            <div>
+              <div style="color:#94a3b8;font-size:12px;">
+                Customer ID
+              </div>
+              <div
+                id="customer-id"
+                style="font-weight:600;margin-top:4px;"
+              >-</div>
+            </div>
+
+            <div>
+              <div style="color:#94a3b8;font-size:12px;">
+                User ID
+              </div>
+              <div
+                id="customer-user-id"
+                style="font-weight:600;margin-top:4px;"
+              >-</div>
+            </div>
+
+            <div>
+              <div style="color:#94a3b8;font-size:12px;">
+                Status
+              </div>
+              <div
+                id="customer-registration-status"
+                style="font-weight:600;margin-top:4px;"
+              >-</div>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <details style="
+          margin-top:16px;
+          border:1px solid rgba(148,163,184,.20);
+          border-radius:12px;
+          padding:12px;
+          background:rgba(15,23,42,.35);
+        ">
+
+          <summary style="
+            cursor:pointer;
+            color:#94a3b8;
+            font-size:13px;
+          ">
+            API Response Diagnostics
+          </summary>
+
+          <pre
+            id="customer-api-response"
+            style="
+              white-space:pre-wrap;
+              word-break:break-word;
+              margin-top:12px;
+              color:#cbd5e1;
+              font-size:12px;
+            "
+          ></pre>
+
+        </details>
+
+      </div>
+    `;
+
+    return true;
+  }
+
+  /* =========================================================
+     3. FIELD ACCESS
+     ========================================================= */
+
+  function getFields() {
+    return {
+      name: normalizeName(
+        el('customer-name')
+          ? el('customer-name').value
+          : ''
+      ),
+
+      mobile: normalizeMobile(
+        el('customer-mobile')
+          ? el('customer-mobile').value
+          : ''
+      ),
+
+      email: normalizeEmail(
+        el('customer-email')
+          ? el('customer-email').value
+          : ''
+      ),
+
+      address: normalizeAddress(
+        el('customer-address')
+          ? el('customer-address').value
+          : ''
+      )
+    };
+  }
+
+  /* =========================================================
+     4. FRONTEND VALIDATION
+     ========================================================= */
+
+  function validate(data) {
+
+    if (!data.name) {
+      return {
+        valid: false,
+        error: 'Full Name is required.'
+      };
+    }
+
+    if (data.name.length < 2) {
+      return {
+        valid: false,
+        error: 'Full Name must contain at least 2 characters.'
+      };
+    }
+
+    if (!data.mobile) {
+      return {
+        valid: false,
+        error: 'Mobile number is required.'
+      };
+    }
+
+    if (!/^[6-9][0-9]{9}$/.test(data.mobile)) {
+      return {
+        valid: false,
+        error: 'Enter a valid Indian mobile number.'
+      };
+    }
+
+    if (!data.email) {
+      return {
+        valid: false,
+        error: 'Email is required.'
+      };
     }
 
     if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(
+        data.email
+      )
     ) {
-      return 'Enter a valid email address.';
-    }
-
-    return '';
-  }
-
-  function validateAddress(address) {
-    if (!address) {
-      return 'Address is required.';
-    }
-
-    if (address.length > 500) {
-      return 'Address cannot exceed 500 characters.';
-    }
-
-    return '';
-  }
-
-  function validateAadhaar(aadhaar) {
-    if (!aadhaar) {
-      return '';
-    }
-
-    var clean = aadhaar.replace(/\s+/g, '');
-
-    if (!/^[0-9]{12}$/.test(clean)) {
-      return 'Aadhaar must contain 12 digits.';
-    }
-
-    return '';
-  }
-
-  function validatePAN(pan) {
-    if (!pan) {
-      return '';
-    }
-
-    var clean = pan.toUpperCase().replace(/\s+/g, '');
-
-    if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(clean)) {
-      return 'Enter a valid PAN number.';
-    }
-
-    return '';
-  }
-
-  function validateForm() {
-    var name = normalizeName(getName());
-    var mobile = normalizeMobile(getMobile());
-    var email = normalizeEmail(getEmail());
-    var address = normalizeAddress(getAddress());
-    var aadhaar = getAadhaar();
-    var pan = getPAN();
-
-    var error = '';
-
-    error = validateName(name);
-    if (error) {
       return {
         valid: false,
-        error: error
+        error: 'Enter a valid email address.'
       };
     }
 
-    error = validateMobile(mobile);
-    if (error) {
+    if (!data.address) {
       return {
         valid: false,
-        error: error
+        error: 'Address is required.'
       };
     }
 
-    error = validateEmail(email);
-    if (error) {
+    if (data.address.length > 500) {
       return {
         valid: false,
-        error: error
-      };
-    }
-
-    error = validateAddress(address);
-    if (error) {
-      return {
-        valid: false,
-        error: error
-      };
-    }
-
-    error = validateAadhaar(aadhaar);
-    if (error) {
-      return {
-        valid: false,
-        error: error
-      };
-    }
-
-    error = validatePAN(pan);
-    if (error) {
-      return {
-        valid: false,
-        error: error
+        error: 'Address cannot exceed 500 characters.'
       };
     }
 
     return {
       valid: true,
-      data: {
-        name: name,
-        mobile: mobile,
-        email: email,
-        address: address
-      }
+      data: data
     };
   }
 
-  /* ========================================================
-     6. REGISTRATION PAYLOAD
-     ======================================================== */
+  /* =========================================================
+     5. REGISTRATION PAYLOAD
+     ========================================================= */
 
   function buildRegistrationPayload() {
-    var name = normalizeName(getName());
-    var mobile = normalizeMobile(getMobile());
-    var email = normalizeEmail(getEmail());
-    var address = normalizeAddress(getAddress());
+
+    var fields = getFields();
 
     /*
-     * IMPORTANT:
+     * EXACT BACKEND CONTRACT
      *
-     * These exact lowercase property names match
-     * GV_registerCustomer() backend expectations.
-     *
-     * Do NOT send Name / Mobile / Email / Address here.
-     * Backend registration service expects:
+     * GV_registerCustomer() expects:
      *
      * name
      * mobile
      * email
      * address
+     *
+     * No uppercase database column names.
+     * No frontend-generated IDs.
+     * No document IDs.
      */
 
     var payload = {
-      name: name,
-      mobile: mobile,
-      email: email,
-      address: address
+      name: fields.name,
+      mobile: fields.mobile,
+      email: fields.email,
+      address: fields.address
     };
 
     console.log(
-      '[GoVara Customer] Registration payload:',
-      JSON.stringify(payload)
+      '[GoVara Customer] CUSTOMER_REGISTER payload:',
+      payload
     );
 
     return payload;
   }
 
-  /* ========================================================
-     7. API CALL
-     ======================================================== */
+  /* =========================================================
+     6. API CALL
+     ========================================================= */
 
-  function callCustomerRegister(data) {
+  function callCustomerRegister(payload) {
+
     if (
       window.GoVaraAPI &&
       typeof window.GoVaraAPI.customerRegister === 'function'
     ) {
-      return window.GoVaraAPI.customerRegister(data);
+      return window.GoVaraAPI.customerRegister(payload);
     }
 
     if (
@@ -461,8 +730,8 @@
     ) {
       return window.GoVaraAPI.request({
         action: ACTION,
-        module: MODULE_NAME,
-        data: data
+        module: MODULE,
+        data: payload
       });
     }
 
@@ -470,7 +739,7 @@
       window.GoVara27 &&
       typeof window.GoVara27.customerRegister === 'function'
     ) {
-      return window.GoVara27.customerRegister(data);
+      return window.GoVara27.customerRegister(payload);
     }
 
     throw new Error(
@@ -478,18 +747,43 @@
     );
   }
 
-  /* ========================================================
-     8. RESPONSE HANDLING
-     ======================================================== */
+  /* =========================================================
+     7. RESPONSE HANDLING
+     ========================================================= */
 
-  function handleRegistrationResponse(response) {
+  function handleResponse(response) {
+
     state.lastResponse = response;
 
-    showResponse(response);
+    responseBox(response);
 
     if (!response) {
-      showMessage(
+      message(
         'No response received from API.',
+        'error'
+      );
+      return false;
+    }
+
+    /*
+     * API-level failure
+     */
+
+    if (response.success !== true) {
+
+      var errorText =
+        response.error ||
+        response.status ||
+        (
+          response.validation &&
+          response.validation.errors
+            ? response.validation.errors.join(', ')
+            : ''
+        ) ||
+        'Customer registration failed.';
+
+      message(
+        errorText,
         'error'
       );
 
@@ -497,38 +791,18 @@
     }
 
     /*
-     * API-level failure
-     */
-    if (response.success !== true) {
-      var apiError =
-        response.error ||
-        (
-          response.validation &&
-          response.validation.errors &&
-          response.validation.errors.join(', ')
-        ) ||
-        response.status ||
-        'Customer registration failed.';
-
-      showMessage(apiError, 'error');
-
-      return false;
-    }
-
-    /*
-     * Business/service-level failure
+     * Business/service-level failure.
      *
-     * CUSTOMER_REGISTER can have:
+     * Backend can return:
      *
-     * response.success === true
-     * result.success === false
-     *
-     * Therefore both levels must be checked.
+     * success: true
+     * result.success: false
      */
 
     var result = response.result || {};
 
     if (result.success === false) {
+
       var validationErrors =
         result.validation &&
         result.validation.errors
@@ -539,10 +813,9 @@
         validationErrors ||
         result.error ||
         result.status ||
-        response.status ||
         'Customer registration failed.';
 
-      showMessage(
+      message(
         businessError,
         'error'
       );
@@ -551,7 +824,7 @@
     }
 
     /*
-     * Successful registration
+     * SUCCESS
      */
 
     var customerId =
@@ -569,97 +842,87 @@
       result.status ||
       'CUSTOMER_REGISTERED';
 
-    var successMessage =
+    if (el('customer-id')) {
+      el('customer-id').textContent =
+        customerId || '-';
+    }
+
+    if (el('customer-user-id')) {
+      el('customer-user-id').textContent =
+        userId || '-';
+    }
+
+    if (el('customer-registration-status')) {
+      el('customer-registration-status').textContent =
+        status;
+    }
+
+    var resultPanel =
+      el('customer-registration-result');
+
+    if (resultPanel) {
+      resultPanel.style.display = 'block';
+    }
+
+    var successText =
       'Customer registered successfully.';
 
     if (customerId) {
-      successMessage +=
+      successText +=
         ' Customer ID: ' + customerId;
     }
 
-    if (userId) {
-      successMessage +=
-        ' User ID: ' + userId;
-    }
-
-    showMessage(
-      successMessage,
+    message(
+      successText,
       'success'
-    );
-
-    setText(
-      [
-        'customer-id',
-        'customerId',
-        'registered-customer-id'
-      ],
-      customerId || '-'
-    );
-
-    setText(
-      [
-        'customer-user-id',
-        'customerUserId',
-        'registered-user-id'
-      ],
-      userId || '-'
-    );
-
-    setText(
-      [
-        'customer-registration-status',
-        'customerRegistrationStatus'
-      ],
-      status
     );
 
     return true;
   }
 
-  /* ========================================================
-     9. SUBMIT
-     ======================================================== */
+  /* =========================================================
+     8. SUBMIT
+     ========================================================= */
 
   async function submit() {
+
     if (state.submitting) {
       return;
     }
 
-    var validation = validateForm();
+    var payload =
+      buildRegistrationPayload();
+
+    var validation =
+      validate(payload);
 
     if (!validation.valid) {
-      showMessage(
+      message(
         validation.error,
         'error'
       );
-
       return;
     }
 
     /*
-     * Build payload again immediately before API call.
-     * This guarantees current form values are used.
+     * Final safety check before API call.
      */
-    var payload = buildRegistrationPayload();
 
-    /*
-     * Safety check:
-     * Do not call backend if payload is empty.
-     */
     if (
       !payload.name ||
       !payload.mobile ||
       !payload.email ||
       !payload.address
     ) {
-      showMessage(
-        'Customer registration data is incomplete.',
-        'error'
-      );
 
       console.error(
-        '[GoVara Customer] Invalid registration payload:',
+        '[GoVara Customer] Empty registration payload:',
         payload
+      );
+
+      message(
+        'Registration data is incomplete.',
+        'error'
       );
 
       return;
@@ -667,259 +930,216 @@
 
     state.submitting = true;
 
-    showMessage(
+    var button =
+      el('customer-register-btn');
+
+    if (button) {
+      button.disabled = true;
+      button.textContent =
+        'Registering...';
+      button.style.opacity = '0.65';
+      button.style.cursor = 'wait';
+    }
+
+    message(
       'Registering customer...',
       'info'
     );
 
     try {
+
+      /*
+       * IMPORTANT:
+       * Send the exact payload directly.
+       */
+
       var response =
         await Promise.resolve(
           callCustomerRegister(payload)
         );
 
-      handleRegistrationResponse(response);
+      handleResponse(response);
 
     } catch (error) {
+
       console.error(
         '[GoVara Customer] Registration error:',
         error
       );
 
-      showMessage(
-        String(error.message || error),
+      message(
+        String(
+          error.message || error
+        ),
         'error'
       );
 
     } finally {
+
       state.submitting = false;
+
+      if (button) {
+        button.disabled = false;
+        button.textContent =
+          'Register Customer';
+        button.style.opacity = '1';
+        button.style.cursor = 'pointer';
+      }
     }
   }
 
-  /* ========================================================
-     10. PROFILE PHOTO
-     ======================================================== */
+  /* =========================================================
+     9. PROFILE PHOTO PREVIEW
+     ========================================================= */
 
-  function handleProfilePhoto(event) {
-    var file =
-      event &&
-      event.target &&
-      event.target.files
-        ? event.target.files[0]
-        : null;
+  function bindPhoto() {
 
-    if (!file) {
-      state.profilePhotoData = '';
-      return;
-    }
+    var input =
+      el('customer-profile-photo');
 
-    if (!file.type || file.type.indexOf('image/') !== 0) {
-      showMessage(
-        'Please select a valid image file.',
-        'error'
-      );
+    if (!input) return;
 
-      event.target.value = '';
-      return;
-    }
+    input.addEventListener(
+      'change',
+      function () {
 
-    var reader = new FileReader();
+        var file =
+          input.files &&
+          input.files.length
+            ? input.files[0]
+            : null;
 
-    reader.onload = function (e) {
-      state.profilePhotoData =
-        e.target.result || '';
+        var preview =
+          el('customer-photo-preview');
 
-      var preview =
-        byId('customer-photo-preview') ||
-        byId('profile-photo-preview') ||
-        byId('profilePreview') ||
-        byId('customerProfilePreview');
+        var image =
+          el('customer-photo-image');
 
-      if (preview) {
-        if (preview.tagName === 'IMG') {
-          preview.src =
-            state.profilePhotoData;
-          preview.style.display = 'block';
-        } else {
-          preview.style.backgroundImage =
-            'url("' +
-            state.profilePhotoData +
-            '")';
-          preview.style.backgroundSize =
-            'cover';
-          preview.style.backgroundPosition =
-            'center';
+        if (!file) {
+          if (preview) {
+            preview.style.display =
+              'none';
+          }
+          return;
         }
+
+        if (
+          !file.type ||
+          file.type.indexOf('image/') !== 0
+        ) {
+
+          input.value = '';
+
+          message(
+            'Please select a valid image file.',
+            'error'
+          );
+
+          return;
+        }
+
+        var reader =
+          new FileReader();
+
+        reader.onload =
+          function (event) {
+
+            if (image) {
+              image.src =
+                event.target.result;
+            }
+
+            if (preview) {
+              preview.style.display =
+                'block';
+            }
+          };
+
+        reader.readAsDataURL(file);
       }
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  /* ========================================================
-     11. INPUT FORMATTING
-     ======================================================== */
-
-  function formatAadhaarInput(event) {
-    var input = event.target;
-
-    if (!input) {
-      return;
-    }
-
-    var value =
-      String(input.value || '')
-        .replace(/[^0-9]/g, '')
-        .slice(0, 12);
-
-    var formatted =
-      value.match(/.{1,4}/g);
-
-    input.value =
-      formatted
-        ? formatted.join(' ')
-        : '';
-  }
-
-  function formatPANInput(event) {
-    var input = event.target;
-
-    if (!input) {
-      return;
-    }
-
-    input.value =
-      String(input.value || '')
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, '')
-        .slice(0, 10);
-  }
-
-  function formatMobileInput(event) {
-    var input = event.target;
-
-    if (!input) {
-      return;
-    }
-
-    input.value =
-      String(input.value || '')
-        .replace(/[^0-9+]/g, '')
-        .slice(0, 13);
-  }
-
-  /* ========================================================
-     12. DOCUMENT POLICY
-     ======================================================== */
-
-  function getDocumentPolicy() {
-    return {
-      aadhaar:
-        state.documentPolicy.aadhaar,
-      pan:
-        state.documentPolicy.pan,
-      other:
-        state.documentPolicy.other
-    };
-  }
-
-  function setDocumentPolicy(policy) {
-    policy = policy || {};
-
-    if (policy.aadhaar) {
-      state.documentPolicy.aadhaar =
-        String(policy.aadhaar).toUpperCase();
-    }
-
-    if (policy.pan) {
-      state.documentPolicy.pan =
-        String(policy.pan).toUpperCase();
-    }
-
-    if (policy.other) {
-      state.documentPolicy.other =
-        String(policy.other).toUpperCase();
-    }
-
-    renderDocumentPolicy();
-  }
-
-  function policyLabel(value) {
-    value =
-      String(value || 'OPTIONAL')
-        .toUpperCase();
-
-    if (value === 'MANDATORY') {
-      return 'Mandatory';
-    }
-
-    if (value === 'DISABLED') {
-      return 'Disabled';
-    }
-
-    return 'Optional';
-  }
-
-  function renderDocumentPolicy() {
-    setText(
-      [
-        'aadhaar-policy',
-        'customer-aadhaar-policy'
-      ],
-      policyLabel(
-        state.documentPolicy.aadhaar
-      )
-    );
-
-    setText(
-      [
-        'pan-policy',
-        'customer-pan-policy'
-      ],
-      policyLabel(
-        state.documentPolicy.pan
-      )
-    );
-
-    setText(
-      [
-        'other-document-policy',
-        'customer-other-document-policy'
-      ],
-      policyLabel(
-        state.documentPolicy.other
-      )
     );
   }
 
-  /* ========================================================
-     13. DOM EVENT BINDING
-     ======================================================== */
+  /* =========================================================
+     10. INPUT FORMATTERS
+     ========================================================= */
 
-  function bindSubmitButtons() {
-    var ids = [
-      'customer-register-btn',
-      'customerRegisterBtn',
-      'register-customer-btn',
-      'registerCustomerBtn',
-      'customer-submit',
-      'customerSubmit',
-      'btn-customer-register'
-    ];
+  function bindMobile() {
 
-    for (var i = 0; i < ids.length; i++) {
-      var button = byId(ids[i]);
+    var input =
+      el('customer-mobile');
 
-      if (!button) {
-        continue;
+    if (!input) return;
+
+    input.addEventListener(
+      'input',
+      function () {
+
+        input.value =
+          String(input.value || '')
+            .replace(/[^0-9+]/g, '')
+            .slice(0, 13);
       }
+    );
+  }
 
-      if (button.dataset.govaraCustomerBound === '1') {
-        continue;
+  function bindAadhaar() {
+
+    var input =
+      el('customer-aadhaar');
+
+    if (!input) return;
+
+    input.addEventListener(
+      'input',
+      function () {
+
+        var value =
+          String(input.value || '')
+            .replace(/[^0-9]/g, '')
+            .slice(0, 12);
+
+        var parts =
+          value.match(/.{1,4}/g);
+
+        input.value =
+          parts
+            ? parts.join(' ')
+            : '';
       }
+    );
+  }
 
-      button.dataset.govaraCustomerBound = '1';
+  function bindPAN() {
 
+    var input =
+      el('customer-pan');
+
+    if (!input) return;
+
+    input.addEventListener(
+      'input',
+      function () {
+
+        input.value =
+          String(input.value || '')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '')
+            .slice(0, 10);
+      }
+    );
+  }
+
+  /* =========================================================
+     11. BIND EVENTS
+     ========================================================= */
+
+  function bind() {
+
+    var button =
+      el('customer-register-btn');
+
+    if (button) {
       button.addEventListener(
         'click',
         function (event) {
@@ -928,157 +1148,62 @@
         }
       );
     }
+
+    bindPhoto();
+    bindMobile();
+    bindAadhaar();
+    bindPAN();
   }
 
-  function bindInputFormatting() {
-    var aadhaarIds = [
-      'customer-aadhaar',
-      'customerAadhaar',
-      'aadhaar-number',
-      'aadhaarNumber',
-      'aadhaar'
-    ];
-
-    for (var i = 0; i < aadhaarIds.length; i++) {
-      var aadhaar = byId(aadhaarIds[i]);
-
-      if (
-        aadhaar &&
-        aadhaar.dataset.govaraAadhaarBound !== '1'
-      ) {
-        aadhaar.dataset.govaraAadhaarBound = '1';
-
-        aadhaar.addEventListener(
-          'input',
-          formatAadhaarInput
-        );
-      }
-    }
-
-    var panIds = [
-      'customer-pan',
-      'customerPAN',
-      'pan-number',
-      'panNumber',
-      'pan'
-    ];
-
-    for (var j = 0; j < panIds.length; j++) {
-      var pan = byId(panIds[j]);
-
-      if (
-        pan &&
-        pan.dataset.govaraPanBound !== '1'
-      ) {
-        pan.dataset.govaraPanBound = '1';
-
-        pan.addEventListener(
-          'input',
-          formatPANInput
-        );
-      }
-    }
-
-    var mobileIds = [
-      'customer-mobile',
-      'customerMobile',
-      'mobile-number',
-      'mobileNumber',
-      'mobile',
-      'phone'
-    ];
-
-    for (var k = 0; k < mobileIds.length; k++) {
-      var mobile = byId(mobileIds[k]);
-
-      if (
-        mobile &&
-        mobile.dataset.govaraMobileBound !== '1'
-      ) {
-        mobile.dataset.govaraMobileBound = '1';
-
-        mobile.addEventListener(
-          'input',
-          formatMobileInput
-        );
-      }
-    }
-  }
-
-  function bindProfilePhoto() {
-    var photo =
-      getProfilePhotoElement();
-
-    if (!photo) {
-      return;
-    }
-
-    if (
-      photo.dataset.govaraPhotoBound === '1'
-    ) {
-      return;
-    }
-
-    photo.dataset.govaraPhotoBound = '1';
-
-    photo.addEventListener(
-      'change',
-      handleProfilePhoto
-    );
-  }
-
-  function bindForm() {
-    bindSubmitButtons();
-    bindInputFormatting();
-    bindProfilePhoto();
-    renderDocumentPolicy();
-  }
-
-  /* ========================================================
-     14. PUBLIC MODULE
-     ======================================================== */
+  /* =========================================================
+     12. PUBLIC MODULE
+     ========================================================= */
 
   var GoVaraCustomer = {
 
-    module: MODULE_NAME,
+    module: MODULE,
 
     action: ACTION,
 
     state: state,
 
     init: function () {
-      bindForm();
+
+      render();
+      bind();
+
+      state.initialized = true;
 
       console.log(
-        '[GoVara Customer] Module initialized.'
+        '[GoVara Customer] Customer module initialized.'
       );
 
       return true;
     },
 
+    render: render,
+
     submit: submit,
 
     register: submit,
 
+    validate: function () {
+      return validate(
+        buildRegistrationPayload()
+      );
+    },
+
     buildRegistrationPayload:
       buildRegistrationPayload,
-
-    validate: validateForm,
-
-    getDocumentPolicy:
-      getDocumentPolicy,
-
-    setDocumentPolicy:
-      setDocumentPolicy,
 
     getLastResponse: function () {
       return state.lastResponse;
     }
   };
 
-  /* ========================================================
-     15. GLOBAL REGISTRATION
-     ======================================================== */
+  /* =========================================================
+     13. GLOBAL REGISTRATION
+     ========================================================= */
 
   window.GoVaraCustomer =
     GoVaraCustomer;
@@ -1104,23 +1229,75 @@
   window.GoVaraModuleRegistry['28-Customer'] =
     GoVaraCustomer;
 
-  /* ========================================================
-     16. AUTO INITIALIZATION
-     ======================================================== */
+  /* =========================================================
+     14. INITIALIZATION
+     ========================================================= */
 
-  function initialize() {
-    bindForm();
+  function initializeCustomer() {
+
+    /*
+     * Prevent duplicate initialization.
+     */
+
+    if (state.initialized) {
+      return;
+    }
+
+    /*
+     * #customer-page may be created by the main index
+     * after this script loads, so initialize immediately
+     * when available.
+     */
+
+    if (el('customer-page')) {
+      GoVaraCustomer.init();
+      return;
+    }
+
+    /*
+     * Retry briefly if page container is not yet present.
+     */
+
+    var attempts = 0;
+
+    var timer =
+      setInterval(
+        function () {
+
+          attempts++;
+
+          if (el('customer-page')) {
+            clearInterval(timer);
+            GoVaraCustomer.init();
+            return;
+          }
+
+          if (attempts >= 30) {
+            clearInterval(timer);
+
+            console.warn(
+              '[GoVara Customer] Customer page container not found.'
+            );
+          }
+
+        },
+        100
+      );
   }
 
   if (
     document.readyState === 'loading'
   ) {
+
     document.addEventListener(
       'DOMContentLoaded',
-      initialize
+      initializeCustomer
     );
+
   } else {
-    initialize();
+
+    initializeCustomer();
+
   }
 
 })();

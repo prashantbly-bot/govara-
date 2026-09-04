@@ -36,7 +36,7 @@
   var STORAGE_KEY = 'GOVARA_CONSOLIDATED_API_V6';
 
   var CONFIG = {
-    API_URL: '',
+    API_URL: 'https://script.google.com/macros/s/AKfycbx5Mc1BuQsb_ssra6Z4INog2vlkIdqImXJOShPZE7sw/dev',
     REQUEST_TIMEOUT: 20000,
     VERSION: 'GOVARA-CONSOLIDATED-API-V6',
     ENVIRONMENT: 'TESTING',

@@ -1,0 +1,1 @@
+window.GoVaraAudit={key:'GOVARA_FRONTEND_AUDIT_V1',list(){try{return JSON.parse(localStorage.getItem(this.key)||'[]')}catch(e){return[]}},add(action,module,detail=''){const a=this.list();a.unshift({time:new Date().toISOString(),action,module,detail});a.splice(500);localStorage.setItem(this.key,JSON.stringify(a));GoVaraState.audit=a}};

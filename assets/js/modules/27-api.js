@@ -1,117 +1,52 @@
 /* ============================================================
    GoVara STEP 27 — Consolidated API Boundary
-   Version: GOVARA-CONSOLIDATED-API-V2
-   Frontend API Boundary Only
-   Backend + Database remain authoritative
+   Version: GOVARA-CONSOLIDATED-API-V3
+
+   FRONTEND API BOUNDARY ONLY
+   Backend + Database remain authoritative.
+
+   IMPORTANT:
+   - No automatic API connection test
+   - API remains NOT CONFIGURED until intentionally configured
+   - Real Money / Payment / Bank Transfer remain BLOCKED
    ============================================================ */
 
-window.GoVaraAPI = (function () {
+(function () {
 
   "use strict";
 
   /* ==========================================================
-     1. CONFIGURATION
+     1. CONSTANTS
      ========================================================== */
 
-  const VERSION = "GOVARA-CONSOLIDATED-API-V2";
+  var VERSION = "GOVARA-CONSOLIDATED-API-V3";
 
-  const CONFIG = {
-    API_URL:
-      (typeof window !== "undefined" && window.GOVARA_API_URL)
-        ? String(window.GOVARA_API_URL).trim()
-        : "",
-
-    REQUEST_TIMEOUT: 20000,
-
-    ENVIRONMENT: "TESTING",
-
-    PROJECT: "GoVara",
-
-    REAL_MONEY: false,
-    REAL_PAYMENT: false,
-    BANK_TRANSFER: false,
-
-    FRONTEND_FINANCIAL_AUTHORITY: false,
-    BACKEND_FINANCIAL_AUTHORITY: true,
-
-    FRONTEND_KYC_AUTHORITY: false,
-    BACKEND_KYC_AUTHORITY: true,
-
-    DATABASE_AUTHORITY: true
-  };
-
-
-  /* ==========================================================
-     2. API STATE
-     ========================================================== */
-
-  const APIState = {
-    configured: false,
-    connected: false,
-    verified: false,
-
-    loading: false,
-
-    lastAction: "",
-    lastResponse: null,
-    lastError: null,
-
-    lastRequestId: "",
-    lastCorrelationId: "",
-
-    requestCount: 0,
-    successCount: 0,
-    errorCount: 0,
-
-    lastRequestAt: null,
-    lastResponseAt: null
-  };
-
-
-  /* ==========================================================
-     3. MODULE REGISTRY
-     ========================================================== */
-
-  const MODULES = {
-
+  var MODULES = {
     CUSTOMER: "CUSTOMER",
     VENDOR: "VENDOR",
     DRIVER: "DRIVER",
     VEHICLE: "VEHICLE",
-
     BOOKING: "BOOKING",
     DUTY: "DUTY",
-
     FARE: "FARE",
-
     TRANSACTION: "TRANSACTION",
     WALLET: "WALLET",
     LEDGER: "LEDGER",
     SETTLEMENT: "SETTLEMENT",
     BILLING: "BILLING",
-
     DOCUMENTS: "DOCUMENTS",
     KYC: "KYC",
-
     ADMIN: "ADMIN",
     AUDIT: "AUDIT",
-
     AUTH: "AUTH",
     NOTIFICATION: "NOTIFICATION",
-
     LOCATION: "LOCATION",
-
     TRAVEL: "TRAVEL",
     WELFARE: "WELFARE"
   };
 
 
-  /* ==========================================================
-     4. ACTION REGISTRY
-     ========================================================== */
-
-  const ACTIONS = {
-
+  var ACTIONS = {
     GET_HEALTH: "GET_HEALTH",
 
     AUTH_LOGIN: "AUTH_LOGIN",
@@ -197,128 +132,351 @@ window.GoVaraAPI = (function () {
 
 
   /* ==========================================================
-     5. SECURITY / SAFETY
+     2. CONFIG
      ========================================================== */
 
-  function enforceSafety(payload) {
+  var CONFIG = {
 
-    const safe = payload && typeof payload === "object"
-      ? JSON.parse(JSON.stringify(payload))
-      : {};
+    API_URL: "",
 
-    /*
-     * Frontend must never become financial authority.
-     */
-    safe.realMoney = false;
-    safe.realPayment = false;
-    safe.bankTransfer = false;
+    REQUEST_TIMEOUT: 20000,
 
-    safe.frontendFinancialAuthority = false;
-    safe.backendFinancialAuthority = true;
+    ENVIRONMENT: "TESTING",
 
-    /*
-     * KYC authority remains backend.
-     */
-    safe.frontendKYCAuthority = false;
-    safe.backendKYCAuthority = true;
+    PROJECT: "GoVara",
 
-    /*
-     * Database remains authoritative store.
-     */
-    safe.databaseAuthority = true;
+    REAL_MONEY: false,
+    REAL_PAYMENT: false,
+    BANK_TRANSFER: false,
 
-    /*
-     * Testing environment.
-     */
-    safe.mode = "TESTING";
+    FRONTEND_FINANCIAL_AUTHORITY: false,
+    BACKEND_FINANCIAL_AUTHORITY: true,
 
-    return safe;
-  }
+    FRONTEND_KYC_AUTHORITY: false,
+    BACKEND_KYC_AUTHORITY: true,
+
+    DATABASE_AUTHORITY: true
+  };
 
 
-  /* ==========================================================
-     6. SENSITIVE DATA SANITIZATION
-     ========================================================== */
+  /*
+   * Read endpoint safely.
+   * This does NOT connect to the API.
+   */
+  function readAPIUrl() {
 
-  const SENSITIVE_KEYS = [
-    "password",
-    "pass",
-    "otp",
-    "pin",
-    "cvv",
-    "cardNumber",
-    "accountNumber",
-    "token",
-    "accessToken",
-    "refreshToken",
-    "secret",
-    "privateKey",
-    "authorization",
-    "rawDocument",
-    "documentBinary",
-    "fileBinary"
-  ];
+    try {
 
-  function sanitize(value) {
+      if (
+        typeof window !== "undefined" &&
+        typeof window.GOVARA_API_URL === "string"
+      ) {
 
-    if (value === null || value === undefined) {
-      return value;
-    }
+        return window.GOVARA_API_URL.trim();
 
-    if (Array.isArray(value)) {
-      return value.map(sanitize);
-    }
-
-    if (typeof value !== "object") {
-      return value;
-    }
-
-    const result = {};
-
-    Object.keys(value).forEach(function (key) {
-
-      const lower = key.toLowerCase();
-
-      const blocked = SENSITIVE_KEYS.some(function (sensitive) {
-        return lower === sensitive.toLowerCase();
-      });
-
-      if (blocked) {
-        result[key] = "[REDACTED]";
-      } else {
-        result[key] = sanitize(value[key]);
       }
-    });
 
-    return result;
+    } catch (e) {
+      return "";
+    }
+
+    return "";
   }
 
 
+  CONFIG.API_URL = readAPIUrl();
+
+
   /* ==========================================================
-     7. REQUEST ID / CORRELATION ID
+     3. STATE
      ========================================================== */
 
-  function randomPart() {
+  var APIState = {
+
+    configured: !!CONFIG.API_URL,
+
+    connected: false,
+
+    verified: false,
+
+    loading: false,
+
+    lastAction: "",
+
+    lastResponse: null,
+
+    lastError: null,
+
+    lastRequestId: "",
+
+    lastCorrelationId: "",
+
+    requestCount: 0,
+
+    successCount: 0,
+
+    errorCount: 0,
+
+    lastRequestAt: null,
+
+    lastResponseAt: null
+  };
+
+
+  /* ==========================================================
+     4. HELPERS
+     ========================================================== */
+
+  function createRandomPart() {
+
     return Math.random()
       .toString(36)
       .substring(2, 10)
       .toUpperCase();
   }
 
+
   function createRequestId() {
-    return "GV-REQ-" + Date.now() + "-" + randomPart();
+
+    return "GV-REQ-" +
+      Date.now() +
+      "-" +
+      createRandomPart();
   }
 
+
   function createCorrelationId() {
-    return "GV-COR-" + Date.now() + "-" + randomPart();
+
+    return "GV-COR-" +
+      Date.now() +
+      "-" +
+      createRandomPart();
+  }
+
+
+  function escapeHTML(value) {
+
+    var text = String(
+      value === null || value === undefined
+        ? ""
+        : value
+    );
+
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  function clone(value) {
+
+    try {
+
+      return JSON.parse(
+        JSON.stringify(value)
+      );
+
+    } catch (e) {
+
+      return value;
+    }
   }
 
 
   /* ==========================================================
-     8. ERROR CREATION
+     5. SENSITIVE DATA PROTECTION
      ========================================================== */
 
-  function createAPIError(
+  var SENSITIVE_KEYS = {
+
+    password: true,
+    pass: true,
+    otp: true,
+    pin: true,
+    cvv: true,
+    cardnumber: true,
+    accountnumber: true,
+    token: true,
+    accesstoken: true,
+    refreshtoken: true,
+    secret: true,
+    privatekey: true,
+    authorization: true,
+    rawdocument: true,
+    documentbinary: true,
+    filebinary: true
+  };
+
+
+  function sanitize(value) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+
+      return value;
+    }
+
+
+    if (Array.isArray(value)) {
+
+      return value.map(
+        sanitize
+      );
+    }
+
+
+    if (
+      typeof value !== "object"
+    ) {
+
+      return value;
+    }
+
+
+    var result = {};
+
+    Object.keys(value).forEach(
+      function (key) {
+
+        var normalized =
+          String(key)
+            .toLowerCase()
+            .replace(/[_-]/g, "");
+
+
+        if (
+          SENSITIVE_KEYS[normalized]
+        ) {
+
+          result[key] = "[REDACTED]";
+
+        } else {
+
+          result[key] =
+            sanitize(value[key]);
+        }
+
+      }
+    );
+
+
+    return result;
+  }
+
+
+  /* ==========================================================
+     6. SAFETY ENFORCEMENT
+     ========================================================== */
+
+  function enforceSafety(payload) {
+
+    var safe = {};
+
+    if (
+      payload &&
+      typeof payload === "object"
+    ) {
+
+      safe = clone(payload) || {};
+    }
+
+
+    safe.mode = "TESTING";
+
+    safe.realMoney = false;
+
+    safe.realPayment = false;
+
+    safe.bankTransfer = false;
+
+    safe.frontendFinancialAuthority = false;
+
+    safe.backendFinancialAuthority = true;
+
+    safe.frontendKYCAuthority = false;
+
+    safe.backendKYCAuthority = true;
+
+    safe.databaseAuthority = true;
+
+
+    return safe;
+  }
+
+
+  /* ==========================================================
+     7. STATUS
+     ========================================================== */
+
+  function getAPIUrl() {
+
+    return CONFIG.API_URL;
+  }
+
+
+  function isConfigured() {
+
+    return !!CONFIG.API_URL;
+  }
+
+
+  function getState() {
+
+    return clone(APIState);
+  }
+
+
+  function getStatus() {
+
+    return {
+
+      version: VERSION,
+
+      configured: APIState.configured,
+
+      connected: APIState.connected,
+
+      verified: APIState.verified,
+
+      loading: APIState.loading,
+
+      environment: CONFIG.ENVIRONMENT,
+
+      realMoney: false,
+
+      realPayment: false,
+
+      bankTransfer: false,
+
+      frontendFinancialAuthority: false,
+
+      backendFinancialAuthority: true,
+
+      frontendKYCAuthority: false,
+
+      backendKYCAuthority: true,
+
+      databaseAuthority: true,
+
+      lastAction: APIState.lastAction,
+
+      lastError: sanitize(
+        APIState.lastError
+      )
+    };
+  }
+
+
+  /* ==========================================================
+     8. ERROR OBJECT
+     ========================================================== */
+
+  function createError(
     message,
     code,
     status,
@@ -328,373 +486,108 @@ window.GoVaraAPI = (function () {
   ) {
 
     return {
+
       success: false,
 
       code: code || "API_ERROR",
 
       status: status || 0,
 
-      message: message || "API request failed.",
+      message:
+        message ||
+        "API request failed.",
 
       action: action || "",
 
-      requestId: requestId || "",
+      requestId:
+        requestId || "",
 
-      correlationId: correlationId || "",
+      correlationId:
+        correlationId || "",
 
-      timestamp: new Date().toISOString()
+      timestamp:
+        new Date().toISOString()
     };
   }
 
 
   /* ==========================================================
-     9. CONFIG HELPERS
-     ========================================================== */
-
-  function getAPIUrl() {
-    return CONFIG.API_URL;
-  }
-
-  function isConfigured() {
-    return !!getAPIUrl();
-  }
-
-  function getState() {
-
-    return JSON.parse(JSON.stringify({
-      configured: APIState.configured,
-      connected: APIState.connected,
-      verified: APIState.verified,
-
-      loading: APIState.loading,
-
-      lastAction: APIState.lastAction,
-      lastResponse: sanitize(APIState.lastResponse),
-      lastError: sanitize(APIState.lastError),
-
-      lastRequestId: APIState.lastRequestId,
-      lastCorrelationId: APIState.lastCorrelationId,
-
-      requestCount: APIState.requestCount,
-      successCount: APIState.successCount,
-      errorCount: APIState.errorCount,
-
-      lastRequestAt: APIState.lastRequestAt,
-      lastResponseAt: APIState.lastResponseAt
-    }));
-  }
-
-
-  /* ==========================================================
-     10. HTTP REQUEST ENGINE
-     ========================================================== */
-
-  async function request(action, payload, options) {
-
-    options = options || {};
-
-    const requestId =
-      options.requestId || createRequestId();
-
-    const correlationId =
-      options.correlationId || createCorrelationId();
-
-    APIState.configured = isConfigured();
-
-    APIState.lastAction = action || "";
-    APIState.lastRequestId = requestId;
-    APIState.lastCorrelationId = correlationId;
-    APIState.lastRequestAt = new Date().toISOString();
-
-    /*
-     * Never automatically test an unconfigured API.
-     */
-    if (!APIState.configured) {
-
-      const error = createAPIError(
-        "API endpoint is not configured.",
-        "API_NOT_CONFIGURED",
-        0,
-        action,
-        requestId,
-        correlationId
-      );
-
-      APIState.lastError = error;
-
-      return error;
-    }
-
-
-    /*
-     * Hard financial boundary.
-     */
-    if (
-      action === "PAYMENT_EXECUTE" ||
-      action === "BANK_TRANSFER_EXECUTE" ||
-      action === "REAL_MONEY_TRANSFER"
-    ) {
-
-      const error = createAPIError(
-        "Real money, real payment and bank transfer are blocked in the frontend.",
-        "FINANCIAL_OPERATION_BLOCKED",
-        403,
-        action,
-        requestId,
-        correlationId
-      );
-
-      APIState.errorCount += 1;
-      APIState.lastError = error;
-
-      return error;
-    }
-
-
-    APIState.loading = true;
-    APIState.requestCount += 1;
-
-    const controller =
-      typeof AbortController !== "undefined"
-        ? new AbortController()
-        : null;
-
-    let timeoutId = null;
-
-    if (controller) {
-
-      timeoutId = setTimeout(function () {
-        controller.abort();
-      }, CONFIG.REQUEST_TIMEOUT);
-    }
-
-
-    const safePayload = enforceSafety(
-      sanitize(payload || {})
-    );
-
-
-    const body = {
-      project: CONFIG.PROJECT,
-      version: VERSION,
-
-      action: action,
-
-      requestId: requestId,
-      correlationId: correlationId,
-
-      timestamp: new Date().toISOString(),
-
-      environment: CONFIG.ENVIRONMENT,
-
-      payload: safePayload
-    };
-
-
-    try {
-
-      const response = await fetch(
-        getAPIUrl(),
-        {
-          method: options.method || "POST",
-
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-            "Accept": "application/json"
-          },
-
-          body:
-            (options.method || "POST") === "GET"
-              ? undefined
-              : JSON.stringify(body),
-
-          signal:
-            controller
-              ? controller.signal
-              : undefined
-        }
-      );
-
-
-      const rawText = await response.text();
-
-      let parsed;
-
-      try {
-        parsed = rawText
-          ? JSON.parse(rawText)
-          : {};
-      } catch (parseError) {
-
-        parsed = {
-          success: false,
-          status: "INVALID_JSON_RESPONSE",
-          raw: rawText
-        };
-      }
-
-
-      APIState.lastResponseAt =
-        new Date().toISOString();
-
-
-      if (!response.ok) {
-
-        const error = createAPIError(
-          parsed.message ||
-          parsed.error ||
-          ("HTTP request failed with status " + response.status),
-
-          parsed.code ||
-          ("HTTP_" + response.status),
-
-          response.status,
-
-          action,
-
-          requestId,
-
-          correlationId
-        );
-
-        APIState.errorCount += 1;
-        APIState.lastError = error;
-        APIState.lastResponse = parsed;
-
-        return error;
-      }
-
-
-      const normalized = normalizeResponse(
-        parsed,
-        action,
-        requestId,
-        correlationId,
-        response.status
-      );
-
-
-      if (normalized.success === true) {
-        APIState.successCount += 1;
-      } else {
-        APIState.errorCount += 1;
-      }
-
-
-      APIState.lastResponse = normalized;
-      APIState.lastError =
-        normalized.success === true
-          ? null
-          : normalized;
-
-
-      return normalized;
-
-    } catch (error) {
-
-      let code = "NETWORK_ERROR";
-      let message =
-        error && error.message
-          ? error.message
-          : "Network request failed.";
-
-      if (error && error.name === "AbortError") {
-        code = "REQUEST_TIMEOUT";
-        message = "API request timed out.";
-      }
-
-
-      const apiError = createAPIError(
-        message,
-        code,
-        0,
-        action,
-        requestId,
-        correlationId
-      );
-
-      APIState.errorCount += 1;
-      APIState.lastError = apiError;
-
-      return apiError;
-
-    } finally {
-
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-
-      APIState.loading = false;
-    }
-  }
-
-
-  /* ==========================================================
-     11. RESPONSE NORMALIZATION
+     9. RESPONSE NORMALIZATION
      ========================================================== */
 
   function normalizeResponse(
-    response,
+    source,
     action,
     requestId,
     correlationId,
     httpStatus
   ) {
 
-    const source =
-      response && typeof response === "object"
-        ? response
+    source =
+      source &&
+      typeof source === "object"
+        ? source
         : {};
 
 
-    let success;
+    var success = true;
 
-    if (typeof source.success === "boolean") {
-      success = source.success;
-    } else if (
-      source.status === "SUCCESS" ||
-      source.status === "DATA_SAVED" ||
-      source.status === "OK"
+
+    if (
+      typeof source.success === "boolean"
     ) {
-      success = true;
+
+      success = source.success;
+
     } else if (
       source.error ||
       source.errors
     ) {
+
       success = false;
-    } else {
-      /*
-       * Health endpoints may return project data
-       * without an explicit success flag.
-       */
-      success = true;
     }
 
 
     return {
+
       success: success,
 
       project:
-        source.project || CONFIG.PROJECT,
+        source.project ||
+        CONFIG.PROJECT,
 
       version:
-        source.version || VERSION,
+        source.version ||
+        VERSION,
 
       action:
-        source.action || action,
+        source.action ||
+        action,
 
       status:
         source.status ||
-        (success ? "SUCCESS" : "ERROR"),
+        (
+          success
+            ? "SUCCESS"
+            : "ERROR"
+        ),
 
       code:
         source.code ||
-        (success ? "OK" : "API_ERROR"),
+        (
+          success
+            ? "OK"
+            : "API_ERROR"
+        ),
 
       message:
         source.message ||
         source.error ||
-        (success ? "Request successful." : "Request failed."),
+        (
+          success
+            ? "Request successful."
+            : "Request failed."
+        ),
 
       data:
         source.data !== undefined
@@ -707,10 +600,12 @@ window.GoVaraAPI = (function () {
         source.errors || null,
 
       requestId:
-        source.requestId || requestId,
+        source.requestId ||
+        requestId,
 
       correlationId:
-        source.correlationId || correlationId,
+        source.correlationId ||
+        correlationId,
 
       httpStatus:
         httpStatus || 200,
@@ -723,77 +618,507 @@ window.GoVaraAPI = (function () {
 
 
   /* ==========================================================
-     12. HEALTH / CONNECTION
+     10. CENTRAL REQUEST ENGINE
+     ========================================================== */
+
+  async function request(
+    action,
+    payload,
+    options
+  ) {
+
+    options = options || {};
+
+
+    var requestId =
+      options.requestId ||
+      createRequestId();
+
+
+    var correlationId =
+      options.correlationId ||
+      createCorrelationId();
+
+
+    APIState.configured =
+      isConfigured();
+
+
+    APIState.lastAction =
+      action || "";
+
+
+    APIState.lastRequestId =
+      requestId;
+
+
+    APIState.lastCorrelationId =
+      correlationId;
+
+
+    APIState.lastRequestAt =
+      new Date().toISOString();
+
+
+    /*
+     * Do not attempt connection when
+     * endpoint is not configured.
+     */
+
+    if (!APIState.configured) {
+
+      var notConfigured =
+        createError(
+          "API endpoint is not configured.",
+          "API_NOT_CONFIGURED",
+          0,
+          action,
+          requestId,
+          correlationId
+        );
+
+
+      APIState.lastError =
+        notConfigured;
+
+
+      return notConfigured;
+    }
+
+
+    /*
+     * Hard financial block.
+     */
+
+    if (
+      action === "PAYMENT_EXECUTE" ||
+      action === "BANK_TRANSFER_EXECUTE" ||
+      action === "REAL_MONEY_TRANSFER"
+    ) {
+
+      var blocked =
+        createError(
+          "Real money, real payment and bank transfer are blocked.",
+          "FINANCIAL_OPERATION_BLOCKED",
+          403,
+          action,
+          requestId,
+          correlationId
+        );
+
+
+      APIState.errorCount += 1;
+
+      APIState.lastError =
+        blocked;
+
+
+      return blocked;
+    }
+
+
+    if (
+      typeof fetch !== "function"
+    ) {
+
+      var fetchError =
+        createError(
+          "Fetch API is not available.",
+          "FETCH_NOT_AVAILABLE",
+          0,
+          action,
+          requestId,
+          correlationId
+        );
+
+
+      APIState.errorCount += 1;
+
+      APIState.lastError =
+        fetchError;
+
+
+      return fetchError;
+    }
+
+
+    APIState.loading = true;
+
+    APIState.requestCount += 1;
+
+
+    var controller = null;
+
+    var timeoutId = null;
+
+
+    try {
+
+      if (
+        typeof AbortController !== "undefined"
+      ) {
+
+        controller =
+          new AbortController();
+
+
+        timeoutId =
+          setTimeout(
+            function () {
+
+              try {
+                controller.abort();
+              } catch (e) {}
+
+            },
+            CONFIG.REQUEST_TIMEOUT
+          );
+      }
+
+
+      var requestBody = {
+
+        project: CONFIG.PROJECT,
+
+        version: VERSION,
+
+        action: action,
+
+        requestId: requestId,
+
+        correlationId:
+          correlationId,
+
+        timestamp:
+          new Date().toISOString(),
+
+        environment:
+          CONFIG.ENVIRONMENT,
+
+        payload:
+          enforceSafety(
+            sanitize(
+              payload || {}
+            )
+          )
+      };
+
+
+      var response =
+        await fetch(
+          CONFIG.API_URL,
+          {
+
+            method:
+              options.method || "POST",
+
+            headers: {
+
+              "Content-Type":
+                "text/plain;charset=utf-8",
+
+              "Accept":
+                "application/json"
+            },
+
+            body:
+              (
+                options.method || "POST"
+              ) === "GET"
+                ? undefined
+                : JSON.stringify(
+                    requestBody
+                  ),
+
+            signal:
+              controller
+                ? controller.signal
+                : undefined
+          }
+        );
+
+
+      var rawText =
+        await response.text();
+
+
+      var parsed = {};
+
+
+      if (rawText) {
+
+        try {
+
+          parsed =
+            JSON.parse(
+              rawText
+            );
+
+        } catch (parseError) {
+
+          parsed = {
+
+            success: false,
+
+            code:
+              "INVALID_JSON_RESPONSE",
+
+            message:
+              "Backend returned an invalid JSON response.",
+
+            raw:
+              rawText
+          };
+        }
+      }
+
+
+      APIState.lastResponseAt =
+        new Date().toISOString();
+
+
+      if (!response.ok) {
+
+        var httpError =
+          createError(
+
+            parsed.message ||
+            parsed.error ||
+            (
+              "HTTP request failed: " +
+              response.status
+            ),
+
+            parsed.code ||
+            (
+              "HTTP_" +
+              response.status
+            ),
+
+            response.status,
+
+            action,
+
+            requestId,
+
+            correlationId
+          );
+
+
+        APIState.errorCount += 1;
+
+        APIState.lastError =
+          httpError;
+
+        APIState.lastResponse =
+          parsed;
+
+
+        return httpError;
+      }
+
+
+      var normalized =
+        normalizeResponse(
+          parsed,
+          action,
+          requestId,
+          correlationId,
+          response.status
+        );
+
+
+      if (
+        normalized.success
+      ) {
+
+        APIState.successCount += 1;
+
+      } else {
+
+        APIState.errorCount += 1;
+      }
+
+
+      APIState.lastResponse =
+        normalized;
+
+
+      APIState.lastError =
+        normalized.success
+          ? null
+          : normalized;
+
+
+      return normalized;
+
+
+    } catch (error) {
+
+      var code =
+        "NETWORK_ERROR";
+
+
+      var message =
+        (
+          error &&
+          error.message
+        )
+          ? error.message
+          : "Network request failed.";
+
+
+      if (
+        error &&
+        error.name === "AbortError"
+      ) {
+
+        code =
+          "REQUEST_TIMEOUT";
+
+        message =
+          "API request timed out.";
+      }
+
+
+      var networkError =
+        createError(
+          message,
+          code,
+          0,
+          action,
+          requestId,
+          correlationId
+        );
+
+
+      APIState.errorCount += 1;
+
+      APIState.lastError =
+        networkError;
+
+
+      return networkError;
+
+
+    } finally {
+
+      if (timeoutId) {
+
+        clearTimeout(
+          timeoutId
+        );
+      }
+
+
+      APIState.loading =
+        false;
+    }
+  }
+
+
+  /* ==========================================================
+     11. HEALTH CHECK
      ========================================================== */
 
   async function testConnection() {
 
     /*
-     * Explicitly called only.
-     * Never auto-run.
+     * Manual call only.
      */
 
     if (!isConfigured()) {
 
-      APIState.configured = false;
-      APIState.connected = false;
-      APIState.verified = false;
+      APIState.configured =
+        false;
 
-      const error = createAPIError(
-        "API endpoint is not configured. Connection test skipped.",
-        "API_NOT_CONFIGURED",
-        0,
-        ACTIONS.GET_HEALTH,
-        "",
-        ""
-      );
+      APIState.connected =
+        false;
 
-      APIState.lastError = error;
+      APIState.verified =
+        false;
+
+
+      var error =
+        createError(
+          "API endpoint is not configured. Connection test skipped.",
+          "API_NOT_CONFIGURED",
+          0,
+          ACTIONS.GET_HEALTH,
+          "",
+          ""
+        );
+
+
+      APIState.lastError =
+        error;
+
 
       return error;
     }
 
 
-    const result = await request(
-      ACTIONS.GET_HEALTH,
-      {
-        check: "HEALTH",
-        project: CONFIG.PROJECT
-      }
-    );
+    var result =
+      await request(
+        ACTIONS.GET_HEALTH,
+        {
+          check: "HEALTH",
+          project: CONFIG.PROJECT
+        }
+      );
 
 
-    if (!result || result.success !== true) {
+    if (
+      !result ||
+      result.success !== true
+    ) {
 
-      APIState.connected = false;
-      APIState.verified = false;
+      APIState.connected =
+        false;
+
+      APIState.verified =
+        false;
+
 
       return result;
     }
 
 
-    APIState.connected = true;
+    APIState.connected =
+      true;
 
 
-    /*
-     * GoVara verification.
-     */
+    var responseProject =
+      result.project;
+
+
     if (
-      result.project === CONFIG.PROJECT ||
-      (
-        result.data &&
-        result.data.project === CONFIG.PROJECT
-      )
+      !responseProject &&
+      result.data &&
+      typeof result.data === "object"
     ) {
 
-      APIState.verified = true;
+      responseProject =
+        result.data.project;
+    }
+
+
+    if (
+      responseProject ===
+      CONFIG.PROJECT
+    ) {
+
+      APIState.verified =
+        true;
 
     } else {
 
-      APIState.verified = false;
+      APIState.verified =
+        false;
+
 
       APIState.lastError =
-        createAPIError(
+        createError(
           "Connected endpoint did not verify as GoVara.",
           "PROJECT_VERIFICATION_FAILED",
           200,
@@ -809,76 +1134,131 @@ window.GoVaraAPI = (function () {
 
 
   /* ==========================================================
-     13. GENERIC MODULE METHODS
+     12. GENERIC CRUD
      ========================================================== */
 
-  async function list(module, filters) {
+  async function list(
+    module,
+    filters
+  ) {
 
     return request(
       module + "_LIST",
       {
         module: module,
-        filters: filters || {}
+        filters:
+          filters || {}
       }
     );
   }
 
 
-  async function get(module, id, extra) {
+  async function get(
+    module,
+    id,
+    extra
+  ) {
+
+    var payload = {
+
+      module: module,
+
+      id: id || ""
+    };
+
+
+    if (
+      extra &&
+      typeof extra === "object"
+    ) {
+
+      Object.keys(extra).forEach(
+        function (key) {
+
+          payload[key] =
+            sanitize(
+              extra[key]
+            );
+
+        }
+      );
+    }
+
 
     return request(
       module + "_GET",
-      {
-        module: module,
-        id: id || "",
-        ...(extra || {})
-      }
+      payload
     );
   }
 
 
-  async function save(module, data) {
+  async function save(
+    module,
+    data
+  ) {
 
     return request(
       module + "_SAVE",
       {
         module: module,
-        data: sanitize(data || {})
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function update(module, id, data) {
+  async function update(
+    module,
+    id,
+    data
+  ) {
 
     return request(
       module + "_UPDATE",
       {
         module: module,
+
         id: id || "",
-        data: sanitize(data || {})
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
   /* ==========================================================
-     14. AUTHENTICATION
+     13. AUTH
      ========================================================== */
 
-  async function authentication(action, data) {
+  async function authentication(
+    action,
+    data
+  ) {
 
     return request(
-      action || ACTIONS.AUTH_SESSION,
+      action ||
+        ACTIONS.AUTH_SESSION,
       {
-        module: MODULES.AUTH,
-        data: sanitize(data || {})
+        module:
+          MODULES.AUTH,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function login(data) {
+  function login(data) {
 
     return authentication(
       ACTIONS.AUTH_LOGIN,
@@ -887,7 +1267,7 @@ window.GoVaraAPI = (function () {
   }
 
 
-  async function register(data) {
+  function register(data) {
 
     return authentication(
       ACTIONS.AUTH_REGISTER,
@@ -896,7 +1276,7 @@ window.GoVaraAPI = (function () {
   }
 
 
-  async function logout(data) {
+  function logout(data) {
 
     return authentication(
       ACTIONS.AUTH_LOGOUT,
@@ -905,7 +1285,7 @@ window.GoVaraAPI = (function () {
   }
 
 
-  async function session(data) {
+  function session(data) {
 
     return authentication(
       ACTIONS.AUTH_SESSION,
@@ -915,88 +1295,106 @@ window.GoVaraAPI = (function () {
 
 
   /* ==========================================================
-     15. FARE
+     14. FARE
      ========================================================== */
 
-  async function fareCalculate(data) {
+  function fareCalculate(data) {
 
     return request(
       ACTIONS.FARE_CALCULATE,
       {
-        module: MODULES.FARE,
-        data: sanitize(data || {})
+        module:
+          MODULES.FARE,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
   /* ==========================================================
-     16. TRANSACTION
+     15. TRANSACTION
      ========================================================== */
 
-  async function transactionCreate(data) {
-
-    /*
-     * Transaction is allowed only as a backend request.
-     * Frontend cannot authorize real money.
-     */
+  function transactionCreate(data) {
 
     return request(
       ACTIONS.TRANSACTION_CREATE,
       {
-        module: MODULES.TRANSACTION,
-        data: sanitize(data || {}),
+        module:
+          MODULES.TRANSACTION,
+
+        data:
+          sanitize(
+            data || {}
+          ),
 
         mode: "TESTING",
 
         realMoney: false,
+
         realPayment: false,
+
         bankTransfer: false
       }
     );
   }
 
 
-  async function transactionList(filters) {
+  function transactionList(
+    filters
+  ) {
 
-    return request(
-      ACTIONS.TRANSACTION_LIST,
-      {
-        module: MODULES.TRANSACTION,
-        filters: filters || {}
-      }
+    return list(
+      MODULES.TRANSACTION,
+      filters
     );
   }
 
 
   /* ==========================================================
-     17. WALLET
+     16. WALLET
      ========================================================== */
 
-  async function walletGet(data) {
+  function walletGet(data) {
 
     return request(
       ACTIONS.WALLET_GET,
       {
-        module: MODULES.WALLET,
-        data: sanitize(data || {})
+        module:
+          MODULES.WALLET,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function walletUpdate(data) {
+  function walletUpdate(data) {
 
     return request(
       ACTIONS.WALLET_UPDATE,
       {
-        module: MODULES.WALLET,
-        data: sanitize(data || {}),
+        module:
+          MODULES.WALLET,
+
+        data:
+          sanitize(
+            data || {}
+          ),
 
         mode: "TESTING",
 
         realMoney: false,
+
         realPayment: false,
+
         bankTransfer: false
       }
     );
@@ -1004,426 +1402,549 @@ window.GoVaraAPI = (function () {
 
 
   /* ==========================================================
-     18. ADMIN
+     17. ADMIN
      ========================================================== */
 
-  async function adminGet(data) {
+  function adminGet(data) {
 
     return request(
       ACTIONS.ADMIN_GET,
       {
-        module: MODULES.ADMIN,
-        data: sanitize(data || {})
+        module:
+          MODULES.ADMIN,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function adminUpdate(data) {
+  function adminUpdate(data) {
 
     return request(
       ACTIONS.ADMIN_UPDATE,
       {
-        module: MODULES.ADMIN,
-        data: sanitize(data || {})
+        module:
+          MODULES.ADMIN,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
   /* ==========================================================
-     19. AUDIT
+     18. AUDIT
      ========================================================== */
 
-  async function auditList(filters) {
+  function auditList(
+    filters
+  ) {
 
     return request(
       ACTIONS.AUDIT_LIST,
       {
-        module: MODULES.AUDIT,
-        filters: filters || {}
+        module:
+          MODULES.AUDIT,
+
+        filters:
+          filters || {}
       }
     );
   }
 
 
   /* ==========================================================
-     20. DOCUMENTS
+     19. DOCUMENTS
      ========================================================== */
 
-  async function documentList(filters) {
+  function documentList(
+    filters
+  ) {
 
     return request(
       ACTIONS.DOCUMENT_LIST,
       {
-        module: MODULES.DOCUMENTS,
-        filters: filters || {}
+        module:
+          MODULES.DOCUMENTS,
+
+        filters:
+          filters || {}
       }
     );
   }
 
 
-  async function documentGet(id, data) {
+  function documentGet(
+    id,
+    data
+  ) {
 
     return request(
       ACTIONS.DOCUMENT_GET,
       {
-        module: MODULES.DOCUMENTS,
+        module:
+          MODULES.DOCUMENTS,
+
         id: id || "",
-        data: sanitize(data || {})
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function documentUpload(data) {
+  function documentUpload(
+    data
+  ) {
 
     return request(
       ACTIONS.DOCUMENT_UPLOAD,
       {
-        module: MODULES.DOCUMENTS,
-        data: sanitize(data || {})
+        module:
+          MODULES.DOCUMENTS,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function documentReplace(data) {
+  function documentReplace(
+    data
+  ) {
 
     return request(
       ACTIONS.DOCUMENT_REPLACE,
       {
-        module: MODULES.DOCUMENTS,
-        data: sanitize(data || {})
+        module:
+          MODULES.DOCUMENTS,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function documentReview(data) {
+  function documentReview(
+    data
+  ) {
 
     return request(
       ACTIONS.DOCUMENT_REVIEW,
       {
-        module: MODULES.DOCUMENTS,
-        data: sanitize(data || {})
+        module:
+          MODULES.DOCUMENTS,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function documentStatus(data) {
+  function documentStatus(
+    data
+  ) {
 
     return request(
       ACTIONS.DOCUMENT_STATUS,
       {
-        module: MODULES.DOCUMENTS,
-        data: sanitize(data || {})
+        module:
+          MODULES.DOCUMENTS,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
   /* ==========================================================
-     21. KYC
+     20. KYC
      ========================================================== */
 
-  async function kycGet(data) {
+  function kycGet(data) {
 
     return request(
       ACTIONS.KYC_GET,
       {
-        module: MODULES.KYC,
-        data: sanitize(data || {})
+        module:
+          MODULES.KYC,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function kycSubmit(data) {
+  function kycSubmit(data) {
 
     return request(
       ACTIONS.KYC_SUBMIT,
       {
-        module: MODULES.KYC,
-        data: sanitize(data || {})
+        module:
+          MODULES.KYC,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function kycReview(data) {
+  function kycReview(data) {
 
     return request(
       ACTIONS.KYC_REVIEW,
       {
-        module: MODULES.KYC,
-        data: sanitize(data || {})
+        module:
+          MODULES.KYC,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  async function kycStatus(data) {
+  function kycStatus(data) {
 
     return request(
       ACTIONS.KYC_STATUS,
       {
-        module: MODULES.KYC,
-        data: sanitize(data || {})
+        module:
+          MODULES.KYC,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
   /* ==========================================================
-     22. TRAVEL
+     21. OTHER MODULES
      ========================================================== */
 
-  async function travel(module, action, data) {
+  function travel(
+    action,
+    data
+  ) {
 
     return request(
-      "TRAVEL_" + String(action || "REQUEST").toUpperCase(),
+      action ||
+        "TRAVEL_REQUEST",
       {
-        module: module || MODULES.TRAVEL,
-        data: sanitize(data || {})
+        module:
+          MODULES.TRAVEL,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
-  /* ==========================================================
-     23. WELFARE
-     ========================================================== */
-
-  async function welfare(action, data) {
+  function welfare(
+    action,
+    data
+  ) {
 
     return request(
-      action || ACTIONS.WELFARE_GET,
+      action ||
+        ACTIONS.WELFARE_GET,
       {
-        module: MODULES.WELFARE,
-        data: sanitize(data || {}),
+        module:
+          MODULES.WELFARE,
 
-        /*
-         * Welfare may contain financial information,
-         * but frontend execution remains blocked.
-         */
+        data:
+          sanitize(
+            data || {}
+          ),
+
         realMoney: false,
+
         realPayment: false,
+
         bankTransfer: false
       }
     );
   }
 
 
-  /* ==========================================================
-     24. LOCATION
-     ========================================================== */
-
-  async function location(action, data) {
+  function location(
+    action,
+    data
+  ) {
 
     return request(
-      action || ACTIONS.LOCATION_GET,
+      action ||
+        ACTIONS.LOCATION_GET,
       {
-        module: MODULES.LOCATION,
-        data: sanitize(data || {})
+        module:
+          MODULES.LOCATION,
+
+        data:
+          sanitize(
+            data || {}
+          )
+      }
+    );
+  }
+
+
+  function notifications(
+    action,
+    data
+  ) {
+
+    return request(
+      action ||
+        ACTIONS.NOTIFICATION_LIST,
+      {
+        module:
+          MODULES.NOTIFICATION,
+
+        data:
+          sanitize(
+            data || {}
+          )
       }
     );
   }
 
 
   /* ==========================================================
-     25. NOTIFICATIONS
+     22. MODULE REGISTRY
      ========================================================== */
 
-  async function notifications(action, data) {
-
-    return request(
-      action || ACTIONS.NOTIFICATION_LIST,
-      {
-        module: MODULES.NOTIFICATION,
-        data: sanitize(data || {})
-      }
-    );
-  }
-
-
-  /* ==========================================================
-     26. CONNECTION RESET
-     ========================================================== */
-
-  function resetConnectionState() {
-
-    APIState.connected = false;
-    APIState.verified = false;
-
-    APIState.lastAction = "";
-    APIState.lastResponse = null;
-    APIState.lastError = null;
-
-    APIState.lastRequestId = "";
-    APIState.lastCorrelationId = "";
-
-    APIState.requestCount = 0;
-    APIState.successCount = 0;
-    APIState.errorCount = 0;
-
-    APIState.lastRequestAt = null;
-    APIState.lastResponseAt = null;
-  }
-
-
-  /* ==========================================================
-     27. STATUS
-     ========================================================== */
-
-  function getStatus() {
-
-    return {
-      version: VERSION,
-
-      configured: isConfigured(),
-
-      connected: APIState.connected,
-
-      verified: APIState.verified,
-
-      environment: CONFIG.ENVIRONMENT,
-
-      frontendFinancialAuthority:
-        CONFIG.FRONTEND_FINANCIAL_AUTHORITY,
-
-      backendFinancialAuthority:
-        CONFIG.BACKEND_FINANCIAL_AUTHORITY,
-
-      frontendKYCAuthority:
-        CONFIG.FRONTEND_KYC_AUTHORITY,
-
-      backendKYCAuthority:
-        CONFIG.BACKEND_KYC_AUTHORITY,
-
-      databaseAuthority:
-        CONFIG.DATABASE_AUTHORITY,
-
-      realMoney:
-        false,
-
-      realPayment:
-        false,
-
-      bankTransfer:
-        false,
-
-      loading:
-        APIState.loading,
-
-      lastAction:
-        APIState.lastAction,
-
-      lastError:
-        sanitize(APIState.lastError)
-    };
-  }
-
-
-  /* ==========================================================
-     28. MODULE API MAP
-     ========================================================== */
-
-  const ModuleRegistry = {
+  var ModuleRegistry = {
 
     CUSTOMER: {
       list: function (filters) {
-        return list(MODULES.CUSTOMER, filters);
+        return list(
+          MODULES.CUSTOMER,
+          filters
+        );
       },
+
       get: function (id, extra) {
-        return get(MODULES.CUSTOMER, id, extra);
+        return get(
+          MODULES.CUSTOMER,
+          id,
+          extra
+        );
       },
+
       save: function (data) {
-        return save(MODULES.CUSTOMER, data);
+        return save(
+          MODULES.CUSTOMER,
+          data
+        );
       },
+
       update: function (id, data) {
-        return update(MODULES.CUSTOMER, id, data);
+        return update(
+          MODULES.CUSTOMER,
+          id,
+          data
+        );
       }
     },
 
 
     VENDOR: {
       list: function (filters) {
-        return list(MODULES.VENDOR, filters);
+        return list(
+          MODULES.VENDOR,
+          filters
+        );
       },
+
       get: function (id, extra) {
-        return get(MODULES.VENDOR, id, extra);
+        return get(
+          MODULES.VENDOR,
+          id,
+          extra
+        );
       },
+
       save: function (data) {
-        return save(MODULES.VENDOR, data);
+        return save(
+          MODULES.VENDOR,
+          data
+        );
       },
+
       update: function (id, data) {
-        return update(MODULES.VENDOR, id, data);
+        return update(
+          MODULES.VENDOR,
+          id,
+          data
+        );
       }
     },
 
 
     DRIVER: {
       list: function (filters) {
-        return list(MODULES.DRIVER, filters);
+        return list(
+          MODULES.DRIVER,
+          filters
+        );
       },
+
       get: function (id, extra) {
-        return get(MODULES.DRIVER, id, extra);
+        return get(
+          MODULES.DRIVER,
+          id,
+          extra
+        );
       },
+
       save: function (data) {
-        return save(MODULES.DRIVER, data);
+        return save(
+          MODULES.DRIVER,
+          data
+        );
       },
+
       update: function (id, data) {
-        return update(MODULES.DRIVER, id, data);
+        return update(
+          MODULES.DRIVER,
+          id,
+          data
+        );
       }
     },
 
 
     VEHICLE: {
       list: function (filters) {
-        return list(MODULES.VEHICLE, filters);
+        return list(
+          MODULES.VEHICLE,
+          filters
+        );
       },
+
       get: function (id, extra) {
-        return get(MODULES.VEHICLE, id, extra);
+        return get(
+          MODULES.VEHICLE,
+          id,
+          extra
+        );
       },
+
       save: function (data) {
-        return save(MODULES.VEHICLE, data);
+        return save(
+          MODULES.VEHICLE,
+          data
+        );
       },
+
       update: function (id, data) {
-        return update(MODULES.VEHICLE, id, data);
+        return update(
+          MODULES.VEHICLE,
+          id,
+          data
+        );
       }
     },
 
 
     BOOKING: {
       list: function (filters) {
-        return list(MODULES.BOOKING, filters);
+        return list(
+          MODULES.BOOKING,
+          filters
+        );
       },
+
       get: function (id, extra) {
-        return get(MODULES.BOOKING, id, extra);
+        return get(
+          MODULES.BOOKING,
+          id,
+          extra
+        );
       },
+
       save: function (data) {
-        return save(MODULES.BOOKING, data);
+        return save(
+          MODULES.BOOKING,
+          data
+        );
       },
+
       update: function (id, data) {
-        return update(MODULES.BOOKING, id, data);
+        return update(
+          MODULES.BOOKING,
+          id,
+          data
+        );
       }
     },
 
 
     DUTY: {
       list: function (filters) {
-        return list(MODULES.DUTY, filters);
+        return list(
+          MODULES.DUTY,
+          filters
+        );
       },
+
       get: function (id, extra) {
-        return get(MODULES.DUTY, id, extra);
+        return get(
+          MODULES.DUTY,
+          id,
+          extra
+        );
       },
+
       save: function (data) {
-        return save(MODULES.DUTY, data);
+        return save(
+          MODULES.DUTY,
+          data
+        );
       },
+
       update: function (id, data) {
-        return update(MODULES.DUTY, id, data);
+        return update(
+          MODULES.DUTY,
+          id,
+          data
+        );
       }
     },
 
@@ -1476,324 +1997,400 @@ window.GoVaraAPI = (function () {
 
 
   /* ==========================================================
-     29. FRONTEND UI
+     23. RESET
+     ========================================================== */
+
+  function resetConnectionState() {
+
+    APIState.connected = false;
+
+    APIState.verified = false;
+
+    APIState.loading = false;
+
+    APIState.lastAction = "";
+
+    APIState.lastResponse = null;
+
+    APIState.lastError = null;
+
+    APIState.lastRequestId = "";
+
+    APIState.lastCorrelationId = "";
+
+    APIState.requestCount = 0;
+
+    APIState.successCount = 0;
+
+    APIState.errorCount = 0;
+
+    APIState.lastRequestAt = null;
+
+    APIState.lastResponseAt = null;
+
+    APIState.configured =
+      isConfigured();
+  }
+
+
+  /* ==========================================================
+     24. UI
      ========================================================== */
 
   function render() {
 
-    const configured =
+    var configured =
       isConfigured();
 
-    const connected =
-      APIState.connected;
 
-    const verified =
-      APIState.verified;
-
-
-    const endpointText =
+    var endpoint =
       configured
         ? "CONFIGURED"
         : "NOT CONFIGURED";
 
 
-    const connectionText =
-      connected
+    var connection =
+      APIState.connected
         ? "CONNECTED"
         : "NOT CONNECTED";
 
 
-    const verificationText =
-      verified
+    var verification =
+      APIState.verified
         ? "VERIFIED"
         : "NOT VERIFIED";
 
 
-    return `
-      <div class="page-head">
+    var endpointValue =
+      configured
+        ? escapeHTML(
+            CONFIG.API_URL
+          )
+        : "No API endpoint configured.";
+
+
+    return [
+
+      '<div class="page-head">',
+
+        '<h1>STEP 27 — Consolidated API</h1>',
+
+        '<div class="muted">',
+          'One API boundary for all GoVara modules.',
+        '</div>',
+
+      '</div>',
+
+
+      '<section class="card">',
+
+        '<h2>API Boundary Status</h2>',
+
+        '<div class="grid four">',
+
+          '<div>',
+            '<b>',
+              endpoint,
+            '</b>',
+            '<div class="muted">',
+              'Endpoint',
+            '</div>',
+          '</div>',
+
+          '<div>',
+            '<b>',
+              connection,
+            '</b>',
+            '<div class="muted">',
+              'Connection',
+            '</div>',
+          '</div>',
+
+          '<div>',
+            '<b>',
+              verification,
+            '</b>',
+            '<div class="muted">',
+              'GoVara Verification',
+            '</div>',
+          '</div>',
+
+          '<div>',
+            '<b>',
+              escapeHTML(
+                APIState.lastAction || "—"
+              ),
+            '</b>',
+            '<div class="muted">',
+              'Last Action',
+            '</div>',
+          '</div>',
+
+        '</div>',
+
+      '</section>',
+
+
+      '<section class="card">',
+
+        '<h2>Environment</h2>',
+
+        '<div class="grid four">',
+
+          '<div>',
+            '<b>',
+              VERSION,
+            '</b>',
+            '<div class="muted">',
+              'Version',
+            '</div>',
+          '</div>',
+
+          '<div>',
+            '<b>',
+              CONFIG.ENVIRONMENT,
+            '</b>',
+            '<div class="muted">',
+              'Environment',
+            '</div>',
+          '</div>',
+
+          '<div>',
+            '<b>',
+              String(
+                APIState.requestCount
+              ),
+            '</b>',
+            '<div class="muted">',
+              'Requests',
+            '</div>',
+          '</div>',
 
-        <h1>STEP 27 — Consolidated API</h1>
+          '<div>',
+            '<b>',
+              String(
+                APIState.successCount
+              ),
+            '</b>',
+            '<div class="muted">',
+              'Successful',
+            '</div>',
+          '</div>',
 
-        <div class="muted">
-          One API boundary for all GoVara modules.
-          Backend and Database remain authoritative.
-        </div>
+        '</div>',
 
-      </div>
+      '</section>',
 
 
-      <section class="card">
+      '<section class="card">',
 
-        <h2>API Boundary Status</h2>
+        '<h2>Authority Boundary</h2>',
 
-        <div class="grid four">
+        '<div class="grid four">',
 
-          <div>
-            <b>${endpointText}</b>
-            <div class="muted">Endpoint</div>
-          </div>
+          '<div>',
+            '<b>BACKEND</b>',
+            '<div class="muted">',
+              'Business Authority',
+            '</div>',
+          '</div>',
 
-          <div>
-            <b>${connectionText}</b>
-            <div class="muted">Connection</div>
-          </div>
+          '<div>',
+            '<b>DATABASE</b>',
+            '<div class="muted">',
+              'Authoritative Store',
+            '</div>',
+          '</div>',
 
-          <div>
-            <b>${verificationText}</b>
-            <div class="muted">GoVara Verification</div>
-          </div>
+          '<div>',
+            '<b>BACKEND</b>',
+            '<div class="muted">',
+              'KYC Authority',
+            '</div>',
+          '</div>',
 
-          <div>
-            <b>${APIState.lastAction || "—"}</b>
-            <div class="muted">Last Action</div>
-          </div>
+          '<div>',
+            '<b>BACKEND</b>',
+            '<div class="muted">',
+              'Financial Authority',
+            '</div>',
+          '</div>',
 
-        </div>
+        '</div>',
 
-      </section>
+      '</section>',
 
 
-      <section class="card">
+      '<section class="card">',
 
-        <h2>API Environment</h2>
+        '<h2>Financial Safety</h2>',
 
-        <div class="grid four">
+        '<div class="grid four">',
 
-          <div>
-            <b>${VERSION}</b>
-            <div class="muted">API Version</div>
-          </div>
+          '<div>',
+            '<b>BLOCKED</b>',
+            '<div class="muted">',
+              'Real Money',
+            '</div>',
+          '</div>',
 
-          <div>
-            <b>${CONFIG.ENVIRONMENT}</b>
-            <div class="muted">Environment</div>
-          </div>
+          '<div>',
+            '<b>BLOCKED</b>',
+            '<div class="muted">',
+              'Real Payment',
+            '</div>',
+          '</div>',
 
-          <div>
-            <b>${APIState.requestCount}</b>
-            <div class="muted">Requests</div>
-          </div>
+          '<div>',
+            '<b>BLOCKED</b>',
+            '<div class="muted">',
+              'Bank Transfer',
+            '</div>',
+          '</div>',
 
-          <div>
-            <b>${APIState.successCount}</b>
-            <div class="muted">Successful</div>
-          </div>
+          '<div>',
+            '<b>FALSE</b>',
+            '<div class="muted">',
+              'Frontend Financial Authority',
+            '</div>',
+          '</div>',
 
-        </div>
+        '</div>',
 
-      </section>
+      '</section>',
 
 
-      <section class="card">
+      '<section class="card">',
 
-        <h2>Authority Boundary</h2>
+        '<h2>Consolidated Modules</h2>',
 
-        <div class="grid four">
+        '<div class="grid four">',
 
-          <div>
-            <b>BACKEND</b>
-            <div class="muted">Business Authority</div>
-          </div>
+          '<div><b>CUSTOMER</b></div>',
+          '<div><b>VENDOR</b></div>',
+          '<div><b>DRIVER</b></div>',
+          '<div><b>VEHICLE</b></div>',
 
-          <div>
-            <b>DATABASE</b>
-            <div class="muted">Authoritative Store</div>
-          </div>
+          '<div><b>BOOKING</b></div>',
+          '<div><b>DUTY</b></div>',
+          '<div><b>FARE</b></div>',
+          '<div><b>TRANSACTION</b></div>',
 
-          <div>
-            <b>BACKEND</b>
-            <div class="muted">KYC Authority</div>
-          </div>
+          '<div><b>WALLET</b></div>',
+          '<div><b>LEDGER</b></div>',
+          '<div><b>SETTLEMENT</b></div>',
+          '<div><b>BILLING</b></div>',
 
-          <div>
-            <b>BACKEND</b>
-            <div class="muted">Financial Authority</div>
-          </div>
+          '<div><b>DOCUMENTS</b></div>',
+          '<div><b>KYC</b></div>',
+          '<div><b>ADMIN</b></div>',
+          '<div><b>AUDIT</b></div>',
 
-        </div>
+          '<div><b>AUTH</b></div>',
+          '<div><b>NOTIFICATION</b></div>',
+          '<div><b>LOCATION</b></div>',
+          '<div><b>TRAVEL</b></div>',
 
-      </section>
+          '<div><b>WELFARE</b></div>',
 
+        '</div>',
 
-      <section class="card">
+      '</section>',
 
-        <h2>Financial Safety Boundary</h2>
 
-        <div class="grid four">
+      '<section class="card">',
 
-          <div>
-            <b>BLOCKED</b>
-            <div class="muted">Real Money</div>
-          </div>
+        '<h2>API Controls</h2>',
 
-          <div>
-            <b>BLOCKED</b>
-            <div class="muted">Real Payment</div>
-          </div>
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;">',
 
-          <div>
-            <b>BLOCKED</b>
-            <div class="muted">Bank Transfer</div>
-          </div>
+          '<button',
+            ' type="button"',
+            ' class="btn"',
+            ' id="govara27-test-connection"',
+          '>',
+            'Test Connection',
+          '</button>',
 
-          <div>
-            <b>FALSE</b>
-            <div class="muted">Frontend Financial Authority</div>
-          </div>
+          '<button',
+            ' type="button"',
+            ' class="btn"',
+            ' id="govara27-reset-state"',
+          '>',
+            'Reset Connection State',
+          '</button>',
 
-        </div>
+        '</div>',
 
-      </section>
 
+        '<div',
+          ' id="govara27-result"',
+          ' class="notice"',
+          ' style="margin-top:12px;"',
+        '>',
 
-      <section class="card">
+          'API testing is manual only. ',
+          'No automatic connection test is performed.',
 
-        <h2>Consolidated Modules</h2>
+        '</div>',
 
-        <div class="grid four">
+      '</section>',
 
-          <div><b>CUSTOMER</b></div>
-          <div><b>VENDOR</b></div>
-          <div><b>DRIVER</b></div>
-          <div><b>VEHICLE</b></div>
 
-          <div><b>BOOKING</b></div>
-          <div><b>DUTY</b></div>
-          <div><b>FARE</b></div>
-          <div><b>TRANSACTION</b></div>
+      '<section class="card">',
 
-          <div><b>WALLET</b></div>
-          <div><b>LEDGER</b></div>
-          <div><b>SETTLEMENT</b></div>
-          <div><b>BILLING</b></div>
+        '<h2>Security Boundary</h2>',
 
-          <div><b>DOCUMENTS</b></div>
-          <div><b>KYC</b></div>
-          <div><b>ADMIN</b></div>
-          <div><b>AUDIT</b></div>
+        '<div class="notice warn">',
 
-          <div><b>AUTH</b></div>
-          <div><b>NOTIFICATION</b></div>
-          <div><b>LOCATION</b></div>
-          <div><b>TRAVEL</b></div>
+          'Frontend is not the authority for ',
+          'business rules, KYC approval, financial ',
+          'operations, audit truth or database truth. ',
+          'Backend remains authoritative.',
 
-          <div><b>WELFARE</b></div>
+        '</div>',
 
-        </div>
+      '</section>',
 
-      </section>
 
+      '<section class="card">',
 
-      <section class="card">
+        '<h2>Current Endpoint</h2>',
 
-        <h2>API Controls</h2>
+        '<div class="muted">',
+          endpointValue,
+        '</div>',
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      '</section>'
 
-          <button
-            type="button"
-            class="btn"
-            id="govara27-test-connection">
-            Test Connection
-          </button>
-
-          <button
-            type="button"
-            class="btn"
-            id="govara27-reset-state">
-            Reset Connection State
-          </button>
-
-        </div>
-
-        <div
-          id="govara27-result"
-          class="notice"
-          style="margin-top:12px;">
-          API testing is manual only.
-          No automatic connection test is performed.
-        </div>
-
-      </section>
-
-
-      <section class="card">
-
-        <h2>Security Boundary</h2>
-
-        <div class="notice warn">
-
-          Frontend does not become the authority for
-          financial transactions, KYC approval, audit truth,
-          business policy enforcement or database truth.
-
-          Final authorization and validation remain with
-          the Backend and authoritative Database.
-
-        </div>
-
-      </section>
-
-
-      <section class="card">
-
-        <h2>Current Endpoint</h2>
-
-        <div class="muted">
-
-          ${
-            configured
-              ? escapeHTML(CONFIG.API_URL)
-              : "No API endpoint configured."
-          }
-
-        </div>
-
-      </section>
-    `;
+    ].join("");
   }
 
 
   /* ==========================================================
-     30. HTML ESCAPE
-     ========================================================== */
-
-  function escapeHTML(value) {
-
-    return String(value || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-
-  /* ==========================================================
-     31. UI BINDING
+     25. UI BIND
      ========================================================== */
 
   function bind(root) {
 
-    root =
-      root ||
-      document.getElementById("module-27") ||
-      document;
+    if (!root) {
+      return;
+    }
 
 
-    const testButton =
+    var testButton =
       root.querySelector(
         "#govara27-test-connection"
       );
 
 
-    const resetButton =
+    var resetButton =
       root.querySelector(
         "#govara27-reset-state"
       );
 
 
-    const resultBox =
+    var resultBox =
       root.querySelector(
         "#govara27-result"
       );
@@ -1801,133 +2398,128 @@ window.GoVaraAPI = (function () {
 
     if (testButton) {
 
-      testButton.addEventListener(
-        "click",
+      testButton.onclick =
         async function () {
 
-          resultBox.textContent =
-            "Testing API connection...";
+          if (resultBox) {
+
+            resultBox.textContent =
+              "Testing API connection...";
+          }
 
 
-          const result =
+          var result =
             await testConnection();
 
 
-          if (result.success === true) {
+          if (resultBox) {
 
             resultBox.textContent =
-              result.message ||
-              "API connection successful.";
-
-          } else {
-
-            resultBox.textContent =
-              result.message ||
-              "API connection failed.";
+              result &&
+              result.message
+                ? result.message
+                : (
+                    result &&
+                    result.success
+                      ? "API connection successful."
+                      : "API connection failed."
+                  );
           }
 
-        }
-      );
+        };
     }
 
 
     if (resetButton) {
 
-      resetButton.addEventListener(
-        "click",
+      resetButton.onclick =
         function () {
 
           resetConnectionState();
 
+
           if (
             root &&
-            root.id === "module-27"
+            root.innerHTML !== undefined
           ) {
-            root.innerHTML = render();
+
+            root.innerHTML =
+              render();
+
             bind(root);
           }
 
-        }
-      );
+        };
     }
+
   }
 
 
   /* ==========================================================
-     32. RENDER + BIND
+     26. RENDER + BIND
      ========================================================== */
 
   function renderAndBind(root) {
 
-    root =
-      root ||
-      document.getElementById("module-27");
+    if (!root) {
+
+      try {
+
+        root =
+          document.getElementById(
+            "module-27"
+          );
+
+      } catch (e) {
+
+        root = null;
+      }
+    }
 
 
     if (!root) {
-      return;
+      return false;
     }
 
 
-    root.innerHTML = render();
+    try {
 
-    bind(root);
-  }
+      root.innerHTML =
+        render();
 
+      bind(root);
 
-  /* ==========================================================
-     33. INITIALIZATION
-     ========================================================== */
+      return true;
 
-  function initialize() {
+    } catch (error) {
 
-    APIState.configured =
-      isConfigured();
+      /*
+       * Do not allow STEP 27 rendering
+       * to crash the entire GoVara frontend.
+       */
 
-    /*
-     * IMPORTANT:
-     * No testConnection() here.
-     *
-     * STEP 27 must remain NOT CONFIGURED /
-     * NOT CONNECTED until the user intentionally
-     * configures and tests the backend.
-     */
+      try {
 
-    const mount =
-      document.getElementById("module-27");
+        root.innerHTML =
+          '<div class="card">' +
+            '<h2>STEP 27 — Consolidated API</h2>' +
+            '<div class="notice warn">' +
+              'STEP 27 UI could not render safely.' +
+            '</div>' +
+          '</div>';
 
+      } catch (ignore) {}
 
-    if (mount) {
-      renderAndBind(mount);
-    }
-  }
-
-
-  if (
-    typeof document !== "undefined"
-  ) {
-
-    if (
-      document.readyState === "loading"
-    ) {
-
-      document.addEventListener(
-        "DOMContentLoaded",
-        initialize
-      );
-
-    } else {
-
-      initialize();
+      return false;
     }
   }
 
 
   /* ==========================================================
-     34. PUBLIC API
+     27. PUBLIC OBJECT
      ========================================================== */
 
-  return {
+  var GoVaraAPI = {
 
     VERSION: VERSION,
 
@@ -1939,94 +2531,151 @@ window.GoVaraAPI = (function () {
 
     state: APIState,
 
-    ModuleRegistry: ModuleRegistry,
+    ModuleRegistry:
+      ModuleRegistry,
 
-    getAPIUrl: getAPIUrl,
+    getAPIUrl:
+      getAPIUrl,
 
-    isConfigured: isConfigured,
+    isConfigured:
+      isConfigured,
 
-    getState: getState,
+    getState:
+      getState,
 
-    getStatus: getStatus,
+    getStatus:
+      getStatus,
 
-    enforceSafety: enforceSafety,
+    enforceSafety:
+      enforceSafety,
 
-    sanitize: sanitize,
+    sanitize:
+      sanitize,
 
-    request: request,
+    request:
+      request,
 
-    testConnection: testConnection,
+    testConnection:
+      testConnection,
 
-    resetConnectionState: resetConnectionState,
+    resetConnectionState:
+      resetConnectionState,
 
-    list: list,
+    list:
+      list,
 
-    get: get,
+    get:
+      get,
 
-    save: save,
+    save:
+      save,
 
-    update: update,
+    update:
+      update,
 
-    authentication: authentication,
+    authentication:
+      authentication,
 
-    login: login,
+    login:
+      login,
 
-    register: register,
+    register:
+      register,
 
-    logout: logout,
+    logout:
+      logout,
 
-    session: session,
+    session:
+      session,
 
-    fareCalculate: fareCalculate,
+    fareCalculate:
+      fareCalculate,
 
-    transactionCreate: transactionCreate,
+    transactionCreate:
+      transactionCreate,
 
-    transactionList: transactionList,
+    transactionList:
+      transactionList,
 
-    walletGet: walletGet,
+    walletGet:
+      walletGet,
 
-    walletUpdate: walletUpdate,
+    walletUpdate:
+      walletUpdate,
 
-    adminGet: adminGet,
+    adminGet:
+      adminGet,
 
-    adminUpdate: adminUpdate,
+    adminUpdate:
+      adminUpdate,
 
-    auditList: auditList,
+    auditList:
+      auditList,
 
-    documentList: documentList,
+    documentList:
+      documentList,
 
-    documentGet: documentGet,
+    documentGet:
+      documentGet,
 
-    documentUpload: documentUpload,
+    documentUpload:
+      documentUpload,
 
-    documentReplace: documentReplace,
+    documentReplace:
+      documentReplace,
 
-    documentReview: documentReview,
+    documentReview:
+      documentReview,
 
-    documentStatus: documentStatus,
+    documentStatus:
+      documentStatus,
 
-    kycGet: kycGet,
+    kycGet:
+      kycGet,
 
-    kycSubmit: kycSubmit,
+    kycSubmit:
+      kycSubmit,
 
-    kycReview: kycReview,
+    kycReview:
+      kycReview,
 
-    kycStatus: kycStatus,
+    kycStatus:
+      kycStatus,
 
-    travel: travel,
+    travel:
+      travel,
 
-    welfare: welfare,
+    welfare:
+      welfare,
 
-    location: location,
+    location:
+      location,
 
-    notifications: notifications,
+    notifications:
+      notifications,
 
-    render: render,
+    render:
+      render,
 
-    bind: bind,
+    bind:
+      bind,
 
-    renderAndBind: renderAndBind
-
+    renderAndBind:
+      renderAndBind
   };
+
+
+  /* ==========================================================
+     28. GLOBAL EXPORT
+     ========================================================== */
+
+  if (
+    typeof window !== "undefined"
+  ) {
+
+    window.GoVaraAPI =
+      GoVaraAPI;
+  }
+
 
 })();

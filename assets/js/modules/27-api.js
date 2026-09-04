@@ -1437,7 +1437,111 @@
       lastError: APIState.lastError
     };
   }
+function extractCustomerRows(response) {
+  if (!response) return [];
 
+  var result = response.result;
+
+  if (Array.isArray(result)) return result;
+  if (result && Array.isArray(result.data)) return result.data;
+  if (result && Array.isArray(result.rows)) return result.rows;
+  if (Array.isArray(response.data)) return response.data;
+  if (Array.isArray(response.rows)) return response.rows;
+
+  return [];
+}
+
+function escapeHTML(value) {
+  return safeString(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderCustomerList(container, response) {
+  var box = container.querySelector('#govara-step27-customer-table');
+  var status = container.querySelector('#govara-step27-customer-list-status');
+  var count = container.querySelector('#govara-step27-customer-count');
+
+  var rows = extractCustomerRows(response);
+
+  if (count) count.textContent = String(rows.length);
+
+  if (!box) return;
+
+  if (!rows.length) {
+    box.innerHTML = '<div class="muted">No customer records found.</div>';
+    if (status) status.textContent = '0 records found';
+    return;
+  }
+
+  var columns = [];
+
+  rows.forEach(function(row) {
+    if (row && typeof row === 'object' && !Array.isArray(row)) {
+      Object.keys(row).forEach(function(key) {
+        if (columns.indexOf(key) === -1) {
+          columns.push(key);
+        }
+      });
+    }
+  });
+
+  if (!columns.length) {
+    box.innerHTML =
+      '<div class="muted">Customer data returned, but table format is not supported yet.</div>';
+
+    if (status) {
+      status.textContent = rows.length + ' records loaded';
+    }
+
+    return;
+  }
+
+  var html =
+    '<div style="overflow:auto;">' +
+    '<table style="width:100%;border-collapse:collapse;">';
+
+  html += '<thead><tr>';
+
+  columns.forEach(function(col) {
+    html +=
+      '<th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;white-space:nowrap;">' +
+      escapeHTML(col) +
+      '</th>';
+  });
+
+  html += '</tr></thead><tbody>';
+
+  rows.forEach(function(row) {
+    html += '<tr>';
+
+    columns.forEach(function(col) {
+      var value =
+        row && row[col] !== undefined
+          ? row[col]
+          : '';
+
+      html +=
+        '<td style="padding:10px;border-bottom:1px solid #eee;white-space:nowrap;">' +
+        escapeHTML(value) +
+        '</td>';
+    });
+
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+
+  box.innerHTML = html;
+
+  if (status) {
+    status.textContent =
+      rows.length + ' records loaded';
+  }
+}
 
 /* ==========================================================
  * 43. FRONTEND RENDER

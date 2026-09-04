@@ -1,42 +1,57 @@
-/* ============================================================
+/* =========================================================
    GoVara — 26A System Configuration
    VERSION: GOVARA-26A-V2
-   FRONTEND-ONLY CONFIGURATION MODULE
+   ---------------------------------------------------------
+   Frontend-only System Configuration
+   Backend / Database / API are NOT connected here.
 
-   RULES:
-   - No backend call
-   - No database call
-   - No API test
-   - No financial authority in frontend
+   Safety:
+   - Frontend is NOT financial authority
    - Backend remains authoritative
    - Real Money = BLOCKED
    - Real Payment = BLOCKED
    - Bank Transfer = BLOCKED
-   - Production Lock = ALWAYS ON
-============================================================ */
+   - Production Lock = HARD LOCKED
+   ========================================================= */
 
 window.GoVara26A = (function () {
 
   "use strict";
 
-  const STORAGE_KEY =
-    "GOVARA_SYSTEM_CONFIG_26A_V2";
+  /* =======================================================
+     CONSTANTS
+     ======================================================= */
 
-  const LEGACY_STORAGE_KEY =
-    "GOVARA_SYSTEM_CONFIG_26A_V1";
+  const VERSION = "GOVARA-26A-V2";
 
-  const AUDIT_STORAGE_KEY =
-    "GOVARA_SYSTEM_AUDIT_26A_V2";
+  const STORAGE_KEY = "GOVARA_SYSTEM_CONFIG_26A_V2";
 
-  const CONFIG_VERSION =
-    "GOVARA-26A-V2";
+  const AUDIT_KEY = "GOVARA_SYSTEM_AUDIT_26A_V2";
 
+  const LEGACY_STORAGE_KEY = "GOVARA_SYSTEM_CONFIG_26A_V1";
 
-  /* ==========================================================
-     MODULE REGISTRY
-  ========================================================== */
+  /* =======================================================
+     LANGUAGE CATALOG
+     ======================================================= */
 
-  const MODULE_DEFINITIONS = [
+  const LANGUAGE_CATALOG = [
+    {
+      code: "English",
+      name: "English",
+      nativeName: "English"
+    },
+    {
+      code: "Hindi",
+      name: "Hindi",
+      nativeName: "हिन्दी"
+    }
+  ];
+
+  /* =======================================================
+     MODULE CATALOG
+     ======================================================= */
+
+  const MODULE_CATALOG = [
     "Customer",
     "Vendor",
     "Driver",
@@ -54,125 +69,74 @@ window.GoVara26A = (function () {
     "Audit"
   ];
 
-
-  /* ==========================================================
+  /* =======================================================
      DEFAULT CONFIGURATION
-  ========================================================== */
+     ======================================================= */
 
   const DEFAULT_CONFIG = {
 
-    /* ---------- SYSTEM IDENTITY ---------- */
-
-    systemName:
-      "GoVara",
+    systemName: "GoVara",
 
     platformName:
       "GoVara Transport & Mobility Platform",
 
-    systemVersion:
-      "26A-V2",
+    systemVersion: VERSION,
 
-    systemStatus:
-      "ACTIVE",
+    systemStatus: "ACTIVE",
 
-    environment:
-      "TESTING",
+    environment: "TESTING",
 
+    maintenanceMode: false,
 
-    /* ---------- SYSTEM LIFECYCLE ---------- */
+    suspendedMode: false,
 
-    maintenanceMode:
-      false,
+    productionLock: true,
 
-    suspendedMode:
-      false,
+    testingMode: true,
 
-    productionLock:
-      true,
+    apiEndpoint: "",
 
-    testingMode:
-      true,
-
-
-    /* ---------- CENTRAL CONFIGURATION ---------- */
-
-    apiEndpoint:
-      "",
-
-    configVersion:
-      CONFIG_VERSION,
+    configVersion: VERSION,
 
     configSource:
       "FRONTEND_LOCAL_CONFIGURATION",
 
-    configurationValidated:
-      false,
+    configurationValidated: false,
 
+    defaultLanguage: "English",
 
-    /* ---------- REGIONAL SETTINGS ---------- */
-
-    defaultLanguage:
+    enabledLanguages: [
       "English",
+      "Hindi"
+    ],
 
-    enabledLanguages:
-      ["English", "Hindi"],
+    country: "India",
 
-    availableLanguages:
-      [
-        "English",
-        "Hindi"
-      ],
+    currency: "INR",
 
-    country:
-      "India",
+    timezone: "Asia/Kolkata",
 
-    currency:
-      "INR",
+    dateFormat: "DD-MM-YYYY",
 
-    timezone:
-      "Asia/Kolkata",
+    timeFormat: "12-hour",
 
-    dateFormat:
-      "DD-MM-YYYY",
+    platformEnabled: true,
 
-    timeFormat:
-      "12-hour",
+    customerRegistration: true,
 
+    vendorRegistration: true,
 
-    /* ---------- GLOBAL PLATFORM CONTROLS ---------- */
+    driverRegistration: true,
 
-    platformEnabled:
-      true,
+    bookingEnabled: true,
 
-    customerRegistration:
-      true,
+    fareEstimateEnabled: true,
 
-    vendorRegistration:
-      true,
+    notificationsEnabled: true,
 
-    driverRegistration:
-      true,
+    welfareEnabled: true,
 
-    bookingEnabled:
-      true,
-
-    fareEstimateEnabled:
-      true,
-
-    notificationsEnabled:
-      true,
-
-
-    /* ---------- SOCIAL WELFARE ---------- */
-
-    welfareEnabled:
-      true,
-
-    welfareMasterControl:
-      true,
-
-
-    /* ---------- MODULE REGISTRY ---------- */
+    welfareMasterControl: true,
 
     modules: {
       Customer: true,
@@ -192,60 +156,114 @@ window.GoVara26A = (function () {
       Audit: true
     },
 
+    realMoney: false,
 
-    /* ---------- FINANCIAL SAFETY ---------- */
+    realPayment: false,
 
-    realMoney:
-      false,
+    bankTransfer: false,
 
-    realPayment:
-      false,
+    frontendAuthority: false,
 
-    bankTransfer:
-      false,
+    backendAuthority: true,
 
-    frontendAuthority:
-      false,
+    auditLogging: true,
 
-    backendAuthority:
-      true,
+    healthMonitoring: true,
 
+    lastAction: "INITIALIZED",
 
-    /* ---------- AUDIT / HEALTH ---------- */
-
-    auditLogging:
-      true,
-
-    healthMonitoring:
-      true,
-
-    lastAction:
-      "INITIALIZED",
-
-    lastUpdated:
-      null
+    lastUpdated: null
   };
 
+  /* =======================================================
+     INTERNAL STATE
+     ======================================================= */
 
-  /* ==========================================================
-     UTILITIES
-  ========================================================== */
+  let config = loadInitialConfig();
 
-  function clone(obj) {
+  /* =======================================================
+     SAFE CLONE
+     ======================================================= */
+
+  function clone(value) {
 
     return JSON.parse(
-      JSON.stringify(obj)
+      JSON.stringify(value)
     );
-
   }
 
+  /* =======================================================
+     LOAD CONFIG
+     ======================================================= */
+
+  function loadInitialConfig() {
+
+    try {
+
+      const current =
+        localStorage.getItem(STORAGE_KEY);
+
+      if (current) {
+
+        const parsed =
+          JSON.parse(current);
+
+        return enforceSafety(
+          mergeConfig(
+            clone(DEFAULT_CONFIG),
+            parsed
+          )
+        );
+      }
+
+      /* -----------------------------------------------
+         Legacy V1 migration
+         ----------------------------------------------- */
+
+      const legacy =
+        localStorage.getItem(
+          LEGACY_STORAGE_KEY
+        );
+
+      if (legacy) {
+
+        const legacyConfig =
+          JSON.parse(legacy);
+
+        const migrated =
+          enforceSafety(
+            mergeConfig(
+              clone(DEFAULT_CONFIG),
+              legacyConfig
+            )
+          );
+
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(migrated)
+        );
+
+        return migrated;
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "GoVara 26A: configuration load failed.",
+        error
+      );
+    }
+
+    return clone(DEFAULT_CONFIG);
+  }
+
+  /* =======================================================
+     MERGE CONFIG
+     ======================================================= */
 
   function mergeConfig(base, incoming) {
 
-    if (
-      !incoming ||
-      typeof incoming !== "object"
-    ) {
+    if (!incoming || typeof incoming !== "object") {
       return base;
     }
 
@@ -268,9 +286,7 @@ window.GoVara26A = (function () {
 
       } else {
 
-        base[key] =
-          incoming[key];
-
+        base[key] = incoming[key];
       }
 
     });
@@ -278,506 +294,749 @@ window.GoVara26A = (function () {
     return base;
   }
 
+  /* =======================================================
+     SAFETY ENFORCEMENT
+     ======================================================= */
 
-  function getStoredConfig() {
+  function enforceSafety(input) {
 
-    try {
+    const safe =
+      clone(input || DEFAULT_CONFIG);
 
-      let stored =
-        localStorage.getItem(
-          STORAGE_KEY
+    /*
+     * These values are NEVER user-editable
+     * from frontend 26A.
+     */
+
+    safe.productionLock = true;
+
+    safe.testingMode = true;
+
+    safe.environment = "TESTING";
+
+    safe.realMoney = false;
+
+    safe.realPayment = false;
+
+    safe.bankTransfer = false;
+
+    safe.frontendAuthority = false;
+
+    safe.backendAuthority = true;
+
+    safe.configSource =
+      "FRONTEND_LOCAL_CONFIGURATION";
+
+    safe.configVersion = VERSION;
+
+    safe.systemVersion = VERSION;
+
+    /*
+     * API remains a configuration placeholder.
+     * Actual connection belongs to STEP 27.
+     */
+
+    if (
+      typeof safe.apiEndpoint !== "string"
+    ) {
+      safe.apiEndpoint = "";
+    }
+
+    /*
+     * Validate languages.
+     */
+
+    if (
+      !Array.isArray(
+        safe.enabledLanguages
+      )
+    ) {
+
+      safe.enabledLanguages =
+        clone(
+          DEFAULT_CONFIG.enabledLanguages
         );
+    }
 
-      let source =
-        "V2";
+    safe.enabledLanguages =
+      safe.enabledLanguages.filter(
+        function (language) {
 
-
-      /*
-       * V1 → V2 migration
-       */
-
-      if (!stored) {
-
-        stored =
-          localStorage.getItem(
-            LEGACY_STORAGE_KEY
+          return LANGUAGE_CATALOG.some(
+            function (item) {
+              return item.code === language;
+            }
           );
-
-        source =
-          "V1";
-
-      }
-
-
-      if (!stored) {
-
-        return {
-          config:
-            clone(DEFAULT_CONFIG),
-          source:
-            "DEFAULT"
-        };
-
-      }
-
-
-      const parsed =
-        JSON.parse(stored);
-
-
-      const config =
-        mergeConfig(
-          clone(DEFAULT_CONFIG),
-          parsed
-        );
-
-
-      /*
-       * Force current V2 metadata
-       */
-
-      config.configVersion =
-        CONFIG_VERSION;
-
-      config.systemVersion =
-        "26A-V2";
-
-      config.configSource =
-        "FRONTEND_LOCAL_CONFIGURATION";
-
-
-      /*
-       * Ensure all modules exist
-       */
-
-      MODULE_DEFINITIONS.forEach(
-        function (moduleName) {
-
-          if (
-            typeof config.modules[moduleName]
-            !== "boolean"
-          ) {
-
-            config.modules[moduleName] =
-              true;
-
-          }
-
         }
       );
 
+    /*
+     * At least English must remain enabled.
+     */
 
-      /*
-       * Ensure language arrays exist
-       */
+    if (
+      safe.enabledLanguages.indexOf(
+        "English"
+      ) === -1
+    ) {
 
-      if (
-        !Array.isArray(
-          config.enabledLanguages
-        )
-      ) {
+      safe.enabledLanguages.unshift(
+        "English"
+      );
+    }
 
-        config.enabledLanguages =
-          ["English", "Hindi"];
+    /*
+     * Default language must be enabled.
+     */
 
-      }
+    if (
+      safe.enabledLanguages.indexOf(
+        safe.defaultLanguage
+      ) === -1
+    ) {
 
+      safe.defaultLanguage =
+        "English";
+    }
 
-      if (
-        !Array.isArray(
-          config.availableLanguages
-        )
-      ) {
+    /*
+     * Validate modules.
+     */
 
-        config.availableLanguages =
-          [
-            "English",
-            "Hindi"
-          ];
+    if (
+      !safe.modules ||
+      typeof safe.modules !== "object"
+    ) {
 
-      }
-
-
-      /*
-       * Migration write
-       */
-
-      if (source === "V1") {
-
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(config)
+      safe.modules =
+        clone(
+          DEFAULT_CONFIG.modules
         );
-
-      }
-
-
-      return {
-        config:
-          config,
-        source:
-          source
-      };
-
-    } catch (error) {
-
-      console.warn(
-        "GoVara26A: configuration load failed.",
-        error
-      );
-
-      return {
-        config:
-          clone(DEFAULT_CONFIG),
-        source:
-          "ERROR"
-      };
-
     }
 
-  }
+    MODULE_CATALOG.forEach(
+      function (moduleName) {
 
-
-  function getConfig() {
-
-    return getStoredConfig().config;
-
-  }
-
-
-  /* ==========================================================
-     LANGUAGE HELPERS
-  ========================================================== */
-
-  function normalizeLanguages(config) {
-
-    if (
-      !Array.isArray(
-        config.availableLanguages
-      )
-    ) {
-
-      config.availableLanguages =
-        [];
-
-    }
-
-
-    if (
-      !Array.isArray(
-        config.enabledLanguages
-      )
-    ) {
-
-      config.enabledLanguages =
-        [];
-
-    }
-
-
-    config.availableLanguages =
-      config.availableLanguages
-        .map(function (language) {
-          return String(language)
-            .trim();
-        })
-        .filter(Boolean);
-
-
-    config.enabledLanguages =
-      config.enabledLanguages
-        .map(function (language) {
-          return String(language)
-            .trim();
-        })
-        .filter(Boolean);
-
-
-    /*
-     * Remove duplicates
-     */
-
-    config.availableLanguages =
-      Array.from(
-        new Set(
-          config.availableLanguages
-        )
-      );
-
-
-    config.enabledLanguages =
-      Array.from(
-        new Set(
-          config.enabledLanguages
-        )
-      );
-
-
-    /*
-     * Every enabled language must
-     * exist in available languages.
-     */
-
-    config.enabledLanguages.forEach(
-      function (language) {
-
-        if (
-          !config.availableLanguages
-            .includes(language)
-        ) {
-
-          config.availableLanguages
-            .push(language);
-
-        }
+        safe.modules[moduleName] =
+          Boolean(
+            safe.modules[moduleName]
+          );
 
       }
     );
 
+    return safe;
+  }
 
-    /*
-     * Default language must remain enabled.
-     */
+  /* =======================================================
+     GET CONFIG
+     ======================================================= */
+
+  function getConfig() {
+
+    return clone(config);
+  }
+
+  /* =======================================================
+     VALIDATION
+     ======================================================= */
+
+  function validateConfig(input) {
+
+    const target =
+      input
+        ? enforceSafety(input)
+        : enforceSafety(config);
+
+    const errors = [];
+
+    if (!target.systemName) {
+      errors.push(
+        "System name is required."
+      );
+    }
+
+    if (!target.platformName) {
+      errors.push(
+        "Platform name is required."
+      );
+    }
 
     if (
-      config.defaultLanguage &&
-      !config.enabledLanguages
-        .includes(
-          config.defaultLanguage
-        )
+      !Array.isArray(
+        target.enabledLanguages
+      ) ||
+      target.enabledLanguages.length === 0
     ) {
 
-      config.enabledLanguages
-        .push(
-          config.defaultLanguage
+      errors.push(
+        "At least one language must be enabled."
+      );
+    }
+
+    if (
+      target.enabledLanguages.indexOf(
+        target.defaultLanguage
+      ) === -1
+    ) {
+
+      errors.push(
+        "Default language must be enabled."
+      );
+    }
+
+    if (
+      target.environment !== "TESTING"
+    ) {
+
+      errors.push(
+        "26A V2 must remain in TESTING mode."
+      );
+    }
+
+    if (
+      target.productionLock !== true
+    ) {
+
+      errors.push(
+        "Production Lock must remain enabled."
+      );
+    }
+
+    if (
+      target.realMoney !== false
+    ) {
+
+      errors.push(
+        "Real Money must remain BLOCKED."
+      );
+    }
+
+    if (
+      target.realPayment !== false
+    ) {
+
+      errors.push(
+        "Real Payment must remain BLOCKED."
+      );
+    }
+
+    if (
+      target.bankTransfer !== false
+    ) {
+
+      errors.push(
+        "Bank Transfer must remain BLOCKED."
+      );
+    }
+
+    if (
+      target.frontendAuthority !== false
+    ) {
+
+      errors.push(
+        "Frontend cannot be financial authority."
+      );
+    }
+
+    if (
+      target.backendAuthority !== true
+    ) {
+
+      errors.push(
+        "Backend must remain authoritative."
+      );
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors: errors
+    };
+  }
+
+  /* =======================================================
+     SAVE
+     ======================================================= */
+
+  function save(nextConfig) {
+
+    const candidate =
+      enforceSafety(
+        mergeConfig(
+          clone(config),
+          nextConfig || {}
+        )
+      );
+
+    const validation =
+      validateConfig(candidate);
+
+    if (!validation.valid) {
+
+      return {
+        success: false,
+        errors: validation.errors
+      };
+    }
+
+    candidate.configurationValidated =
+      true;
+
+    candidate.lastAction =
+      "CONFIGURATION_SAVED";
+
+    candidate.lastUpdated =
+      new Date().toISOString();
+
+    config = candidate;
+
+    try {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(config)
+      );
+
+      createAuditEvent(
+        "CONFIGURATION_SAVED",
+        "System configuration updated locally."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "GoVara 26A: save failed.",
+        error
+      );
+
+      return {
+        success: false,
+        errors: [
+          "Unable to save configuration locally."
+        ]
+      };
+    }
+
+    renderAndBind();
+
+    return {
+      success: true,
+      config: getConfig()
+    };
+  }
+
+  /* =======================================================
+     RESET
+     ======================================================= */
+
+  function reset() {
+
+    config =
+      clone(DEFAULT_CONFIG);
+
+    config =
+      enforceSafety(config);
+
+    config.lastAction =
+      "RESET_TO_DEFAULTS";
+
+    config.lastUpdated =
+      new Date().toISOString();
+
+    try {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(config)
+      );
+
+      createAuditEvent(
+        "CONFIGURATION_RESET",
+        "System configuration reset to defaults."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "GoVara 26A: reset failed.",
+        error
+      );
+    }
+
+    renderAndBind();
+
+    return getConfig();
+  }
+
+  /* =======================================================
+     RELOAD FROM LOCAL STORAGE
+     ======================================================= */
+
+  function reload() {
+
+    try {
+
+      const stored =
+        localStorage.getItem(
+          STORAGE_KEY
         );
 
+      if (stored) {
+
+        config =
+          enforceSafety(
+            JSON.parse(stored)
+          );
+
+      } else {
+
+        config =
+          clone(DEFAULT_CONFIG);
+      }
+
+    } catch (error) {
+
+      console.warn(
+        "GoVara 26A: reload failed.",
+        error
+      );
+
+      config =
+        clone(DEFAULT_CONFIG);
     }
 
+    renderAndBind();
+
+    return getConfig();
   }
 
+  /* =======================================================
+     AUDIT EVENT
+     ======================================================= */
 
-  function addLanguage(language) {
+  function createAuditEvent(
+    action,
+    description,
+    metadata
+  ) {
 
-    const config =
-      getConfig();
-
-    const name =
-      String(language || "")
-        .trim();
-
-
-    if (!name) {
-
-      return {
-        success:
-          false,
-        message:
-          "Language name is required."
-      };
-
+    if (!config.auditLogging) {
+      return null;
     }
 
+    const event = {
 
-    if (
-      !config.availableLanguages
-        .includes(name)
-    ) {
+      id:
+        "26A-" +
+        Date.now() +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2, 8),
 
-      config.availableLanguages
-        .push(name);
+      module: "26A",
 
+      action:
+        action || "UNKNOWN_ACTION",
+
+      description:
+        description || "",
+
+      metadata:
+        metadata || {},
+
+      environment:
+        "TESTING",
+
+      timestamp:
+        new Date().toISOString()
+    };
+
+    let history = [];
+
+    try {
+
+      const stored =
+        localStorage.getItem(
+          AUDIT_KEY
+        );
+
+      if (stored) {
+
+        history =
+          JSON.parse(stored);
+
+        if (!Array.isArray(history)) {
+          history = [];
+        }
+      }
+
+    } catch (error) {
+
+      history = [];
     }
 
+    history.unshift(event);
 
-    if (
-      !config.enabledLanguages
-        .includes(name)
-    ) {
+    /*
+     * Keep local audit history controlled.
+     */
 
-      config.enabledLanguages
-        .push(name);
-
+    if (history.length > 100) {
+      history = history.slice(0, 100);
     }
 
+    try {
 
-    config.lastAction =
-      "LANGUAGE_ADDED";
+      localStorage.setItem(
+        AUDIT_KEY,
+        JSON.stringify(history)
+      );
 
+    } catch (error) {
 
-    return save(config);
+      console.warn(
+        "GoVara 26A: audit save failed.",
+        error
+      );
+    }
 
+    return event;
   }
 
+  /* =======================================================
+     AUDIT HISTORY
+     ======================================================= */
 
-  function removeLanguage(language) {
+  function getAuditHistory() {
 
-    const config =
-      getConfig();
+    try {
 
-    const name =
-      String(language || "")
-        .trim();
+      const stored =
+        localStorage.getItem(
+          AUDIT_KEY
+        );
 
+      if (!stored) {
+        return [];
+      }
 
-    if (!name) {
+      const history =
+        JSON.parse(stored);
 
-      return {
-        success:
-          false,
-        message:
-          "Language name is required."
-      };
+      return Array.isArray(history)
+        ? history
+        : [];
 
+    } catch (error) {
+
+      return [];
     }
-
-
-    if (
-      name ===
-      config.defaultLanguage
-    ) {
-
-      return {
-        success:
-          false,
-        message:
-          "Default language cannot be removed."
-      };
-
-    }
-
-
-    config.enabledLanguages =
-      config.enabledLanguages
-        .filter(function (item) {
-          return item !== name;
-        });
-
-
-    config.availableLanguages =
-      config.availableLanguages
-        .filter(function (item) {
-          return item !== name;
-        });
-
-
-    config.lastAction =
-      "LANGUAGE_REMOVED";
-
-
-    return save(config);
-
   }
 
+  /* =======================================================
+     CLEAR AUDIT HISTORY
+     ======================================================= */
 
-  function toggleLanguage(language) {
+  function clearAuditHistory() {
 
-    const config =
-      getConfig();
+    try {
 
-    const name =
-      String(language || "")
-        .trim();
+      localStorage.removeItem(
+        AUDIT_KEY
+      );
 
+      return true;
 
-    if (!name) {
+    } catch (error) {
 
+      console.warn(
+        "GoVara 26A: audit clear failed.",
+        error
+      );
+
+      return false;
+    }
+  }
+
+  /* =======================================================
+     LANGUAGE CONTROL
+     ======================================================= */
+
+  function setLanguageEnabled(
+    language,
+    enabled
+  ) {
+
+    const found =
+      LANGUAGE_CATALOG.some(
+        function (item) {
+          return item.code === language;
+        }
+      );
+
+    if (!found) {
       return {
-        success:
-          false,
-          message:
-            "Language name is required."
+        success: false,
+        error: "Unknown language."
       };
-
     }
 
-
-    if (
-      name ===
-      config.defaultLanguage
-    ) {
-
-      return {
-        success:
-          false,
-        message:
-          "Default language must remain enabled."
-      };
-
-    }
-
-
-    const index =
+    let languages =
       config.enabledLanguages
-        .indexOf(name);
+        .slice();
 
+    if (enabled) {
 
-    if (index >= 0) {
+      if (
+        languages.indexOf(language) === -1
+      ) {
 
-      config.enabledLanguages
-        .splice(index, 1);
-
-      config.lastAction =
-        "LANGUAGE_DISABLED";
+        languages.push(language);
+      }
 
     } else {
 
-      if (
-        !config.availableLanguages
-          .includes(name)
-      ) {
+      /*
+       * English cannot be disabled.
+       */
 
-        config.availableLanguages
-          .push(name);
+      if (language === "English") {
 
+        return {
+          success: false,
+          error:
+            "English must remain enabled."
+        };
       }
 
-      config.enabledLanguages
-        .push(name);
+      /*
+       * Do not disable the current
+       * default language.
+       */
 
-      config.lastAction =
-        "LANGUAGE_ENABLED";
+      if (
+        language === config.defaultLanguage
+      ) {
 
+        return {
+          success: false,
+          error:
+            "Change default language before disabling it."
+        };
+      }
+
+      languages =
+        languages.filter(
+          function (item) {
+            return item !== language;
+          }
+        );
     }
 
+    config.enabledLanguages =
+      languages;
 
-    return save(config);
+    config =
+      enforceSafety(config);
 
+    config.lastAction =
+      enabled
+        ? "LANGUAGE_ENABLED"
+        : "LANGUAGE_DISABLED";
+
+    config.lastUpdated =
+      new Date().toISOString();
+
+    createAuditEvent(
+      config.lastAction,
+      language +
+      " language " +
+      (enabled ? "enabled." : "disabled."),
+      {
+        language: language,
+        enabled: enabled
+      }
+    );
+
+    save(config);
+
+    return {
+      success: true,
+      config: getConfig()
+    };
   }
 
+  /* =======================================================
+     DEFAULT LANGUAGE
+     ======================================================= */
 
-  /* ==========================================================
-     MODULE HELPERS
-  ========================================================== */
+  function setDefaultLanguage(
+    language
+  ) {
+
+    if (
+      config.enabledLanguages.indexOf(
+        language
+      ) === -1
+    ) {
+
+      return {
+        success: false,
+        error:
+          "Language must be enabled first."
+      };
+    }
+
+    config.defaultLanguage =
+      language;
+
+    config.lastAction =
+      "DEFAULT_LANGUAGE_CHANGED";
+
+    config.lastUpdated =
+      new Date().toISOString();
+
+    createAuditEvent(
+      "DEFAULT_LANGUAGE_CHANGED",
+      "Default language changed.",
+      {
+        language: language
+      }
+    );
+
+    save(config);
+
+    return {
+      success: true,
+      config: getConfig()
+    };
+  }
+
+  /* =======================================================
+     MODULE CONTROL
+     ======================================================= */
 
   function setModuleEnabled(
     moduleName,
     enabled
   ) {
 
-    const config =
-      getConfig();
-
-
     if (
-      !MODULE_DEFINITIONS
-        .includes(moduleName)
+      MODULE_CATALOG.indexOf(
+        moduleName
+      ) === -1
     ) {
 
       return {
-        success:
-          false,
-        message:
-          "Unknown GoVara module."
+        success: false,
+        error: "Unknown module."
       };
-
     }
 
-
     /*
-     * Admin and Audit remain
-     * available for control/audit
-     * integrity.
+     * Admin and Audit remain available
+     * for the Administrator Control Center.
      */
 
     if (
@@ -788,922 +1047,148 @@ window.GoVara26A = (function () {
       if (!enabled) {
 
         return {
-          success:
-            false,
-          message:
+          success: false,
+          error:
             moduleName +
-            " cannot be disabled from 26A."
+            " module cannot be disabled from 26A."
         };
-
       }
-
     }
 
-
     config.modules[moduleName] =
-      !!enabled;
-
+      Boolean(enabled);
 
     config.lastAction =
       enabled
         ? "MODULE_ENABLED"
         : "MODULE_DISABLED";
 
-
-    return save(config);
-
-  }
-
-
-  function isModuleEnabled(
-    moduleName
-  ) {
-
-    const config =
-      getConfig();
-
-    return !!(
-      config.modules &&
-      config.modules[moduleName]
-    );
-
-  }
-
-
-  /* ==========================================================
-     VALIDATION
-  ========================================================== */
-
-  function validateConfig(config) {
-
-    const errors = [];
-    const warnings = [];
-
-
-    if (!config) {
-
-      errors.push(
-        "Configuration is missing."
-      );
-
-      return {
-        valid:
-          false,
-        errors:
-          errors,
-        warnings:
-          warnings
-      };
-
-    }
-
-
-    /* ---------- IDENTITY ---------- */
-
-    if (!config.systemName) {
-
-      errors.push(
-        "System name is required."
-      );
-
-    }
-
-
-    if (!config.platformName) {
-
-      errors.push(
-        "Platform name is required."
-      );
-
-    }
-
-
-    if (!config.systemVersion) {
-
-      errors.push(
-        "System version is required."
-      );
-
-    }
-
-
-    if (!config.environment) {
-
-      errors.push(
-        "Environment is required."
-      );
-
-    }
-
-
-    if (
-      ![
-        "TESTING",
-        "STAGING",
-        "PRODUCTION"
-      ].includes(
-        config.environment
-      )
-    ) {
-
-      errors.push(
-        "Invalid environment."
-      );
-
-    }
-
-
-    if (!config.systemStatus) {
-
-      errors.push(
-        "System status is required."
-      );
-
-    }
-
-
-    if (
-      ![
-        "ACTIVE",
-        "MAINTENANCE",
-        "SUSPENDED",
-        "INACTIVE"
-      ].includes(
-        config.systemStatus
-      )
-    ) {
-
-      errors.push(
-        "Invalid system status."
-      );
-
-    }
-
-
-    /* ---------- REGIONAL ---------- */
-
-    if (
-      !config.defaultLanguage
-    ) {
-
-      errors.push(
-        "Default language is required."
-      );
-
-    }
-
-
-    if (
-      !Array.isArray(
-        config.enabledLanguages
-      )
-    ) {
-
-      errors.push(
-        "Enabled languages must be an array."
-      );
-
-    }
-
-
-    if (
-      !Array.isArray(
-        config.availableLanguages
-      )
-    ) {
-
-      errors.push(
-        "Available languages must be an array."
-      );
-
-    }
-
-
-    if (
-      Array.isArray(
-        config.enabledLanguages
-      ) &&
-      config.defaultLanguage &&
-      !config.enabledLanguages
-        .includes(
-          config.defaultLanguage
-        )
-    ) {
-
-      errors.push(
-        "Default language must be enabled."
-      );
-
-    }
-
-
-    if (!config.country) {
-
-      errors.push(
-        "Country is required."
-      );
-
-    }
-
-
-    if (!config.currency) {
-
-      errors.push(
-        "Currency is required."
-      );
-
-    }
-
-
-    if (!config.timezone) {
-
-      errors.push(
-        "Timezone is required."
-      );
-
-    }
-
-
-    /* ---------- MODULE REGISTRY ---------- */
-
-    if (
-      !config.modules ||
-      typeof config.modules !== "object"
-    ) {
-
-      errors.push(
-        "Module registry is invalid."
-      );
-
-    } else {
-
-      MODULE_DEFINITIONS.forEach(
-        function (moduleName) {
-
-          if (
-            typeof config.modules[
-              moduleName
-            ] !== "boolean"
-          ) {
-
-            errors.push(
-              "Module state missing: " +
-              moduleName
-            );
-
-          }
-
-        }
-      );
-
-    }
-
-
-    /* ---------- SAFETY ---------- */
-
-    if (
-      config.realMoney !== false
-    ) {
-
-      errors.push(
-        "Real Money must remain BLOCKED."
-      );
-
-    }
-
-
-    if (
-      config.realPayment !== false
-    ) {
-
-      errors.push(
-        "Real Payment must remain BLOCKED."
-      );
-
-    }
-
-
-    if (
-      config.bankTransfer !== false
-    ) {
-
-      errors.push(
-        "Bank Transfer must remain BLOCKED."
-      );
-
-    }
-
-
-    if (
-      config.frontendAuthority !== false
-    ) {
-
-      errors.push(
-        "Frontend must never become financial authority."
-      );
-
-    }
-
-
-    if (
-      config.backendAuthority !== true
-    ) {
-
-      errors.push(
-        "Backend must remain authoritative."
-      );
-
-    }
-
-
-    if (
-      config.productionLock !== true
-    ) {
-
-      errors.push(
-        "Production Lock must remain enabled."
-      );
-
-    }
-
-
-    /* ---------- ENVIRONMENT GUARDS ---------- */
-
-    if (
-      config.environment ===
-      "TESTING" &&
-      config.testingMode !== true
-    ) {
-
-      warnings.push(
-        "Testing environment normally uses Testing Mode."
-      );
-
-    }
-
-
-    if (
-      config.environment ===
-      "PRODUCTION" &&
-      config.testingMode === true
-    ) {
-
-      errors.push(
-        "Testing Mode must be OFF in Production."
-      );
-
-    }
-
-
-    if (
-      config.environment ===
-      "PRODUCTION" &&
-      config.productionLock !== true
-    ) {
-
-      errors.push(
-        "Production Lock must remain enabled."
-      );
-
-    }
-
-
-    /* ---------- LIFECYCLE GUARDS ---------- */
-
-    if (
-      config.maintenanceMode === true &&
-      config.systemStatus === "ACTIVE"
-    ) {
-
-      warnings.push(
-        "Maintenance Mode is ON while system status is ACTIVE."
-      );
-
-    }
-
-
-    if (
-      config.suspendedMode === true &&
-      config.systemStatus === "ACTIVE"
-    ) {
-
-      warnings.push(
-        "Suspended Mode is ON while system status is ACTIVE."
-      );
-
-    }
-
-
-    if (
-      config.systemStatus ===
-      "MAINTENANCE" &&
-      config.maintenanceMode !== true
-    ) {
-
-      warnings.push(
-        "System status is MAINTENANCE but Maintenance Mode is OFF."
-      );
-
-    }
-
-
-    if (
-      config.systemStatus ===
-      "SUSPENDED" &&
-      config.suspendedMode !== true
-    ) {
-
-      warnings.push(
-        "System status is SUSPENDED but Suspended Mode is OFF."
-      );
-
-    }
-
-
-    if (
-      config.platformEnabled !== true &&
-      config.systemStatus === "ACTIVE"
-    ) {
-
-      warnings.push(
-        "Platform is disabled while system status is ACTIVE."
-      );
-
-    }
-
-
-    return {
-      valid:
-        errors.length === 0,
-
-      errors:
-        errors,
-
-      warnings:
-        warnings
-    };
-
-  }
-
-
-  /* ==========================================================
-     HARD SAFETY NORMALIZATION
-  ========================================================== */
-
-  function enforceSafety(config) {
-
-    config.realMoney =
-      false;
-
-    config.realPayment =
-      false;
-
-    config.bankTransfer =
-      false;
-
-    config.frontendAuthority =
-      false;
-
-    config.backendAuthority =
-      true;
-
-    config.productionLock =
-      true;
-
-    config.configVersion =
-      CONFIG_VERSION;
-
-    config.systemVersion =
-      "26A-V2";
-
-    config.configSource =
-      "FRONTEND_LOCAL_CONFIGURATION";
-
-
-    normalizeLanguages(config);
-
-
-    /*
-     * Admin and Audit are mandatory
-     * for configuration integrity.
-     */
-
-    if (!config.modules) {
-
-      config.modules = {};
-
-    }
-
-
-    MODULE_DEFINITIONS.forEach(
-      function (moduleName) {
-
-        if (
-          typeof config.modules[
-            moduleName
-          ] !== "boolean"
-        ) {
-
-          config.modules[
-            moduleName
-          ] = true;
-
-        }
-
-      }
-    );
-
-
-    config.modules.Admin =
-      true;
-
-    config.modules.Audit =
-      true;
-
-
-    return config;
-
-  }
-
-
-  /* ==========================================================
-     AUDIT STORAGE
-  ========================================================== */
-
-  function getAuditHistory() {
-
-    try {
-
-      const stored =
-        localStorage.getItem(
-          AUDIT_STORAGE_KEY
-        );
-
-
-      if (!stored) {
-
-        return [];
-
-      }
-
-
-      const parsed =
-        JSON.parse(stored);
-
-
-      return Array.isArray(parsed)
-        ? parsed
-        : [];
-
-    } catch (error) {
-
-      console.warn(
-        "GoVara26A: audit history load failed.",
-        error
-      );
-
-      return [];
-
-    }
-
-  }
-
-
-  function writeAuditEvent(
-    action,
-    details
-  ) {
-
-    const config =
-      getConfig();
-
-
-    if (
-      config.auditLogging !== true
-    ) {
-
-      return null;
-
-    }
-
-
-    const event =
-      createAuditEvent(
-        action,
-        details
-      );
-
-
-    const history =
-      getAuditHistory();
-
-
-    history.push(event);
-
-
-    /*
-     * Keep latest 200 local events.
-     */
-
-    const trimmed =
-      history.slice(-200);
-
-
-    localStorage.setItem(
-      AUDIT_STORAGE_KEY,
-      JSON.stringify(trimmed)
-    );
-
-
-    return event;
-
-  }
-
-
-  function createAuditEvent(
-    action,
-    details
-  ) {
-
-    return {
-
-      module:
-        "26A",
-
-      action:
-        action || "UNKNOWN",
-
-      details:
-        details || "",
-
-      timestamp:
-        new Date().toISOString(),
-
-      authority:
-        "FRONTEND_CONFIGURATION_ONLY",
-
-      backendModified:
-        false,
-
-      databaseModified:
-        false
-
-    };
-
-  }
-
-
-  function clearAuditHistory() {
-
-    localStorage.removeItem(
-      AUDIT_STORAGE_KEY
-    );
-
-    return true;
-
-  }
-
-
-  /* ==========================================================
-     SAVE
-  ========================================================== */
-
-  function save(config) {
-
-    const current =
-      mergeConfig(
-        clone(DEFAULT_CONFIG),
-        config || {}
-      );
-
-
-    enforceSafety(current);
-
-
-    current.lastUpdated =
-      new Date().toISOString();
-
-
-    if (
-      !current.lastAction ||
-      current.lastAction ===
-      "INITIALIZED"
-    ) {
-
-      current.lastAction =
-        "CONFIGURATION_SAVED";
-
-    }
-
-
-    const validation =
-      validateConfig(current);
-
-
-    if (!validation.valid) {
-
-      console.error(
-        "GoVara26A validation failed:",
-        validation.errors
-      );
-
-
-      writeAuditEvent(
-        "CONFIGURATION_REJECTED",
-        validation.errors.join("; ")
-      );
-
-
-      return {
-        success:
-          false,
-
-        validation:
-          validation
-      };
-
-    }
-
-
-    current.configurationValidated =
-      true;
-
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(current)
-    );
-
-
-    writeAuditEvent(
-      current.lastAction,
-      "26A configuration saved locally."
-    );
-
-
-    return {
-
-      success:
-        true,
-
-      config:
-        current,
-
-      validation:
-        validation
-
-    };
-
-  }
-
-
-  /* ==========================================================
-     RESET
-  ========================================================== */
-
-  function reset() {
-
-    const previous =
-      getConfig();
-
-
-    const config =
-      clone(DEFAULT_CONFIG);
-
-
-    config.lastAction =
-      "CONFIGURATION_RESET";
-
-
     config.lastUpdated =
       new Date().toISOString();
 
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(config)
+    createAuditEvent(
+      config.lastAction,
+      moduleName +
+      " module " +
+      (enabled ? "enabled." : "disabled."),
+      {
+        module: moduleName,
+        enabled: enabled
+      }
     );
 
+    save(config);
 
-    writeAuditEvent(
-      "CONFIGURATION_RESET",
-      "26A configuration reset to defaults."
-    );
-
-
-    return clone(config);
-
+    return {
+      success: true,
+      config: getConfig()
+    };
   }
 
+  /* =======================================================
+     SYSTEM HEALTH
+     ======================================================= */
 
-  /* ==========================================================
-     STATUS / HEALTH
-  ========================================================== */
-
-  function getSystemHealth(config) {
-
-    const c =
-      config || getConfig();
-
+  function getSystemHealth() {
 
     const validation =
-      validateConfig(c);
+      validateConfig(config);
 
-
-    let lifecycle =
-      "ACTIVE";
-
-
-    if (
-      c.suspendedMode
-    ) {
-
-      lifecycle =
-        "SUSPENDED";
-
-    } else if (
-      c.maintenanceMode
-    ) {
-
-      lifecycle =
-        "MAINTENANCE";
-
-    } else if (
-      c.platformEnabled !== true
-    ) {
-
-      lifecycle =
-        "DISABLED";
-
-    } else if (
-      c.systemStatus ===
-      "INACTIVE"
-    ) {
-
-      lifecycle =
-        "INACTIVE";
-
-    }
-
+    const enabledModules =
+      MODULE_CATALOG.filter(
+        function (moduleName) {
+          return config.modules[moduleName];
+        }
+      );
 
     return {
 
-      system:
-        c.platformEnabled
-          ? "HEALTHY"
-          : "DISABLED",
-
-      configuration:
-        validation.valid
-          ? "VALID"
-          : "ERROR",
-
-      environment:
-        c.environment,
+      version: VERSION,
 
       lifecycle:
-        lifecycle,
+        "FRONTEND_CONFIGURATION_READY",
 
-      api:
-        c.apiEndpoint
-          ? "CONFIGURED"
-          : "NOT CONFIGURED",
+      validation:
+        validation.valid
+          ? "VALID"
+          : "INVALID",
 
-      backend:
-        "AUTHORITATIVE",
+      environment:
+        config.environment,
 
-      financial:
-        (
-          c.realMoney === false &&
-          c.realPayment === false &&
-          c.bankTransfer === false
-        )
-          ? "SAFE"
-          : "BLOCKED",
+      systemStatus:
+        config.systemStatus,
 
-      audit:
-        c.auditLogging
-          ? "ENABLED"
-          : "DISABLED",
+      platformEnabled:
+        config.platformEnabled,
 
-      healthMonitoring:
-        c.healthMonitoring
-          ? "ENABLED"
-          : "DISABLED",
+      apiAuthority:
+        "STEP 27 — CONSOLIDATED API",
+
+      backendAuthority:
+        config.backendAuthority,
+
+      frontendAuthority:
+        config.frontendAuthority,
+
+      financialSafety: {
+
+        realMoney:
+          config.realMoney
+            ? "ENABLED"
+            : "BLOCKED",
+
+        realPayment:
+          config.realPayment
+            ? "ENABLED"
+            : "BLOCKED",
+
+        bankTransfer:
+          config.bankTransfer
+            ? "ENABLED"
+            : "BLOCKED"
+      },
 
       productionLock:
-        c.productionLock
+        config.productionLock
           ? "LOCKED"
-          : "ERROR"
+          : "UNLOCKED",
 
+      testingMode:
+        config.testingMode
+          ? "ON"
+          : "OFF",
+
+      enabledLanguageCount:
+        config.enabledLanguages.length,
+
+      enabledModuleCount:
+        enabledModules.length,
+
+      totalModuleCount:
+        MODULE_CATALOG.length,
+
+      auditLogging:
+        config.auditLogging
+          ? "ON"
+          : "OFF",
+
+      healthMonitoring:
+        config.healthMonitoring
+          ? "ON"
+          : "OFF",
+
+      lastAction:
+        config.lastAction,
+
+      lastUpdated:
+        config.lastUpdated
     };
-
   }
 
-
-  /* ==========================================================
-     HTML HELPERS
-  ========================================================== */
+  /* =======================================================
+     HTML ESCAPE
+     ======================================================= */
 
   function esc(value) {
 
@@ -1733,9 +1218,11 @@ window.GoVara26A = (function () {
         /'/g,
         "&#039;"
       );
-
   }
 
+  /* =======================================================
+     OPTION HELPER
+     ======================================================= */
 
   function option(
     value,
@@ -1743,2157 +1230,1290 @@ window.GoVara26A = (function () {
     selected
   ) {
 
-    return `
-      <option
-        value="${esc(value)}"
-        ${selected === value
-          ? "selected"
-          : ""}
-      >
-        ${esc(label)}
-      </option>
-    `;
-
+    return (
+      '<option value="' +
+      esc(value) +
+      '"' +
+      (
+        selected
+          ? " selected"
+          : ""
+      ) +
+      ">" +
+      esc(label) +
+      "</option>"
+    );
   }
 
+  /* =======================================================
+     BOOLEAN CONTROL
+     ======================================================= */
 
   function boolControl(
-    id,
+    key,
     label,
-    value,
-    description,
-    locked
+    checked,
+    disabled
   ) {
 
     return `
-      <div class="govara26a-control">
-
-        <div
-          class="govara26a-control-main"
+      <label class="govara26a-control">
+        <input
+          type="checkbox"
+          data-26a-field="${esc(key)}"
+          ${checked ? "checked" : ""}
+          ${disabled ? "disabled" : ""}
         >
-
-          <label
-            class="govara26a-toggle"
-            for="${esc(id)}"
-          >
-
-            <input
-              type="checkbox"
-              id="${esc(id)}"
-              ${value ? "checked" : ""}
-              ${locked ? "disabled" : ""}
-            >
-
-            <span
-              class="govara26a-switch"
-            ></span>
-
-            <span>
-
-              <strong>
-                ${esc(label)}
-              </strong>
-
-              ${
-                description
-                  ? `
-                    <small>
-                      ${esc(description)}
-                    </small>
-                  `
-                  : ""
-              }
-
-            </span>
-
-          </label>
-
-          ${
-            locked
-              ? `
-                <span
-                  class="govara26a-lock"
-                >
-                  LOCKED
-                </span>
-              `
-              : ""
-          }
-
-        </div>
-
-      </div>
+        <span>${esc(label)}</span>
+      </label>
     `;
-
   }
 
+  /* =======================================================
+     LANGUAGE SECTION
+     ======================================================= */
 
-  /* ==========================================================
-     RENDER
-  ========================================================== */
+  function renderLanguages() {
+
+    return LANGUAGE_CATALOG.map(
+      function (language) {
+
+        const enabled =
+          config.enabledLanguages.indexOf(
+            language.code
+          ) !== -1;
+
+        const isDefault =
+          config.defaultLanguage ===
+          language.code;
+
+        return `
+          <div class="card govara26a-language-card">
+
+            <div class="row between">
+
+              <div>
+                <b>${esc(language.nativeName)}</b>
+
+                <div class="muted">
+                  ${esc(language.name)}
+                </div>
+              </div>
+
+              <div class="govara26a-language-actions">
+
+                <label class="govara26a-control">
+
+                  <input
+                    type="checkbox"
+                    data-26a-language="${esc(language.code)}"
+                    ${enabled ? "checked" : ""}
+                    ${
+                      language.code === "English"
+                        ? "disabled"
+                        : ""
+                    }
+                  >
+
+                  <span>
+                    ${enabled ? "Enabled" : "Disabled"}
+                  </span>
+
+                </label>
+
+                <label class="govara26a-control">
+
+                  <input
+                    type="radio"
+                    name="govara26a-default-language"
+                    data-26a-default-language="${esc(language.code)}"
+                    ${
+                      isDefault
+                        ? "checked"
+                        : ""
+                    }
+                  >
+
+                  <span>Default</span>
+
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      }
+    ).join("");
+  }
+
+  /* =======================================================
+     MODULE SECTION
+     ======================================================= */
+
+  function renderModules() {
+
+    return MODULE_CATALOG.map(
+      function (moduleName) {
+
+        const enabled =
+          Boolean(
+            config.modules[moduleName]
+          );
+
+        const locked =
+          moduleName === "Admin" ||
+          moduleName === "Audit";
+
+        return `
+          <div class="card govara26a-module-card">
+
+            <div class="row between">
+
+              <div>
+                <b>${esc(moduleName)}</b>
+
+                <div class="muted">
+                  GoVara module
+                </div>
+              </div>
+
+              <label class="govara26a-control">
+
+                <input
+                  type="checkbox"
+                  data-26a-module="${esc(moduleName)}"
+                  ${
+                    enabled
+                      ? "checked"
+                      : ""
+                  }
+                  ${
+                    locked
+                      ? "disabled"
+                      : ""
+                  }
+                >
+
+                <span>
+                  ${
+                    locked
+                      ? "Core"
+                      : (
+                          enabled
+                            ? "Enabled"
+                            : "Disabled"
+                        )
+                  }
+                </span>
+
+              </label>
+
+            </div>
+
+          </div>
+        `;
+      }
+    ).join("");
+  }
+
+  /* =======================================================
+     AUDIT SECTION
+     ======================================================= */
+
+  function renderAudit() {
+
+    const history =
+      getAuditHistory();
+
+    if (!history.length) {
+
+      return `
+        <div class="notice">
+          No local 26A audit events yet.
+        </div>
+      `;
+    }
+
+    return history
+      .slice(0, 10)
+      .map(
+        function (event) {
+
+          return `
+            <div class="govara26a-audit-row">
+
+              <div>
+                <b>${esc(event.action)}</b>
+
+                <div class="muted">
+                  ${esc(event.description)}
+                </div>
+              </div>
+
+              <div class="muted">
+                ${esc(event.timestamp)}
+              </div>
+
+            </div>
+          `;
+        }
+      )
+      .join("");
+  }
+
+  /* =======================================================
+     MAIN RENDER
+     ======================================================= */
 
   function render() {
 
-    const c =
-      getConfig();
-
-
     const health =
-      getSystemHealth(c);
-
+      getSystemHealth();
 
     const validation =
-      validateConfig(c);
-
-
-    const modules =
-      MODULE_DEFINITIONS;
-
+      validateConfig(config);
 
     return `
 
-      <style>
-
-        .govara26a-wrap {
-          display:flex;
-          flex-direction:column;
-          gap:18px;
-        }
-
-        .govara26a-head {
-          display:flex;
-          justify-content:space-between;
-          align-items:flex-start;
-          gap:16px;
-          flex-wrap:wrap;
-        }
-
-        .govara26a-head h1 {
-          margin:0 0 6px;
-        }
-
-        .govara26a-head p {
-          margin:0;
-          opacity:.72;
-        }
-
-        .govara26a-statusbar {
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(145px,1fr));
-          gap:10px;
-        }
-
-        .govara26a-status {
-          padding:14px;
-          border:1px solid rgba(255,255,255,.08);
-          border-radius:14px;
-          background:rgba(255,255,255,.035);
-        }
-
-        .govara26a-status strong {
-          display:block;
-          margin-bottom:5px;
-        }
-
-        .govara26a-status small {
-          opacity:.65;
-        }
-
-        .govara26a-grid {
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(280px,1fr));
-          gap:16px;
-        }
-
-        .govara26a-section {
-          padding:20px;
-          border:1px solid rgba(255,255,255,.08);
-          border-radius:16px;
-          background:rgba(255,255,255,.025);
-        }
-
-        .govara26a-section h2 {
-          margin:0 0 6px;
-          font-size:18px;
-        }
-
-        .govara26a-section-desc {
-          margin:0 0 18px;
-          opacity:.62;
-          font-size:13px;
-        }
-
-        .govara26a-fields {
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(220px,1fr));
-          gap:14px;
-        }
-
-        .govara26a-field {
-          display:flex;
-          flex-direction:column;
-          gap:7px;
-        }
-
-        .govara26a-field label {
-          font-size:12px;
-          font-weight:700;
-          opacity:.72;
-        }
-
-        .govara26a-field input,
-        .govara26a-field select {
-          width:100%;
-          box-sizing:border-box;
-          padding:11px 12px;
-          border-radius:10px;
-          border:1px solid rgba(255,255,255,.10);
-          background:rgba(0,0,0,.18);
-          color:inherit;
-          outline:none;
-        }
-
-        .govara26a-field input:focus,
-        .govara26a-field select:focus {
-          border-color:rgba(120,170,255,.55);
-        }
-
-        .govara26a-controls {
-          display:grid;
-          gap:8px;
-        }
-
-        .govara26a-control {
-          padding:12px;
-          border-radius:12px;
-          background:rgba(255,255,255,.025);
-          border:1px solid rgba(255,255,255,.06);
-        }
-
-        .govara26a-control-main {
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:10px;
-        }
-
-        .govara26a-toggle {
-          display:flex;
-          align-items:center;
-          gap:10px;
-          cursor:pointer;
-        }
-
-        .govara26a-toggle input {
-          display:none;
-        }
-
-        .govara26a-switch {
-          width:42px;
-          height:23px;
-          border-radius:20px;
-          background:rgba(255,255,255,.15);
-          position:relative;
-          flex-shrink:0;
-        }
-
-        .govara26a-switch::after {
-          content:"";
-          width:17px;
-          height:17px;
-          border-radius:50%;
-          position:absolute;
-          left:3px;
-          top:3px;
-          background:white;
-          transition:.2s;
-        }
-
-        .govara26a-toggle input:checked
-        + .govara26a-switch {
-          background:rgba(70,190,120,.75);
-        }
-
-        .govara26a-toggle input:checked
-        + .govara26a-switch::after {
-          transform:translateX(19px);
-        }
-
-        .govara26a-toggle strong {
-          display:block;
-        }
-
-        .govara26a-toggle small {
-          display:block;
-          opacity:.58;
-          margin-top:2px;
-        }
-
-        .govara26a-lock {
-          font-size:10px;
-          font-weight:800;
-          opacity:.55;
-        }
-
-        .govara26a-module-grid {
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(190px,1fr));
-          gap:10px;
-        }
-
-        .govara26a-module {
-          padding:12px;
-          border-radius:11px;
-          background:rgba(255,255,255,.035);
-          border:1px solid rgba(255,255,255,.07);
-          display:flex;
-          flex-direction:column;
-          gap:9px;
-        }
-
-        .govara26a-module-top {
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:8px;
-        }
-
-        .govara26a-module span {
-          font-weight:700;
-          font-size:13px;
-        }
-
-        .govara26a-badge {
-          font-size:10px;
-          padding:4px 7px;
-          border-radius:20px;
-          font-weight:800;
-        }
-
-        .govara26a-on {
-          background:rgba(70,190,120,.15);
-        }
-
-        .govara26a-off {
-          background:rgba(255,90,90,.12);
-        }
-
-        .govara26a-module button,
-        .govara26a-language button {
-          padding:8px 10px;
-          border-radius:8px;
-          border:1px solid rgba(255,255,255,.09);
-          background:rgba(255,255,255,.05);
-          color:inherit;
-          cursor:pointer;
-          font-weight:700;
-        }
-
-        .govara26a-safe {
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(190px,1fr));
-          gap:10px;
-        }
-
-        .govara26a-safe-card {
-          padding:15px;
-          border-radius:13px;
-          background:rgba(255,255,255,.025);
-          border:1px solid rgba(255,255,255,.07);
-        }
-
-        .govara26a-safe-card strong {
-          display:block;
-          margin-bottom:6px;
-        }
-
-        .govara26a-blocked {
-          font-weight:900;
-          letter-spacing:.4px;
-        }
-
-        .govara26a-health-grid {
-          display:grid;
-          grid-template-columns:
-            repeat(auto-fit,minmax(160px,1fr));
-          gap:10px;
-        }
-
-        .govara26a-health {
-          padding:14px;
-          border-radius:12px;
-          background:rgba(255,255,255,.03);
-        }
-
-        .govara26a-health b {
-          display:block;
-          margin-bottom:4px;
-        }
-
-        .govara26a-health small {
-          opacity:.58;
-        }
-
-        .govara26a-notice {
-          padding:14px 16px;
-          border-radius:12px;
-          background:rgba(255,190,70,.08);
-          border:1px solid rgba(255,190,70,.16);
-          font-size:13px;
-        }
-
-        .govara26a-error {
-          padding:14px 16px;
-          border-radius:12px;
-          background:rgba(255,80,80,.10);
-          border:1px solid rgba(255,80,80,.18);
-        }
-
-        .govara26a-actions {
-          position:sticky;
-          bottom:12px;
-          display:flex;
-          justify-content:flex-end;
-          gap:10px;
-          flex-wrap:wrap;
-          padding:12px;
-          border-radius:15px;
-          background:rgba(10,12,18,.92);
-          border:1px solid rgba(255,255,255,.09);
-          backdrop-filter:blur(12px);
-        }
-
-        .govara26a-actions button {
-          padding:11px 17px;
-          border-radius:10px;
-          border:1px solid rgba(255,255,255,.10);
-          cursor:pointer;
-          background:rgba(255,255,255,.06);
-          color:inherit;
-          font-weight:800;
-        }
-
-        .govara26a-actions button:hover {
-          background:rgba(255,255,255,.11);
-        }
-
-        .govara26a-save {
-          background:rgba(70,150,255,.20)!important;
-        }
-
-        .govara26a-meta {
-          display:flex;
-          justify-content:space-between;
-          gap:12px;
-          flex-wrap:wrap;
-          opacity:.55;
-          font-size:12px;
-        }
-
-        .govara26a-language {
-          display:grid;
-          gap:8px;
-        }
-
-        .govara26a-language-row {
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:10px;
-          padding:10px 12px;
-          border-radius:10px;
-          background:rgba(255,255,255,.025);
-          border:1px solid rgba(255,255,255,.06);
-        }
-
-        .govara26a-language-actions {
-          display:flex;
-          gap:6px;
-          flex-wrap:wrap;
-        }
-
-        .govara26a-language-add {
-          display:flex;
-          gap:8px;
-          margin-top:10px;
-        }
-
-        .govara26a-language-add input {
-          flex:1;
-          min-width:0;
-          padding:10px;
-          border-radius:9px;
-          border:1px solid rgba(255,255,255,.10);
-          background:rgba(0,0,0,.18);
-          color:inherit;
-        }
-
-        .govara26a-audit-list {
-          max-height:280px;
-          overflow:auto;
-          display:grid;
-          gap:7px;
-          margin-top:14px;
-        }
-
-        .govara26a-audit-item {
-          padding:10px;
-          border-radius:9px;
-          background:rgba(255,255,255,.025);
-          border:1px solid rgba(255,255,255,.06);
-          font-size:12px;
-        }
-
-        .govara26a-audit-item b {
-          display:block;
-          margin-bottom:4px;
-        }
-
-        .govara26a-small-btn {
-          padding:7px 10px!important;
-          font-size:11px;
-        }
-
-      </style>
-
-
-      <div
-        class="govara26a-wrap"
-        id="govara26a-root"
-      >
-
-
-        <!-- HEADER -->
-
-        <div class="govara26a-head">
+      <div class="page-head">
+
+        <h1>
+          26A — System Configuration
+        </h1>
+
+        <div class="muted">
+          Frontend system configuration,
+          platform settings and safety controls.
+        </div>
+
+      </div>
+
+      <!-- ================================================
+           STATUS
+           ================================================ -->
+
+      <section class="card">
+
+        <h2>System Status</h2>
+
+        <div class="grid four">
+
+          <div>
+            <b>${esc(health.systemStatus)}</b>
+            <div class="muted">
+              System
+            </div>
+          </div>
+
+          <div>
+            <b>${esc(health.environment)}</b>
+            <div class="muted">
+              Environment
+            </div>
+          </div>
+
+          <div>
+            <b>
+              ${esc(health.productionLock)}
+            </b>
+            <div class="muted">
+              Production Lock
+            </div>
+          </div>
+
+          <div>
+            <b>
+              ${esc(health.testingMode)}
+            </b>
+            <div class="muted">
+              Testing Mode
+            </div>
+          </div>
+
+        </div>
+
+        <div class="notice warn">
+
+          API remains
+          <b>NOT CONFIGURED</b>.
+
+          STEP 27 owns the
+          Consolidated API boundary.
+
+          Backend and Database remain separate.
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           BASIC SYSTEM CONFIGURATION
+           ================================================ -->
+
+      <section class="card">
+
+        <h2>Basic Configuration</h2>
+
+        <div class="grid two">
+
+          <label>
+
+            <span>System Name</span>
+
+            <input
+              type="text"
+              data-26a-text="systemName"
+              value="${esc(config.systemName)}"
+            >
+
+          </label>
+
+          <label>
+
+            <span>Platform Name</span>
+
+            <input
+              type="text"
+              data-26a-text="platformName"
+              value="${esc(config.platformName)}"
+            >
+
+          </label>
+
+          <label>
+
+            <span>Country</span>
+
+            <input
+              type="text"
+              data-26a-text="country"
+              value="${esc(config.country)}"
+            >
+
+          </label>
+
+          <label>
+
+            <span>Currency</span>
+
+            <input
+              type="text"
+              data-26a-text="currency"
+              value="${esc(config.currency)}"
+            >
+
+          </label>
+
+          <label>
+
+            <span>Timezone</span>
+
+            <select data-26a-select="timezone">
+
+              ${option(
+                "Asia/Kolkata",
+                "Asia/Kolkata",
+                config.timezone === "Asia/Kolkata"
+              )}
+
+              ${option(
+                "UTC",
+                "UTC",
+                config.timezone === "UTC"
+              )}
+
+            </select>
+
+          </label>
+
+          <label>
+
+            <span>Date Format</span>
+
+            <select data-26a-select="dateFormat">
+
+              ${option(
+                "DD-MM-YYYY",
+                "DD-MM-YYYY",
+                config.dateFormat === "DD-MM-YYYY"
+              )}
+
+              ${option(
+                "MM-DD-YYYY",
+                "MM-DD-YYYY",
+                config.dateFormat === "MM-DD-YYYY"
+              )}
+
+              ${option(
+                "YYYY-MM-DD",
+                "YYYY-MM-DD",
+                config.dateFormat === "YYYY-MM-DD"
+              )}
+
+            </select>
+
+          </label>
+
+          <label>
+
+            <span>Time Format</span>
+
+            <select data-26a-select="timeFormat">
+
+              ${option(
+                "12-hour",
+                "12-hour",
+                config.timeFormat === "12-hour"
+              )}
+
+              ${option(
+                "24-hour",
+                "24-hour",
+                config.timeFormat === "24-hour"
+              )}
+
+            </select>
+
+          </label>
+
+          <label>
+
+            <span>Default Language</span>
+
+            <select
+              data-26a-select="defaultLanguage"
+            >
+
+              ${LANGUAGE_CATALOG
+                .filter(
+                  function (language) {
+
+                    return (
+                      config.enabledLanguages.indexOf(
+                        language.code
+                      ) !== -1
+                    );
+
+                  }
+                )
+                .map(
+                  function (language) {
+
+                    return option(
+                      language.code,
+                      language.nativeName,
+                      config.defaultLanguage ===
+                        language.code
+                    );
+
+                  }
+                )
+                .join("")}
+
+            </select>
+
+          </label>
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           PLATFORM CONTROLS
+           ================================================ -->
+
+      <section class="card">
+
+        <h2>Platform Controls</h2>
+
+        <div class="grid two">
+
+          ${boolControl(
+            "platformEnabled",
+            "Platform Enabled",
+            config.platformEnabled,
+            false
+          )}
+
+          ${boolControl(
+            "customerRegistration",
+            "Customer Registration",
+            config.customerRegistration,
+            false
+          )}
+
+          ${boolControl(
+            "vendorRegistration",
+            "Vendor Registration",
+            config.vendorRegistration,
+            false
+          )}
+
+          ${boolControl(
+            "driverRegistration",
+            "Driver Registration",
+            config.driverRegistration,
+            false
+          )}
+
+          ${boolControl(
+            "bookingEnabled",
+            "Booking Enabled",
+            config.bookingEnabled,
+            false
+          )}
+
+          ${boolControl(
+            "fareEstimateEnabled",
+            "Fare Estimate Enabled",
+            config.fareEstimateEnabled,
+            false
+          )}
+
+          ${boolControl(
+            "notificationsEnabled",
+            "Notifications Enabled",
+            config.notificationsEnabled,
+            false
+          )}
+
+          ${boolControl(
+            "welfareEnabled",
+            "Welfare Enabled",
+            config.welfareEnabled,
+            false
+          )}
+
+          ${boolControl(
+            "welfareMasterControl",
+            "Welfare Master Control",
+            config.welfareMasterControl,
+            false
+          )}
+
+          ${boolControl(
+            "maintenanceMode",
+            "Maintenance Mode",
+            config.maintenanceMode,
+            false
+          )}
+
+          ${boolControl(
+            "suspendedMode",
+            "Suspended Mode",
+            config.suspendedMode,
+            false
+          )}
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           LANGUAGE CONTROL
+           ================================================ -->
+
+      <section class="card">
+
+        <div class="row between">
 
           <div>
 
-            <h1>
-              26A — System Configuration
-            </h1>
+            <h2>Language Control</h2>
 
-            <p>
-              Central frontend configuration and platform
-              safety control. Backend and database remain
-              authoritative.
-            </p>
+            <div class="muted">
+              Enable supported platform languages
+              and select the default language.
+            </div>
 
           </div>
 
         </div>
 
+        <div class="grid two">
 
-        <!-- HEALTH -->
+          ${renderLanguages()}
 
-        <div class="govara26a-statusbar">
+        </div>
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.system)}
-            </strong>
-            <small>
-              Platform
-            </small>
-          </div>
+      </section>
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.configuration)}
-            </strong>
-            <small>
-              Configuration
-            </small>
-          </div>
+      <!-- ================================================
+           MODULE CONTROL
+           ================================================ -->
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.environment)}
-            </strong>
-            <small>
-              Environment
-            </small>
-          </div>
+      <section class="card">
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.lifecycle)}
-            </strong>
-            <small>
-              Lifecycle
-            </small>
-          </div>
+        <div class="row between">
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.api)}
-            </strong>
-            <small>
-              API
-            </small>
-          </div>
+          <div>
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.financial)}
-            </strong>
-            <small>
-              Financial Safety
-            </small>
-          </div>
+            <h2>Module Control</h2>
 
-          <div class="govara26a-status">
-            <strong>
-              ${esc(health.productionLock)}
-            </strong>
-            <small>
-              Production Lock
-            </small>
+            <div class="muted">
+              Enable or disable frontend module visibility.
+              Backend authority remains unchanged.
+            </div>
+
           </div>
 
         </div>
 
+        <div class="grid two">
 
-        <!-- VALIDATION -->
+          ${renderModules()}
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           FINANCIAL SAFETY
+           ================================================ -->
+
+      <section class="card">
+
+        <h2>Financial Safety Boundary</h2>
+
+        <div class="grid four">
+
+          <div>
+
+            <b>BLOCKED</b>
+
+            <div class="muted">
+              Real Money
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>BLOCKED</b>
+
+            <div class="muted">
+              Real Payment
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>BLOCKED</b>
+
+            <div class="muted">
+              Bank Transfer
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>BACKEND</b>
+
+            <div class="muted">
+              Financial Authority
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="notice warn">
+
+          Frontend 26A cannot become the
+          financial authority.
+
+          Real financial execution remains blocked.
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           API BOUNDARY
+           ================================================ -->
+
+      <section class="card">
+
+        <h2>API Boundary</h2>
+
+        <div class="grid two">
+
+          <div>
+
+            <b>
+              ${
+                config.apiEndpoint
+                  ? "CONFIGURED"
+                  : "NOT CONFIGURED"
+              }
+            </b>
+
+            <div class="muted">
+              Endpoint
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              STEP 27
+            </b>
+
+            <div class="muted">
+              Consolidated API Authority
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="notice">
+
+          26A does not connect to the
+          Backend or Database.
+
+          Do not run API connection tests
+          from this module.
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           HEALTH
+           ================================================ -->
+
+      <section class="card">
+
+        <h2>Configuration Health</h2>
+
+        <div class="grid four">
+
+          <div>
+
+            <b>
+              ${esc(health.validation)}
+            </b>
+
+            <div class="muted">
+              Validation
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              ${esc(
+                health.enabledLanguageCount
+              )}
+            </b>
+
+            <div class="muted">
+              Enabled Languages
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              ${esc(
+                health.enabledModuleCount
+              )}
+              /
+              ${esc(
+                health.totalModuleCount
+              )}
+            </b>
+
+            <div class="muted">
+              Enabled Modules
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              ${esc(
+                health.lastAction
+              )}
+            </b>
+
+            <div class="muted">
+              Last Action
+            </div>
+
+          </div>
+
+        </div>
 
         ${
-          !validation.valid
-
+          validation.valid
             ? `
-              <div class="govara26a-error">
-
-                <strong>
-                  Configuration Validation Error
-                </strong>
-
-                <ul>
-                  ${
-                    validation.errors
-                      .map(function (e) {
-                        return `
-                          <li>
-                            ${esc(e)}
-                          </li>
-                        `;
-                      })
-                      .join("")
-                  }
-                </ul>
-
+              <div class="notice">
+                Configuration is valid.
               </div>
             `
-
             : `
-              <div class="govara26a-notice">
-
-                <strong>
-                  Configuration Safe
-                </strong>
-
-                <div>
-                  26A V2 is operating as a frontend
-                  configuration layer. No backend or
-                  database changes are performed here.
-                </div>
-
-                ${
-                  validation.warnings.length
-                    ? `
-                      <div style="margin-top:8px;">
-                        Warnings:
-                        ${validation.warnings
-                          .map(esc)
-                          .join(" • ")}
-                      </div>
-                    `
-                    : ""
-                }
-
+              <div class="notice danger">
+                ${validation.errors
+                  .map(
+                    function (error) {
+                      return (
+                        "<div>" +
+                        esc(error) +
+                        "</div>"
+                      );
+                    }
+                  )
+                  .join("")}
               </div>
             `
         }
 
+      </section>
 
-        <div class="govara26a-grid">
+      <!-- ================================================
+           LOCAL AUDIT
+           ================================================ -->
 
+      <section class="card">
 
-          <!-- SYSTEM IDENTITY -->
+        <div class="row between">
 
-          <section
-            class="govara26a-section"
-          >
+          <div>
 
-            <h2>
-              1. System Identity
-            </h2>
+            <h2>26A Local Audit</h2>
 
-            <p class="govara26a-section-desc">
-              Core platform identity and lifecycle.
-            </p>
-
-            <div class="govara26a-fields">
-
-              <div class="govara26a-field">
-
-                <label>
-                  System Name
-                </label>
-
-                <input
-                  id="26a-systemName"
-                  value="${esc(c.systemName)}"
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Platform Name
-                </label>
-
-                <input
-                  id="26a-platformName"
-                  value="${esc(c.platformName)}"
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  System Version
-                </label>
-
-                <input
-                  id="26a-systemVersion"
-                  value="${esc(c.systemVersion)}"
-                  disabled
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  System Status
-                </label>
-
-                <select
-                  id="26a-systemStatus"
-                >
-
-                  ${option(
-                    "ACTIVE",
-                    "ACTIVE",
-                    c.systemStatus
-                  )}
-
-                  ${option(
-                    "MAINTENANCE",
-                    "MAINTENANCE",
-                    c.systemStatus
-                  )}
-
-                  ${option(
-                    "SUSPENDED",
-                    "SUSPENDED",
-                    c.systemStatus
-                  )}
-
-                  ${option(
-                    "INACTIVE",
-                    "INACTIVE",
-                    c.systemStatus
-                  )}
-
-                </select>
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Environment
-                </label>
-
-                <select
-                  id="26a-environment"
-                >
-
-                  ${option(
-                    "TESTING",
-                    "TESTING",
-                    c.environment
-                  )}
-
-                  ${option(
-                    "STAGING",
-                    "STAGING",
-                    c.environment
-                  )}
-
-                  ${option(
-                    "PRODUCTION",
-                    "PRODUCTION",
-                    c.environment
-                  )}
-
-                </select>
-
-              </div>
-
+            <div class="muted">
+              Frontend configuration audit only.
             </div>
 
-          </section>
-
-
-          <!-- ENVIRONMENT -->
-
-          <section
-            class="govara26a-section"
-          >
-
-            <h2>
-              2. Environment & Safety
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Operational lifecycle and production protection.
-            </p>
-
-            <div class="govara26a-controls">
-
-              ${boolControl(
-                "26a-maintenanceMode",
-                "Maintenance Mode",
-                c.maintenanceMode,
-                "Temporarily place platform into maintenance.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-suspendedMode",
-                "Suspended Mode",
-                c.suspendedMode,
-                "Suspend normal platform operations.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-productionLock",
-                "Production Lock",
-                c.productionLock,
-                "Hard production safety boundary.",
-                true
-              )}
-
-              ${boolControl(
-                "26a-testingMode",
-                "Testing Mode",
-                c.testingMode,
-                "Keeps current platform operation in testing mode.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-platformEnabled",
-                "Platform Enabled",
-                c.platformEnabled,
-                "Global platform availability.",
-                false
-              )}
-
-            </div>
-
-          </section>
-
-
-          <!-- API -->
-
-          <section
-            class="govara26a-section"
-          >
-
-            <h2>
-              3. Central Configuration & API
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Endpoint is only a configuration placeholder.
-              Actual API connection belongs to STEP 27.
-            </p>
-
-            <div class="govara26a-fields">
-
-              <div class="govara26a-field">
-
-                <label>
-                  API Endpoint
-                </label>
-
-                <input
-                  id="26a-apiEndpoint"
-                  value="${esc(c.apiEndpoint)}"
-                  placeholder="API endpoint — not configured"
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Configuration Version
-                </label>
-
-                <input
-                  value="${esc(CONFIG_VERSION)}"
-                  disabled
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Configuration Source
-                </label>
-
-                <input
-                  value="${esc(c.configSource)}"
-                  disabled
-                >
-
-              </div>
-
-            </div>
-
-
-            <div
-              class="govara26a-notice"
-              style="margin-top:16px;"
-            >
-
-              <strong>
-                API STATUS:
-                ${
-                  c.apiEndpoint
-                    ? "CONFIGURED"
-                    : "NOT CONFIGURED"
-                }
-              </strong>
-
-              <div>
-                No API connection or test is executed
-                from 26A.
-              </div>
-
-            </div>
-
-          </section>
-
-
-          <!-- REGIONAL -->
-
-          <section
-            class="govara26a-section"
-          >
-
-            <h2>
-              4. Regional Settings & i18n
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Admin-configurable regional defaults and
-              scalable language configuration.
-            </p>
-
-            <div class="govara26a-fields">
-
-              <div class="govara26a-field">
-
-                <label>
-                  Default Language
-                </label>
-
-                <select
-                  id="26a-defaultLanguage"
-                >
-
-                  ${
-                    c.availableLanguages
-                      .map(function (language) {
-
-                        return option(
-                          language,
-                          language,
-                          c.defaultLanguage
-                        );
-
-                      })
-                      .join("")
-                  }
-
-                </select>
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Country
-                </label>
-
-                <input
-                  id="26a-country"
-                  value="${esc(c.country)}"
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Currency
-                </label>
-
-                <input
-                  id="26a-currency"
-                  value="${esc(c.currency)}"
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Timezone
-                </label>
-
-                <input
-                  id="26a-timezone"
-                  value="${esc(c.timezone)}"
-                >
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Date Format
-                </label>
-
-                <select
-                  id="26a-dateFormat"
-                >
-
-                  ${option(
-                    "DD-MM-YYYY",
-                    "DD-MM-YYYY",
-                    c.dateFormat
-                  )}
-
-                  ${option(
-                    "MM-DD-YYYY",
-                    "MM-DD-YYYY",
-                    c.dateFormat
-                  )}
-
-                  ${option(
-                    "YYYY-MM-DD",
-                    "YYYY-MM-DD",
-                    c.dateFormat
-                  )}
-
-                </select>
-
-              </div>
-
-
-              <div class="govara26a-field">
-
-                <label>
-                  Time Format
-                </label>
-
-                <select
-                  id="26a-timeFormat"
-                >
-
-                  ${option(
-                    "12-hour",
-                    "12-hour",
-                    c.timeFormat
-                  )}
-
-                  ${option(
-                    "24-hour",
-                    "24-hour",
-                    c.timeFormat
-                  )}
-
-                </select>
-
-              </div>
-
-            </div>
-
-
-            <!-- LANGUAGE MANAGER -->
-
-            <div
-              class="govara26a-notice"
-              style="margin-top:16px;"
-            >
-
-              <strong>
-                Language Manager
-              </strong>
-
-              <div
-                class="govara26a-language"
-                style="margin-top:10px;"
-              >
-
-                ${
-                  c.availableLanguages
-                    .map(function (language) {
-
-                      const enabled =
-                        c.enabledLanguages
-                          .includes(language);
-
-                      const isDefault =
-                        language ===
-                        c.defaultLanguage;
-
-                      return `
-
-                        <div
-                          class="govara26a-language-row"
-                        >
-
-                          <div>
-
-                            <strong>
-                              ${esc(language)}
-                            </strong>
-
-                            <div
-                              style="
-                                opacity:.55;
-                                font-size:11px;
-                                margin-top:3px;
-                              "
-                            >
-                              ${
-                                isDefault
-                                  ? "DEFAULT"
-                                  : enabled
-                                    ? "ENABLED"
-                                    : "DISABLED"
-                              }
-                            </div>
-
-                          </div>
-
-                          <div
-                            class="govara26a-language-actions"
-                          >
-
-                            ${
-                              isDefault
-                                ? `
-                                  <button
-                                    type="button"
-                                    disabled
-                                  >
-                                    DEFAULT
-                                  </button>
-                                `
-                                : `
-                                  <button
-                                    type="button"
-                                    class="26a-language-toggle"
-                                    data-language="${esc(language)}"
-                                  >
-                                    ${
-                                      enabled
-                                        ? "Disable"
-                                        : "Enable"
-                                    }
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    class="26a-language-remove govara26a-small-btn"
-                                    data-language="${esc(language)}"
-                                  >
-                                    Remove
-                                  </button>
-                                `
-                            }
-
-                          </div>
-
-                        </div>
-
-                      `;
-
-                    })
-                    .join("")
-                }
-
-              </div>
-
-
-              <div
-                class="govara26a-language-add"
-              >
-
-                <input
-                  id="26a-newLanguage"
-                  placeholder="Add language"
-                >
-
-                <button
-                  type="button"
-                  id="26a-addLanguage"
-                >
-                  + Add Language
-                </button>
-
-              </div>
-
-
-              <small
-                style="
-                  display:block;
-                  margin-top:8px;
-                  opacity:.58;
-                "
-              >
-                Translation packs remain frontend-based.
-                No translation API/backend is used.
-              </small>
-
-            </div>
-
-          </section>
-
-
-          <!-- PLATFORM -->
-
-          <section
-            class="govara26a-section"
-          >
-
-            <h2>
-              5. Platform & Service Controls
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Global registration, booking and service
-              availability controls.
-            </p>
-
-            <div class="govara26a-controls">
-
-              ${boolControl(
-                "26a-customerRegistration",
-                "Customer Registration",
-                c.customerRegistration,
-                "Primary booking initiator.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-vendorRegistration",
-                "Vendor Registration",
-                c.vendorRegistration,
-                "Vendor/company onboarding.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-driverRegistration",
-                "Driver Registration",
-                c.driverRegistration,
-                "Driver onboarding.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-bookingEnabled",
-                "Booking Enabled",
-                c.bookingEnabled,
-                "Global booking capability.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-fareEstimateEnabled",
-                "Fare Estimate",
-                c.fareEstimateEnabled,
-                "Customer-side fare estimation.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-notificationsEnabled",
-                "Notifications",
-                c.notificationsEnabled,
-                "Platform notification capability.",
-                false
-              )}
-
-            </div>
-
-          </section>
-
-
-          <!-- WELFARE -->
-
-          <section
-            class="govara26a-section"
-          >
-
-            <h2>
-              6. Social Welfare Master Control
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Global master switch for welfare-related
-              platform functionality.
-            </p>
-
-            <div class="govara26a-controls">
-
-              ${boolControl(
-                "26a-welfareEnabled",
-                "Welfare Module Enabled",
-                c.welfareEnabled,
-                "Enables welfare functionality.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-welfareMasterControl",
-                "Welfare Master Control",
-                c.welfareMasterControl,
-                "Administrator-level master control.",
-                false
-              )}
-
-            </div>
-
-          </section>
-
-
-          <!-- MODULE REGISTRY -->
-
-          <section
-            class="govara26a-section"
-            style="grid-column:1/-1;"
-          >
-
-            <h2>
-              7. Module Registry & Controls
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Frontend module availability registry.
-              No backend tables are created or modified.
-            </p>
-
-            <div
-              class="govara26a-module-grid"
-            >
-
-              ${
-                modules
-                  .map(function (moduleName) {
-
-                    const enabled =
-                      !!c.modules[
-                        moduleName
-                      ];
-
-                    const locked =
-                      moduleName === "Admin" ||
-                      moduleName === "Audit";
-
-
-                    return `
-
-                      <div
-                        class="govara26a-module"
-                      >
-
-                        <div
-                          class="govara26a-module-top"
-                        >
-
-                          <span>
-                            ${esc(moduleName)}
-                          </span>
-
-                          <span
-                            class="
-                              govara26a-badge
-                              ${
-                                enabled
-                                  ? "govara26a-on"
-                                  : "govara26a-off"
-                              }
-                            "
-                          >
-                            ${
-                              enabled
-                                ? "ENABLED"
-                                : "DISABLED"
-                            }
-                          </span>
-
-                        </div>
-
-
-                        ${
-                          locked
-
-                            ? `
-                              <button
-                                type="button"
-                                disabled
-                              >
-                                REQUIRED
-                              </button>
-                            `
-
-                            : `
-                              <button
-                                type="button"
-                                class="26a-module-toggle"
-                                data-module="${esc(moduleName)}"
-                              >
-                                ${
-                                  enabled
-                                    ? "Disable"
-                                    : "Enable"
-                                }
-                              </button>
-                            `
-                        }
-
-                      </div>
-
-                    `;
-
-                  })
-                  .join("")
-              }
-
-            </div>
-
-          </section>
-
-
-          <!-- FINANCIAL -->
-
-          <section
-            class="govara26a-section"
-            style="grid-column:1/-1;"
-          >
-
-            <h2>
-              8. Financial Safety Boundary
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Hard frontend safety boundary. Financial
-              authority remains with the backend.
-            </p>
-
-            <div class="govara26a-safe">
-
-              <div class="govara26a-safe-card">
-
-                <strong>
-                  REAL MONEY
-                </strong>
-
-                <span class="govara26a-blocked">
-                  BLOCKED
-                </span>
-
-              </div>
-
-
-              <div class="govara26a-safe-card">
-
-                <strong>
-                  REAL PAYMENT
-                </strong>
-
-                <span class="govara26a-blocked">
-                  BLOCKED
-                </span>
-
-              </div>
-
-
-              <div class="govara26a-safe-card">
-
-                <strong>
-                  BANK TRANSFER
-                </strong>
-
-                <span class="govara26a-blocked">
-                  BLOCKED
-                </span>
-
-              </div>
-
-
-              <div class="govara26a-safe-card">
-
-                <strong>
-                  FRONTEND AUTHORITY
-                </strong>
-
-                <span>
-                  NO
-                </span>
-
-              </div>
-
-
-              <div class="govara26a-safe-card">
-
-                <strong>
-                  BACKEND AUTHORITY
-                </strong>
-
-                <span>
-                  YES
-                </span>
-
-              </div>
-
-            </div>
-
-          </section>
-
-
-          <!-- AUDIT -->
-
-          <section
-            class="govara26a-section"
-            style="grid-column:1/-1;"
-          >
-
-            <h2>
-              9. Audit & Health Monitoring
-            </h2>
-
-            <p class="govara26a-section-desc">
-              Local configuration monitoring and audit
-              visibility.
-            </p>
-
-            <div class="govara26a-controls">
-
-              ${boolControl(
-                "26a-auditLogging",
-                "Audit Logging",
-                c.auditLogging,
-                "Records configuration actions locally.",
-                false
-              )}
-
-              ${boolControl(
-                "26a-healthMonitoring",
-                "Health Monitoring",
-                c.healthMonitoring,
-                "Shows configuration health indicators.",
-                false
-              )}
-
-            </div>
-
-
-            <div
-              class="govara26a-health-grid"
-              style="margin-top:16px;"
-            >
-
-              <div class="govara26a-health">
-                <b>System</b>
-                <small>
-                  ${esc(health.system)}
-                </small>
-              </div>
-
-              <div class="govara26a-health">
-                <b>Configuration</b>
-                <small>
-                  ${esc(health.configuration)}
-                </small>
-              </div>
-
-              <div class="govara26a-health">
-                <b>Lifecycle</b>
-                <small>
-                  ${esc(health.lifecycle)}
-                </small>
-              </div>
-
-              <div class="govara26a-health">
-                <b>API</b>
-                <small>
-                  ${esc(health.api)}
-                </small>
-              </div>
-
-              <div class="govara26a-health">
-                <b>Financial</b>
-                <small>
-                  ${esc(health.financial)}
-                </small>
-              </div>
-
-              <div class="govara26a-health">
-                <b>Backend</b>
-                <small>
-                  AUTHORITATIVE
-                </small>
-              </div>
-
-              <div class="govara26a-health">
-                <b>Production Lock</b>
-                <small>
-                  ${esc(health.productionLock)}
-                </small>
-              </div>
-
-            </div>
-
-
-            <!-- LOCAL AUDIT HISTORY -->
-
-            <div
-              class="govara26a-notice"
-              style="margin-top:16px;"
-            >
-
-              <strong>
-                Local Audit History
-              </strong>
-
-              <div
-                id="26a-audit-history"
-                class="govara26a-audit-list"
-              >
-                Loading...
-              </div>
-
-              <button
-                type="button"
-                id="26a-clearAudit"
-                style="
-                  margin-top:10px;
-                  padding:8px 12px;
-                  border-radius:8px;
-                  border:1px solid rgba(255,255,255,.09);
-                  background:rgba(255,255,255,.05);
-                  color:inherit;
-                  cursor:pointer;
-                  font-weight:700;
-                "
-              >
-                Clear Local Audit
-              </button>
-
-            </div>
-
-          </section>
-
-
-        </div>
-
-
-        <!-- ACTION BAR -->
-
-        <div class="govara26a-actions">
+          </div>
 
           <button
             type="button"
-            id="26a-reload"
+            class="secondary"
+            data-26a-action="clear-audit"
+          >
+            Clear Local Audit
+          </button>
+
+        </div>
+
+        <div class="govara26a-audit-list">
+
+          ${renderAudit()}
+
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           ACTIONS
+           ================================================ -->
+
+      <section class="card">
+
+        <div class="row gap">
+
+          <button
+            type="button"
+            class="primary"
+            data-26a-action="save"
+          >
+            Save Configuration
+          </button>
+
+          <button
+            type="button"
+            class="secondary"
+            data-26a-action="reload"
           >
             Reload
           </button>
 
           <button
             type="button"
-            id="26a-reset"
+            class="secondary"
+            data-26a-action="reset"
           >
             Reset Defaults
           </button>
 
-          <button
-            type="button"
-            class="govara26a-save"
-            id="26a-save"
-          >
-            Save Configuration
-          </button>
-
         </div>
 
+      </section>
 
-        <div class="govara26a-meta">
-
-          <span>
-            Config:
-            ${esc(CONFIG_VERSION)}
-          </span>
-
-          <span>
-            Last Action:
-            ${esc(c.lastAction)}
-          </span>
-
-          <span>
-            Last Updated:
-            ${
-              c.lastUpdated
-                ? esc(c.lastUpdated)
-                : "Not saved yet"
-            }
-          </span>
-
-        </div>
-
-
+      <div class="muted govara26a-version">
+        ${esc(VERSION)}
       </div>
 
     `;
-
   }
 
-
-  /* ==========================================================
+  /* =======================================================
      READ FORM
-  ========================================================== */
+     ======================================================= */
 
-  function readForm() {
+  function readForm(root) {
 
-    const current =
-      getConfig();
-
-
-    function value(id) {
-
-      const el =
-        document.getElementById(id);
-
-      return el
-        ? el.value
-        : "";
-
-    }
-
-
-    function checked(id) {
-
-      const el =
-        document.getElementById(id);
-
-      return el
-        ? !!el.checked
-        : false;
-
-    }
-
-
-    const config =
-      clone(current);
-
-
-    /* ---------- IDENTITY ---------- */
-
-    config.systemName =
-      value(
-        "26a-systemName"
-      );
-
-    config.platformName =
-      value(
-        "26a-platformName"
-      );
-
-    config.systemStatus =
-      value(
-        "26a-systemStatus"
-      );
-
-    config.environment =
-      value(
-        "26a-environment"
-      );
-
-
-    /* ---------- SAFETY ---------- */
-
-    config.maintenanceMode =
-      checked(
-        "26a-maintenanceMode"
-      );
-
-    config.suspendedMode =
-      checked(
-        "26a-suspendedMode"
-      );
-
-    config.testingMode =
-      checked(
-        "26a-testingMode"
-      );
-
-    config.platformEnabled =
-      checked(
-        "26a-platformEnabled"
-      );
-
+    const next =
+      clone(config);
 
     /*
-     * Production Lock is always hard enforced.
+     * Text fields
      */
 
-    config.productionLock =
-      true;
+    root
+      .querySelectorAll(
+        "[data-26a-text]"
+      )
+      .forEach(
+        function (element) {
 
+          const key =
+            element.getAttribute(
+              "data-26a-text"
+            );
 
-    /* ---------- API ---------- */
+          next[key] =
+            element.value;
 
-    config.apiEndpoint =
-      value(
-        "26a-apiEndpoint"
+        }
       );
 
+    /*
+     * Select fields
+     */
 
-    /* ---------- REGIONAL ---------- */
+    root
+      .querySelectorAll(
+        "[data-26a-select]"
+      )
+      .forEach(
+        function (element) {
 
-    config.defaultLanguage =
-      value(
-        "26a-defaultLanguage"
+          const key =
+            element.getAttribute(
+              "data-26a-select"
+            );
+
+          next[key] =
+            element.value;
+
+        }
       );
 
-    config.country =
-      value(
-        "26a-country"
+    /*
+     * Boolean fields
+     */
+
+    root
+      .querySelectorAll(
+        "[data-26a-field]"
+      )
+      .forEach(
+        function (element) {
+
+          const key =
+            element.getAttribute(
+              "data-26a-field"
+            );
+
+          next[key] =
+            element.checked;
+
+        }
       );
 
-    config.currency =
-      value(
-        "26a-currency"
+    /*
+     * Language controls
+     */
+
+    root
+      .querySelectorAll(
+        "[data-26a-language]"
+      )
+      .forEach(
+        function (element) {
+
+          const language =
+            element.getAttribute(
+              "data-26a-language"
+            );
+
+          if (element.checked) {
+
+            if (
+              next.enabledLanguages.indexOf(
+                language
+              ) === -1
+            ) {
+
+              next.enabledLanguages.push(
+                language
+              );
+            }
+
+          } else {
+
+            if (language !== "English") {
+
+              next.enabledLanguages =
+                next.enabledLanguages.filter(
+                  function (item) {
+                    return item !== language;
+                  }
+                );
+            }
+
+          }
+
+        }
       );
 
-    config.timezone =
-      value(
-        "26a-timezone"
+    /*
+     * Module controls
+     */
+
+    root
+      .querySelectorAll(
+        "[data-26a-module]"
+      )
+      .forEach(
+        function (element) {
+
+          const moduleName =
+            element.getAttribute(
+              "data-26a-module"
+            );
+
+          if (
+            moduleName === "Admin" ||
+            moduleName === "Audit"
+          ) {
+
+            next.modules[moduleName] =
+              true;
+
+          } else {
+
+            next.modules[moduleName] =
+              element.checked;
+          }
+
+        }
       );
 
-    config.dateFormat =
-      value(
-        "26a-dateFormat"
-      );
-
-    config.timeFormat =
-      value(
-        "26a-timeFormat"
-      );
-
-
-    /* ---------- SERVICES ---------- */
-
-    config.customerRegistration =
-      checked(
-        "26a-customerRegistration"
-      );
-
-    config.vendorRegistration =
-      checked(
-        "26a-vendorRegistration"
-      );
-
-    config.driverRegistration =
-      checked(
-        "26a-driverRegistration"
-      );
-
-    config.bookingEnabled =
-      checked(
-        "26a-bookingEnabled"
-      );
-
-    config.fareEstimateEnabled =
-      checked(
-        "26a-fareEstimateEnabled"
-      );
-
-    config.notificationsEnabled =
-      checked(
-        "26a-notificationsEnabled"
-      );
-
-
-    /* ---------- WELFARE ---------- */
-
-    config.welfareEnabled =
-      checked(
-        "26a-welfareEnabled"
-      );
-
-    config.welfareMasterControl =
-      checked(
-        "26a-welfareMasterControl"
-      );
-
-
-    /* ---------- AUDIT ---------- */
-
-    config.auditLogging =
-      checked(
-        "26a-auditLogging"
-      );
-
-    config.healthMonitoring =
-      checked(
-        "26a-healthMonitoring"
-      );
-
-
-    /* ---------- HARD SAFETY ---------- */
-
-    enforceSafety(config);
-
-
-    return config;
-
+    return enforceSafety(next);
   }
 
-
-  /* ==========================================================
-     AUDIT UI
-  ========================================================== */
-
-  function renderAuditHistory() {
-
-    const mount =
-      document.getElementById(
-        "26a-audit-history"
-      );
-
-
-    if (!mount) {
-      return;
-    }
-
-
-    const history =
-      getAuditHistory()
-        .slice()
-        .reverse();
-
-
-    if (!history.length) {
-
-      mount.innerHTML =
-        `
-          <div
-            style="
-              opacity:.55;
-              padding:8px 0;
-            "
-          >
-            No local audit events yet.
-          </div>
-        `;
-
-      return;
-
-    }
-
-
-    mount.innerHTML =
-      history
-        .map(function (event) {
-
-          return `
-
-            <div
-              class="govara26a-audit-item"
-            >
-
-              <b>
-                ${esc(event.action)}
-              </b>
-
-              <div>
-                ${esc(event.details)}
-              </div>
-
-              <div
-                style="
-                  opacity:.45;
-                  margin-top:4px;
-                "
-              >
-                ${esc(event.timestamp)}
-              </div>
-
-            </div>
-
-          `;
-
-        })
-        .join("");
-
-  }
-
-
-  /* ==========================================================
-     BIND EVENTS
-  ========================================================== */
+  /* =======================================================
+     BIND
+     ======================================================= */
 
   function bind() {
 
+    const root =
+      document.getElementById(
+        "module-26A"
+      );
+
+    if (!root) {
+
+      console.warn(
+        "GoVara 26A: mount #module-26A not found."
+      );
+
+      return;
+    }
+
+    /*
+     * IMPORTANT:
+     * All selectors below use valid
+     * data attributes.
+     *
+     * No selector such as:
+     * .26a-language-toggle
+     *
+     * is used anywhere.
+     */
+
+    root
+      .querySelectorAll(
+        "[data-26a-language]"
+      )
+      .forEach(
+        function (element) {
+
+          element.addEventListener(
+            "change",
+            function () {
+
+              const language =
+                element.getAttribute(
+                  "data-26a-language"
+                );
+
+              setLanguageEnabled(
+                language,
+                element.checked
+              );
+
+            }
+          );
+
+        }
+      );
+
+    /*
+     * Default language
+     */
+
+    root
+      .querySelectorAll(
+        "[data-26a-default-language]"
+      )
+      .forEach(
+        function (element) {
+
+          element.addEventListener(
+            "change",
+            function () {
+
+              if (!element.checked) {
+                return;
+              }
+
+              const language =
+                element.getAttribute(
+                  "data-26a-default-language"
+                );
+
+              setDefaultLanguage(
+                language
+              );
+
+            }
+          );
+
+        }
+      );
+
+    /*
+     * Module controls
+     */
+
+    root
+      .querySelectorAll(
+        "[data-26a-module]"
+      )
+      .forEach(
+        function (element) {
+
+          element.addEventListener(
+            "change",
+            function () {
+
+              const moduleName =
+                element.getAttribute(
+                  "data-26a-module"
+                );
+
+              setModuleEnabled(
+                moduleName,
+                element.checked
+              );
+
+            }
+          );
+
+        }
+      );
+
+    /*
+     * Save
+     */
+
     const saveButton =
-      document.getElementById(
-        "26a-save"
+      root.querySelector(
+        '[data-26a-action="save"]'
       );
-
-
-    const resetButton =
-      document.getElementById(
-        "26a-reset"
-      );
-
-
-    const reloadButton =
-      document.getElementById(
-        "26a-reload"
-      );
-
-
-    /* ---------- SAVE ---------- */
 
     if (saveButton) {
 
-      saveButton.onclick =
+      saveButton.addEventListener(
+        "click",
         function () {
 
-          const config =
-            readForm();
-
-
-          /*
-           * Lifecycle normalization.
-           */
-
-          if (
-            config.maintenanceMode
-          ) {
-
-            config.systemStatus =
-              "MAINTENANCE";
-
-          }
-
-
-          if (
-            config.suspendedMode
-          ) {
-
-            config.systemStatus =
-              "SUSPENDED";
-
-          }
-
+          const next =
+            readForm(root);
 
           const result =
-            save(config);
-
+            save(next);
 
           if (!result.success) {
 
             alert(
-              "Configuration validation failed:\n\n" +
-              result.validation.errors
-                .join("\n")
+              "26A configuration could not be saved:\n\n" +
+              result.errors.join("\n")
             );
 
             return;
-
           }
 
-
-          if (
-            result.validation.warnings &&
-            result.validation.warnings.length
-          ) {
-
-            console.warn(
-              "GoVara26A warnings:",
-              result.validation.warnings
-            );
-
-          }
-
-
-          saveButton.textContent =
-            "Saved ✓";
-
-
-          setTimeout(
-            function () {
-
-              saveButton.textContent =
-                "Save Configuration";
-
-            },
-            1600
+          alert(
+            "26A configuration saved successfully."
           );
 
-
-          renderAndBind();
-
-        };
+        }
+      );
 
     }
 
+    /*
+     * Reload
+     */
 
-    /* ---------- RESET ---------- */
+    const reloadButton =
+      root.querySelector(
+        '[data-26a-action="reload"]'
+      );
+
+    if (reloadButton) {
+
+      reloadButton.addEventListener(
+        "click",
+        function () {
+
+          reload();
+
+        }
+      );
+
+    }
+
+    /*
+     * Reset
+     */
+
+    const resetButton =
+      root.querySelector(
+        '[data-26a-action="reset"]'
+      );
 
     if (resetButton) {
 
-      resetButton.onclick =
+      resetButton.addEventListener(
+        "click",
         function () {
 
           const confirmed =
@@ -3901,287 +2521,60 @@ window.GoVara26A = (function () {
               "Reset 26A System Configuration to defaults?"
             );
 
-
           if (!confirmed) {
             return;
           }
 
-
           reset();
 
-
-          renderAndBind();
-
-        };
-
-    }
-
-
-    /* ---------- RELOAD ---------- */
-
-    if (reloadButton) {
-
-      reloadButton.onclick =
-        function () {
-
-          renderAndBind();
-
-        };
-
-    }
-
-
-    /* ---------- LANGUAGE ADD ---------- */
-
-    const addLanguageButton =
-      document.getElementById(
-        "26a-addLanguage"
-      );
-
-
-    if (addLanguageButton) {
-
-      addLanguageButton.onclick =
-        function () {
-
-          const input =
-            document.getElementById(
-              "26a-newLanguage"
-            );
-
-
-          const language =
-            input
-              ? input.value.trim()
-              : "";
-
-
-          if (!language) {
-
-            alert(
-              "Please enter a language name."
-            );
-
-            return;
-
-          }
-
-
-          const result =
-            addLanguage(language);
-
-
-          if (!result.success) {
-
-            alert(
-              result.message ||
-              "Unable to add language."
-            );
-
-            return;
-
-          }
-
-
-          renderAndBind();
-
-        };
-
-    }
-
-
-    /* ---------- LANGUAGE TOGGLE ---------- */
-
-    document
-      .querySelectorAll(
-        ".26a-language-toggle"
-      )
-      .forEach(
-        function (button) {
-
-          button.onclick =
-            function () {
-
-              const language =
-                button.dataset.language;
-
-
-              const result =
-                toggleLanguage(
-                  language
-                );
-
-
-              if (!result.success) {
-
-                alert(
-                  result.message ||
-                  "Unable to change language."
-                );
-
-                return;
-
-              }
-
-
-              renderAndBind();
-
-            };
-
         }
       );
 
+    }
 
-    /* ---------- LANGUAGE REMOVE ---------- */
-
-    document
-      .querySelectorAll(
-        ".26a-language-remove"
-      )
-      .forEach(
-        function (button) {
-
-          button.onclick =
-            function () {
-
-              const language =
-                button.dataset.language;
-
-
-              const confirmed =
-                window.confirm(
-                  "Remove language '" +
-                  language +
-                  "'?"
-                );
-
-
-              if (!confirmed) {
-                return;
-              }
-
-
-              const result =
-                removeLanguage(
-                  language
-                );
-
-
-              if (!result.success) {
-
-                alert(
-                  result.message ||
-                  "Unable to remove language."
-                );
-
-                return;
-
-              }
-
-
-              renderAndBind();
-
-            };
-
-        }
-      );
-
-
-    /* ---------- MODULE TOGGLE ---------- */
-
-    document
-      .querySelectorAll(
-        ".26a-module-toggle"
-      )
-      .forEach(
-        function (button) {
-
-          button.onclick =
-            function () {
-
-              const moduleName =
-                button.dataset.module;
-
-
-              const config =
-                getConfig();
-
-
-              const current =
-                !!config.modules[
-                  moduleName
-                ];
-
-
-              const result =
-                setModuleEnabled(
-                  moduleName,
-                  !current
-                );
-
-
-              if (!result.success) {
-
-                alert(
-                  result.message ||
-                  "Unable to change module."
-                );
-
-                return;
-
-              }
-
-
-              renderAndBind();
-
-            };
-
-        }
-      );
-
-
-    /* ---------- CLEAR AUDIT ---------- */
+    /*
+     * Clear audit
+     */
 
     const clearAuditButton =
-      document.getElementById(
-        "26a-clearAudit"
+      root.querySelector(
+        '[data-26a-action="clear-audit"]'
       );
-
 
     if (clearAuditButton) {
 
-      clearAuditButton.onclick =
+      clearAuditButton.addEventListener(
+        "click",
         function () {
 
           const confirmed =
             window.confirm(
-              "Clear all local 26A audit history?"
+              "Clear local 26A audit history?"
             );
-
 
           if (!confirmed) {
             return;
           }
 
-
           clearAuditHistory();
 
+          createAuditEvent(
+            "AUDIT_HISTORY_CLEARED",
+            "Local audit history was cleared."
+          );
 
-          renderAuditHistory();
+          renderAndBind();
 
-        };
+        }
+      );
 
     }
 
-
-    renderAuditHistory();
-
   }
 
-
-  /* ==========================================================
+  /* =======================================================
      RENDER + BIND
-  ========================================================== */
+     ======================================================= */
 
   function renderAndBind() {
 
@@ -4190,38 +2583,64 @@ window.GoVara26A = (function () {
         "module-26A"
       );
 
-
     if (!mount) {
 
-      console.error(
-        "GoVara26A: #module-26A mount not found."
+      console.warn(
+        "GoVara 26A: mount #module-26A not found."
       );
 
       return;
-
     }
 
+    try {
 
-    mount.innerHTML =
-      render();
+      mount.innerHTML =
+        render();
 
+      bind();
 
-    bind();
+    } catch (error) {
 
+      console.error(
+        "GoVara 26A render error:",
+        error
+      );
+
+      mount.innerHTML = `
+        <div class="notice danger">
+
+          <b>26A System Configuration Error</b>
+
+          <div>
+            ${esc(error.message)}
+          </div>
+
+        </div>
+      `;
+    }
   }
 
-
-  /* ==========================================================
+  /* =======================================================
      PUBLIC API
-  ========================================================== */
+     ======================================================= */
 
   return {
 
-    render:
-      render,
+    VERSION: VERSION,
 
-    bind:
-      bind,
+    STORAGE_KEY: STORAGE_KEY,
+
+    AUDIT_KEY: AUDIT_KEY,
+
+    LANGUAGE_CATALOG:
+      clone(LANGUAGE_CATALOG),
+
+    MODULE_CATALOG:
+      clone(MODULE_CATALOG),
+
+    render: render,
+
+    bind: bind,
 
     renderAndBind:
       renderAndBind,
@@ -4234,6 +2653,9 @@ window.GoVara26A = (function () {
 
     reset:
       reset,
+
+    reload:
+      reload,
 
     validateConfig:
       validateConfig,
@@ -4250,36 +2672,41 @@ window.GoVara26A = (function () {
     clearAuditHistory:
       clearAuditHistory,
 
-    addLanguage:
-      addLanguage,
+    setLanguageEnabled:
+      setLanguageEnabled,
 
-    removeLanguage:
-      removeLanguage,
-
-    toggleLanguage:
-      toggleLanguage,
+    setDefaultLanguage:
+      setDefaultLanguage,
 
     setModuleEnabled:
       setModuleEnabled,
 
-    isModuleEnabled:
-      isModuleEnabled,
-
-    permissions:
-      MODULE_DEFINITIONS,
+    languages:
+      function () {
+        return clone(
+          LANGUAGE_CATALOG
+        );
+      },
 
     modules:
-      MODULE_DEFINITIONS,
-
-    STORAGE_KEY:
-      STORAGE_KEY,
-
-    AUDIT_STORAGE_KEY:
-      AUDIT_STORAGE_KEY,
-
-    VERSION:
-      CONFIG_VERSION
+      function () {
+        return clone(
+          MODULE_CATALOG
+        );
+      }
 
   };
 
 })();
+
+/* =========================================================
+   GLOBAL ALIAS
+   ========================================================= */
+
+window.GoVara26A =
+  window.GoVara26A;
+
+
+/* =========================================================
+   END — GoVara 26A V2
+   ========================================================= */

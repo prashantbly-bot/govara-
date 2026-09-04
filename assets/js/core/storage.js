@@ -1,0 +1,1 @@
+window.GoVaraStorage={keys:{system:'GOVARA_SYSTEM_CONFIG_26A',roles:'GOVARA_ROLES_26B'},clone:v=>JSON.parse(JSON.stringify(v)),load(key,fallback){try{const r=localStorage.getItem(key);return r?JSON.parse(r):this.clone(fallback)}catch(e){return this.clone(fallback)}},save(key,v){localStorage.setItem(key,JSON.stringify(v))},remove(key){localStorage.removeItem(key)}};

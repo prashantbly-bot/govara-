@@ -1,3898 +1,516 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoVara — Administrator Control Center</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root{
-  --bg:#f4f7fb;
-  --card:#ffffff;
-  --text:#172033;
-  --muted:#667085;
-  --border:#dfe5ee;
-  --primary:#2563eb;
-  --primary-dark:#1d4ed8;
-  --success:#15803d;
-  --warning:#b45309;
-  --danger:#b91c1c;
-  --dark:#111827;
-  --sidebar:#111827;
-  --sidebar-text:#d1d5db;
-  --sidebar-active:#2563eb;
-  --shadow:0 8px 24px rgba(15,23,42,.07);
-  --radius:14px;
-}
+  <title>GoVara — Administrator Control Center</title>
 
-*{
-  box-sizing:border-box;
-}
-
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-button,
-input,
-select,
-textarea{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
-.app{
-  min-height:100vh;
-  display:flex;
-}
-
-.sidebar{
-  width:260px;
-  background:var(--sidebar);
-  color:white;
-  position:fixed;
-  left:0;
-  top:0;
-  bottom:0;
-  overflow-y:auto;
-  z-index:20;
-}
-
-.brand{
-  padding:22px 18px;
-  border-bottom:1px solid rgba(255,255,255,.1);
-}
-
-.brand-title{
-  font-size:22px;
-  font-weight:800;
-}
-
-.brand-sub{
-  font-size:12px;
-  color:#9ca3af;
-  margin-top:5px;
-}
-
-.nav{
-  padding:14px 10px 30px;
-}
-
-.nav-section{
-  color:#6b7280;
-  font-size:11px;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  padding:14px 10px 7px;
-}
-
-.nav button{
-  width:100%;
-  border:0;
-  background:transparent;
-  color:var(--sidebar-text);
-  text-align:left;
-  padding:11px 12px;
-  margin:2px 0;
-  border-radius:9px;
-}
-
-.nav button:hover{
-  background:#1f2937;
-  color:white;
-}
-
-.nav button.active{
-  background:var(--sidebar-active);
-  color:white;
-}
-
-.main{
-  margin-left:260px;
-  width:calc(100% - 260px);
-  min-width:0;
-}
-
-.topbar{
-  height:68px;
-  background:white;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 22px;
-  position:sticky;
-  top:0;
-  z-index:10;
-}
-
-.topbar-left{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.topbar-title{
-  font-weight:800;
-}
-
-.status-row{
-  display:flex;
-  gap:7px;
-  flex-wrap:wrap;
-}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  border-radius:999px;
-  padding:5px 9px;
-  font-size:11px;
-  font-weight:700;
-  white-space:nowrap;
-}
-
-.badge.ready{
-  background:#dcfce7;
-  color:#166534;
-}
-
-.badge.warning{
-  background:#fef3c7;
-  color:#92400e;
-}
-
-.badge.danger{
-  background:#fee2e2;
-  color:#991b1b;
-}
-
-.badge.neutral{
-  background:#eef2f7;
-  color:#475467;
-}
-
-.content{
-  padding:22px;
-  max-width:1600px;
-  margin:auto;
-}
-
-.page{
-  display:none;
-}
-
-.page.active{
-  display:block;
-}
-
-.page-header{
-  margin-bottom:18px;
-}
-
-.page-header h1{
-  margin:0 0 6px;
-  font-size:25px;
-}
-
-.page-header p{
-  margin:0;
-  color:var(--muted);
-}
-
-.grid{
-  display:grid;
-  gap:16px;
-}
-
-.grid-2{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-.grid-3{
-  grid-template-columns:repeat(3,minmax(0,1fr));
-}
-
-.grid-4{
-  grid-template-columns:repeat(4,minmax(0,1fr));
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:18px;
-  margin-bottom:16px;
-}
-
-.card h2{
-  font-size:17px;
-  margin:0 0 5px;
-}
-
-.card h3{
-  font-size:15px;
-  margin:0 0 10px;
-}
-
-.card-sub{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:15px;
-}
-
-label{
-  display:block;
-  font-size:12px;
-  font-weight:700;
-  margin-bottom:6px;
-}
-
-input,
-select,
-textarea{
-  width:100%;
-  border:1px solid var(--border);
-  border-radius:9px;
-  padding:10px 11px;
-  background:white;
-  color:var(--text);
-  outline:none;
-}
-
-input:focus,
-select:focus,
-textarea:focus{
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(37,99,235,.1);
-}
-
-textarea{
-  min-height:90px;
-  resize:vertical;
-}
-
-.field{
-  margin-bottom:13px;
-}
-
-.checkbox{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  margin:8px 0;
-}
-
-.checkbox input{
-  width:auto;
-}
-
-.btn-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:9px;
-  margin-top:14px;
-}
-
-.btn{
-  border:1px solid var(--border);
-  background:white;
-  color:var(--text);
-  padding:9px 13px;
-  border-radius:9px;
-  font-weight:700;
-}
-
-.btn:hover{
-  background:#f8fafc;
-}
-
-.btn.primary{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:white;
-}
-
-.btn.primary:hover{
-  background:var(--primary-dark);
-}
-
-.btn.success{
-  background:#15803d;
-  border-color:#15803d;
-  color:white;
-}
-
-.btn.warning{
-  background:#b45309;
-  border-color:#b45309;
-  color:white;
-}
-
-.btn.danger{
-  background:#b91c1c;
-  border-color:#b91c1c;
-  color:white;
-}
-
-.stat{
-  background:white;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:17px;
-  box-shadow:var(--shadow);
-}
-
-.stat-label{
-  color:var(--muted);
-  font-size:12px;
-  font-weight:700;
-}
-
-.stat-value{
-  font-size:25px;
-  font-weight:800;
-  margin-top:7px;
-}
-
-.kv{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  border-bottom:1px solid #edf0f4;
-  padding:10px 0;
-}
-
-.kv:last-child{
-  border-bottom:0;
-}
-
-.kv span:first-child{
-  color:var(--muted);
-  font-size:13px;
-}
-
-.kv span:last-child{
-  font-weight:700;
-  text-align:right;
-}
-
-.notice{
-  border:1px solid #bfdbfe;
-  background:#eff6ff;
-  color:#1e3a8a;
-  padding:13px;
-  border-radius:10px;
-  font-size:13px;
-  margin-bottom:15px;
-}
-
-.notice.warning{
-  border-color:#fde68a;
-  background:#fffbeb;
-  color:#92400e;
-}
-
-.notice.danger{
-  border-color:#fecaca;
-  background:#fef2f2;
-  color:#991b1b;
-}
-
-.table-wrap{
-  overflow:auto;
-  border:1px solid var(--border);
-  border-radius:10px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:760px;
-}
-
-th,
-td{
-  border-bottom:1px solid var(--border);
-  padding:10px 9px;
-  text-align:left;
-  font-size:12px;
-  vertical-align:middle;
-}
-
-th{
-  background:#f8fafc;
-  font-weight:800;
-}
-
-tr:last-child td{
-  border-bottom:0;
-}
-
-.center{
-  text-align:center;
-}
-
-.permission-cell input{
-  width:17px;
-  height:17px;
-}
-
-.role-card{
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:15px;
-  background:white;
-  cursor:pointer;
-  transition:.15s;
-}
-
-.role-card:hover{
-  border-color:#93c5fd;
-}
-
-.role-card.selected{
-  border:2px solid var(--primary);
-  background:#eff6ff;
-}
-
-.role-card-title{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  font-weight:800;
-}
-
-.role-card-description{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:7px;
-  line-height:1.45;
-}
-
-.role-card-footer{
-  margin-top:12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.toggle{
-  position:relative;
-  width:42px;
-  height:23px;
-  display:inline-block;
-}
-
-.toggle input{
-  opacity:0;
-  width:0;
-  height:0;
-}
-
-.slider{
-  position:absolute;
-  inset:0;
-  background:#cbd5e1;
-  border-radius:999px;
-  transition:.2s;
-}
-
-.slider:before{
-  content:"";
-  position:absolute;
-  width:17px;
-  height:17px;
-  left:3px;
-  top:3px;
-  background:white;
-  border-radius:50%;
-  transition:.2s;
-}
-
-.toggle input:checked + .slider{
-  background:var(--primary);
-}
-
-.toggle input:checked + .slider:before{
-  transform:translateX(19px);
-}
-
-.role-selected-label{
-  color:var(--primary);
-  font-size:11px;
-  font-weight:800;
-}
-
-.module-name{
-  font-weight:700;
-}
-
-.module-note{
-  color:var(--muted);
-  font-size:11px;
-}
-
-.footer-note{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:15px;
-  line-height:1.5;
-}
-
-.hidden{
-  display:none!important;
-}
-
-.mobile-menu{
-  display:none;
-}
-
-@media(max-width:1050px){
-  .grid-4{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-
-  .grid-3{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-}
-
-@media(max-width:800px){
-  .sidebar{
-    transform:translateX(-100%);
-    transition:.2s;
-  }
-
-  .sidebar.open{
-    transform:translateX(0);
-  }
-
-  .main{
-    margin-left:0;
-    width:100%;
-  }
-
-  .mobile-menu{
-    display:block;
-  }
-
-  .grid-2,
-  .grid-3,
-  .grid-4{
-    grid-template-columns:1fr;
-  }
-
-  .topbar{
-    padding:0 12px;
-  }
-
-  .content{
-    padding:13px;
-  }
-
-  .status-row{
-    display:none;
-  }
-}
-</style>
+  <!-- GoVara CSS -->
+  <link rel="stylesheet" href="assets/css/GoVara.css">
 </head>
 
 <body>
 
-<div class="app">
+  <div id="app">
 
-<aside class="sidebar" id="sidebar">
+    <!-- =====================================================
+         TOP BAR
+         ===================================================== -->
+    <header class="topbar">
 
-  <div class="brand">
-    <div class="brand-title">GoVara</div>
-    <div class="brand-sub">Administrator Control Center</div>
-  </div>
-
-  <nav class="nav">
-
-    <div class="nav-section">Control Center</div>
-
-    <button class="nav-btn active" data-page="dashboard">
-      Dashboard
-    </button>
-
-    <button class="nav-btn" data-page="system">
-      26A — System Configuration
-    </button>
-
-    <button class="nav-btn" data-page="roles">
-      26B — User & Role Control
-    </button>
-
-    <button class="nav-btn" data-page="policies">
-      26C — Business Policies
-    </button>
-
-    <button class="nav-btn" data-page="operations">
-      26D — Operations Control
-    </button>
-
-    <button class="nav-btn" data-page="financial">
-      26E — Financial Control
-    </button>
-
-    <button class="nav-btn" data-page="documents">
-      26F — Documents & KYC
-    </button>
-
-    <button class="nav-btn" data-page="audit">
-      26G — Audit & Monitoring
-    </button>
-
-    <div class="nav-section">Integration</div>
-
-    <button class="nav-btn" data-page="api">
-      STEP 27 — Consolidated API
-    </button>
-
-  </nav>
-</aside>
-
-<main class="main">
-
-<header class="topbar">
-
-  <div class="topbar-left">
-    <button class="btn mobile-menu" id="mobileMenuBtn">☰</button>
-    <div>
-      <div class="topbar-title">GoVara Administrator</div>
-    </div>
-  </div>
-
-  <div class="status-row">
-    <span class="badge ready">FRONTEND READY</span>
-    <span class="badge warning" id="topApiBadge">API NOT CONFIGURED</span>
-    <span class="badge warning">TESTING MODE</span>
-    <span class="badge danger">REAL MONEY BLOCKED</span>
-  </div>
-
-  <div style="width:140px;">
-    <select id="globalLanguageSelector" aria-label="Language"></select>
-  </div>
-
-</header>
-
-<div class="content">
-
-<!-- ========================================================= -->
-<!-- DASHBOARD -->
-<!-- ========================================================= -->
-
-<section class="page active" id="page-dashboard">
-
-  <div class="page-header">
-    <h1>Administrator Dashboard</h1>
-    <p>Central control layer for GoVara.</p>
-  </div>
-
-  <div class="grid grid-4">
-
-    <div class="stat">
-      <div class="stat-label">Frontend</div>
-      <div class="stat-value">READY</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">API</div>
-      <div class="stat-value" id="dashboardApiStatus">NOT CONFIGURED</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Roles</div>
-      <div class="stat-value" id="dashboardRoleCount">4</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Real Money</div>
-      <div class="stat-value">BLOCKED</div>
-    </div>
-
-  </div>
-
-  <div class="card">
-    <h2>Architecture Status</h2>
-    <div class="kv">
-      <span>System</span>
-      <span>GoVara</span>
-    </div>
-    <div class="kv">
-      <span>Administrator Layer</span>
-      <span>26A → 26B → 26C → 26D → 26E → 26F → 26G</span>
-    </div>
-    <div class="kv">
-      <span>Backend</span>
-      <span>Separate / Not Connected</span>
-    </div>
-    <div class="kv">
-      <span>Database</span>
-      <span>Separate / Not Connected</span>
-    </div>
-    <div class="kv">
-      <span>Financial Authority</span>
-      <span>Backend Only</span>
-    </div>
-  </div>
-
-  <div class="notice">
-    Administrator Control Center is being built first. Backend and database integration remain outside this stage.
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26A SYSTEM CONFIGURATION -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-system">
-
-  <div class="page-header">
-    <h1>26A — System Configuration</h1>
-    <p>Global system-level configuration.</p>
-  </div>
-
-  <div class="card">
-    <h2>System Identity</h2>
-    <div class="grid grid-2">
-
-      <div class="field">
-        <label>System Name</label>
-        <input id="systemName" value="GoVara">
+      <div>
+        <strong>GoVara</strong>
+        <span class="muted">Administrator Control Center</span>
       </div>
 
-      <div class="field">
-        <label>Platform / System Type</label>
-        <input id="platformType" value="TRANSPORT_MOBILITY">
-      </div>
+      <div class="topbar-status">
 
-      <div class="field">
-        <label>System Version</label>
-        <input id="systemVersion" value="GOVARA-SYSTEM-26A">
-      </div>
-
-      <div class="field">
-        <label>Frontend Version</label>
-        <input id="frontendVersion" value="ADMIN-CONTROL-26">
-      </div>
-
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Environment & System Status</h2>
-
-    <div class="grid grid-2">
-
-      <div class="field">
-        <label>Environment</label>
-        <select id="environment">
-          <option value="TESTING">TESTING</option>
-          <option value="STAGING">STAGING</option>
-          <option value="PRODUCTION">PRODUCTION</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>System Status</label>
-        <select id="systemStatus">
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="MAINTENANCE">MAINTENANCE</option>
-          <option value="SUSPENDED">SUSPENDED</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div class="field">
-      <label>Maintenance / System Message</label>
-      <textarea id="maintenanceMessage">GoVara system is currently under maintenance.</textarea>
-    </div>
-
-    <div class="field">
-      <label>Maintenance Behaviour</label>
-      <select id="maintenanceBehavior">
-        <option value="NOTICE_ONLY">NOTICE ONLY</option>
-        <option value="READ_ONLY">READ ONLY</option>
-        <option value="BLOCK_OPERATIONS">BLOCK OPERATIONS</option>
-      </select>
-    </div>
-
-  </div>
-
-  <div class="card">
-    <h2>Production Safety</h2>
-
-    <label class="checkbox">
-      <input type="checkbox" id="productionLock" checked>
-      Production Lock
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" id="testingIndicator" checked>
-      Testing Mode Indicator
-    </label>
-
-  </div>
-
-  <div class="card">
-    <h2>Consolidated API Configuration</h2>
-
-    <div class="notice">
-      Backend is intentionally not connected at this stage. Only the consolidated endpoint is configured here.
-    </div>
-
-    <div class="field">
-      <label>Consolidated API Endpoint</label>
-      <input id="apiEndpoint" placeholder="https://script.google.com/macros/s/.../exec">
-    </div>
-
-    <div class="btn-row">
-      <button class="btn" id="validateEndpointBtn">Validate Endpoint</button>
-      <button class="btn primary" id="saveApiConfigBtn">Save API Configuration</button>
-      <button class="btn danger" id="clearApiBtn">Clear API</button>
-    </div>
-
-  </div>
-
-  <div class="card">
-    <h2>Language & Localization</h2>
-
-    <div class="grid grid-2">
-
-      <div class="field">
-        <label>Default Language</label>
-        <select id="defaultLanguage"></select>
-      </div>
-
-      <div class="field">
-        <label>Language Selector</label>
-        <select id="languageSelectorMode">
-          <option value="SHOW">SHOW</option>
-          <option value="HIDE">HIDE</option>
-          <option value="ADMIN_ONLY">ADMIN ONLY</option>
-        </select>
-      </div>
-
-    </div>
-
-    <h3>Available Languages</h3>
-    <div id="languageList"></div>
-
-  </div>
-
-  <div class="card">
-    <h2>Regional Settings</h2>
-
-    <div class="grid grid-3">
-
-      <div class="field">
-        <label>Timezone</label>
-        <select id="timezone">
-          <option value="Asia/Kolkata">Asia/Kolkata</option>
-          <option value="UTC">UTC</option>
-          <option value="Asia/Dubai">Asia/Dubai</option>
-          <option value="Asia/Singapore">Asia/Singapore</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Currency</label>
-        <select id="currency">
-          <option value="INR">INR</option>
-          <option value="USD">USD</option>
-          <option value="AED">AED</option>
-          <option value="EUR">EUR</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Date Format</label>
-        <select id="dateFormat">
-          <option value="DD-MM-YYYY">DD-MM-YYYY</option>
-          <option value="MM-DD-YYYY">MM-DD-YYYY</option>
-          <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Time Format</label>
-        <select id="timeFormat">
-          <option value="12H">12H</option>
-          <option value="24H">24H</option>
-        </select>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Social Welfare</h2>
-
-    <label class="checkbox">
-      <input type="checkbox" id="welfareEnabled" checked>
-      Social Welfare Module Enabled
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" id="welfareVisibility" checked>
-      Show Welfare Options
-    </label>
-
-  </div>
-
-  <div class="card">
-    <h2>System Behaviour</h2>
-
-    <label class="checkbox">
-      <input type="checkbox" id="showMaintenanceMessage" checked>
-      Show Maintenance Message
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" id="blockWhenSuspended" checked>
-      Block Operations When Suspended
-    </label>
-
-  </div>
-
-  <div class="card">
-    <h2>Configuration Management</h2>
-
-    <div class="grid grid-3">
-
-      <div class="field">
-        <label>Configuration Version</label>
-        <input id="configVersion" value="26A-1.0">
-      </div>
-
-      <div class="field">
-        <label>Last Updated</label>
-        <input id="lastUpdated" readonly>
-      </div>
-
-      <div class="field">
-        <label>Storage Mode</label>
-        <input value="LOCAL FRONTEND" readonly>
-      </div>
-
-    </div>
-
-    <div class="btn-row">
-      <button class="btn primary" id="save26ABtn">Save Configuration</button>
-      <button class="btn" id="reload26ABtn">Reload Configuration</button>
-      <button class="btn danger" id="reset26ABtn">Reset to Defaults</button>
-    </div>
-
-  </div>
-
-  <div class="card">
-    <h2>Safety Boundary</h2>
-
-    <div class="kv">
-      <span>Real Money</span>
-      <span class="badge danger">BLOCKED</span>
-    </div>
-
-    <div class="kv">
-      <span>Real Payment</span>
-      <span class="badge danger">BLOCKED</span>
-    </div>
-
-    <div class="kv">
-      <span>Bank Transfer</span>
-      <span class="badge danger">BLOCKED</span>
-    </div>
-
-    <div class="kv">
-      <span>Frontend Financial Authority</span>
-      <span>NO</span>
-    </div>
-
-    <div class="kv">
-      <span>Backend Authority</span>
-      <span>YES — WHEN CONNECTED</span>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26B USER & ROLE CONTROL -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-roles">
-
-  <div class="page-header">
-    <h1>26B — User & Role Control</h1>
-    <p>Central role registry, role status, module access and permission control.</p>
-  </div>
-
-  <div class="notice">
-    <strong>Security boundary:</strong>
-    Frontend role configuration controls the administrator UI and access presentation.
-    Actual authorization must ultimately be enforced by the backend.
-  </div>
-
-  <!-- ROLE SUMMARY -->
-
-  <div class="grid grid-4">
-
-    <div class="stat">
-      <div class="stat-label">Registered Roles</div>
-      <div class="stat-value" id="roleCountStat">4</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Active Roles</div>
-      <div class="stat-value" id="activeRoleCountStat">4</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Primary Booking Role</div>
-      <div class="stat-value" style="font-size:19px;">CUSTOMER</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Financial Authority</div>
-      <div class="stat-value" style="font-size:19px;">BACKEND</div>
-    </div>
-
-  </div>
-
-  <!-- ROLE REGISTRY -->
-
-  <div class="card">
-    <h2>Role Registry</h2>
-    <div class="card-sub">
-      Core GoVara roles. Future roles can be added without redesigning the permission architecture.
-    </div>
-
-    <div class="grid grid-2" id="roleCards"></div>
-
-  </div>
-
-  <!-- SELECTED ROLE -->
-
-  <div class="card">
-
-    <h2>Selected Role Configuration</h2>
-
-    <div id="selectedRoleInfo"></div>
-
-    <div class="grid grid-2">
-
-      <div class="field">
-        <label>Role Code</label>
-        <input id="roleCode" readonly>
-      </div>
-
-      <div class="field">
-        <label>Role Name</label>
-        <input id="roleName">
-      </div>
-
-    </div>
-
-    <div class="field">
-      <label>Role Description</label>
-      <textarea id="roleDescription"></textarea>
-    </div>
-
-    <label class="checkbox">
-      <input type="checkbox" id="roleEnabled">
-      Role Enabled
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" id="primaryBookingRole">
-      Primary Booking Initiator
-    </label>
-
-    <div class="btn-row">
-      <button class="btn primary" id="saveRoleBtn">Save Selected Role</button>
-      <button class="btn" id="resetRoleBtn">Reset Selected Role</button>
-    </div>
-
-  </div>
-
-  <!-- MODULE ACCESS -->
-
-  <div class="card">
-
-    <h2>Role-wise Module Access</h2>
-
-    <div class="card-sub">
-      Select which GoVara modules are available to the selected role.
-    </div>
-
-    <div class="table-wrap">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Module</th>
-            <th>Description</th>
-            <th class="center">Enabled</th>
-            <th class="center">Read</th>
-            <th class="center">Create</th>
-            <th class="center">Edit</th>
-            <th class="center">Delete</th>
-            <th class="center">Approve</th>
-          </tr>
-        </thead>
-
-        <tbody id="permissionTableBody"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-  <!-- ROLE-SPECIFIC RULES -->
-
-  <div class="card">
-
-    <h2>Role-specific Business Access</h2>
-
-    <div class="grid grid-2">
-
-      <div class="card" style="box-shadow:none;margin:0;">
-        <h3>Customer</h3>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="customerBooking" checked>
-          Can initiate booking
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="customerFare" checked>
-          Can view fare estimate
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="customerHistory" checked>
-          Can view own booking/history
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="customerRating" checked>
-          Can submit rating/feedback
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="customerWallet" checked>
-          Can view wallet
-        </label>
-
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:0;">
-        <h3>Vendor</h3>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="vendorProfile" checked>
-          Can manage vendor profile
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="vendorVehicle" checked>
-          Can manage assigned vehicles
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="vendorDriver" checked>
-          Can manage assigned drivers
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="vendorOperations" checked>
-          Can operate assigned bookings
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="vendorKyc" checked>
-          Can manage vendor documents/KYC
-        </label>
-
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:0;">
-        <h3>Driver</h3>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="driverDuty" checked>
-          Can manage own duty
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="driverBooking" checked>
-          Can view assigned bookings
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="driverTrip" checked>
-          Can update trip status
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="driverDocuments" checked>
-          Can view/manage required documents
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="driverRating" checked>
-          Can view relevant feedback
-        </label>
-
-      </div>
-
-      <div class="card" style="box-shadow:none;margin:0;">
-        <h3>Admin</h3>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="adminSystem" checked>
-          Can manage system configuration
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="adminRoles" checked>
-          Can manage users and roles
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="adminPolicies" checked>
-          Can manage business policies
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="adminAudit" checked>
-          Can view audit/monitoring
-        </label>
-
-        <label class="checkbox">
-          <input type="checkbox" data-role-rule="adminKyc" checked>
-          Can manage KYC controls
-        </label>
-
-      </div>
-
-    </div>
-
-    <div class="btn-row">
-      <button class="btn primary" id="saveRoleRulesBtn">Save Role-specific Rules</button>
-    </div>
-
-  </div>
-
-  <!-- FINANCIAL BOUNDARY -->
-
-  <div class="card">
-
-    <h2>Financial & Sensitive Access Boundary</h2>
-
-    <div class="notice warning">
-      Wallet, Transaction, Ledger, Settlement and Billing may be visible according to role,
-      but financial truth is never generated by the frontend.
-    </div>
-
-    <div class="kv">
-      <span>Wallet</span>
-      <span>Backend Required</span>
-    </div>
-
-    <div class="kv">
-      <span>Transaction</span>
-      <span>Backend Required</span>
-    </div>
-
-    <div class="kv">
-      <span>Ledger</span>
-      <span>Backend Required</span>
-    </div>
-
-    <div class="kv">
-      <span>Settlement</span>
-      <span>Backend Required</span>
-    </div>
-
-    <div class="kv">
-      <span>Billing</span>
-      <span>Backend Required</span>
-    </div>
-
-    <div class="kv">
-      <span>Bank Transfer</span>
-      <span class="badge danger">BLOCKED</span>
-    </div>
-
-  </div>
-
-  <!-- ROLE CONFIG MANAGEMENT -->
-
-  <div class="card">
-
-    <h2>Role Configuration Management</h2>
-
-    <div class="grid grid-3">
-
-      <div class="field">
-        <label>Configuration Version</label>
-        <input id="roleConfigVersion" value="26B-1.0">
-      </div>
-
-      <div class="field">
-        <label>Last Updated</label>
-        <input id="roleLastUpdated" readonly>
-      </div>
-
-      <div class="field">
-        <label>Storage Mode</label>
-        <input value="LOCAL FRONTEND" readonly>
-      </div>
-
-    </div>
-
-    <div class="btn-row">
-      <button class="btn primary" id="saveAllRolesBtn">Save All Role Configuration</button>
-      <button class="btn" id="reloadRolesBtn">Reload Role Configuration</button>
-      <button class="btn danger" id="resetRolesBtn">Reset Roles to Defaults</button>
-    </div>
-
-  </div>
-
-  <div class="footer-note">
-    26B controls the frontend role model. Backend authorization remains authoritative once the consolidated API is connected.
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26C -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-policies">
-
-  <div class="page-header">
-    <h1>26C — Business Policies</h1>
-    <p>Central business rules and configurable policy values.</p>
-  </div>
-
-  <div class="card">
-
-    <h2>Fare & Charges</h2>
-
-    <div class="grid grid-3">
-
-      <div class="field">
-        <label>Base Fare</label>
-        <input type="number" id="baseFare" value="100">
-      </div>
-
-      <div class="field">
-        <label>Per KM Rate</label>
-        <input type="number" id="perKmRate" value="12">
-      </div>
-
-      <div class="field">
-        <label>Service Charge %</label>
-        <input type="number" id="serviceCharge" value="5">
-      </div>
-
-      <div class="field">
-        <label>Tax %</label>
-        <input type="number" id="taxPercent" value="5">
-      </div>
-
-      <div class="field">
-        <label>Maximum Discount %</label>
-        <input type="number" id="maxDiscount" value="20">
-      </div>
-
-      <div class="field">
-        <label>Default Advance %</label>
-        <input type="number" id="advancePercent" value="20">
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="card">
-
-    <h2>KYC Policy</h2>
-
-    <label class="checkbox">
-      <input type="checkbox" id="customerKyc" checked>
-      Customer KYC Required
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" id="vendorKyc" checked>
-      Vendor KYC Required
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" id="driverKyc" checked>
-      Driver KYC Required
-    </label>
-
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26D -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-operations">
-
-  <div class="page-header">
-    <h1>26D — Operations Control</h1>
-    <p>Operational feature and service controls.</p>
-  </div>
-
-  <div class="card">
-
-    <h2>Operational Controls</h2>
-
-    <div id="operationControls"></div>
-
-  </div>
-
-  <div class="card">
-
-    <h2>Services</h2>
-
-    <div id="serviceControls"></div>
-
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26E -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-financial">
-
-  <div class="page-header">
-    <h1>26E — Financial Control</h1>
-    <p>Financial module boundaries and backend authority.</p>
-  </div>
-
-  <div class="notice danger">
-    Frontend is NOT the financial authority.
-    Real money, real payment and bank transfer remain blocked.
-  </div>
-
-  <div class="grid grid-3" id="financialModules"></div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26F -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-documents">
-
-  <div class="page-header">
-    <h1>26F — Documents & KYC</h1>
-    <p>Document requirements, verification and expiry monitoring.</p>
-  </div>
-
-  <div class="card">
-    <h2>Document Controls</h2>
-    <div id="documentControls"></div>
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- 26G -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-audit">
-
-  <div class="page-header">
-    <h1>26G — Audit & Monitoring</h1>
-    <p>Local frontend configuration audit and monitoring.</p>
-  </div>
-
-  <div class="card">
-
-    <h2>Audit Log</h2>
-
-    <div class="btn-row">
-      <button class="btn danger" id="clearAuditBtn">Clear Local Log</button>
-    </div>
-
-    <div class="table-wrap" style="margin-top:15px;">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Action</th>
-            <th>Details</th>
-          </tr>
-        </thead>
-
-        <tbody id="auditBody"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ========================================================= -->
-<!-- STEP 27 -->
-<!-- ========================================================= -->
-
-<section class="page" id="page-api">
-
-  <div class="page-header">
-    <h1>STEP 27 — Consolidated API</h1>
-    <p>Single API boundary for the GoVara frontend.</p>
-  </div>
-
-  <div class="card">
-
-    <h2>API Status</h2>
-
-    <div class="kv">
-      <span>API Object</span>
-      <span>AVAILABLE</span>
-    </div>
-
-    <div class="kv">
-      <span>Endpoint</span>
-      <span id="apiPageEndpoint">NONE</span>
-    </div>
-
-    <div class="kv">
-      <span>Connection</span>
-      <span id="apiConnectionStatus">NOT TESTED</span>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn primary" id="step27SaveBtn">Save Endpoint</button>
-      <button class="btn danger" id="step27ClearBtn">Clear Endpoint</button>
-      <button class="btn" id="step27TestBtn">Test Connection</button>
-    </div>
-
-  </div>
-
-  <div class="card">
-
-    <h2>Consolidated Modules</h2>
-
-    <div class="grid grid-3">
-
-      <div class="stat">Customer</div>
-      <div class="stat">Vendor</div>
-      <div class="stat">Driver</div>
-      <div class="stat">Vehicle</div>
-      <div class="stat">Booking</div>
-      <div class="stat">Duty</div>
-      <div class="stat">Fare</div>
-      <div class="stat">Transaction</div>
-      <div class="stat">Wallet</div>
-      <div class="stat">Ledger</div>
-      <div class="stat">Settlement</div>
-      <div class="stat">Billing</div>
-      <div class="stat">Documents</div>
-      <div class="stat">Admin</div>
-      <div class="stat">Audit</div>
-
-    </div>
-
-  </div>
-
-  <div class="notice danger">
-    No separate API is created for individual frontend modules.
-    All future module calls must pass through the consolidated GoVara API boundary.
-  </div>
-
-</section>
-
-</div>
-</main>
-</div>
-
-
-<script>
-/* ============================================================
-   GOVARA CORE STORAGE
-============================================================ */
-
-const STORAGE = {
-  SYSTEM: "GOVARA_SYSTEM_CONFIG_26A_V1",
-  ROLES: "GOVARA_ROLE_CONFIG_26B_V1",
-  AUDIT: "GOVARA_ADMIN_AUDIT_V1",
-  UI_LANGUAGE: "GOVARA_UI_LANGUAGE",
-  POLICIES: "GOVARA_POLICY_CONFIG_26C_V1",
-  OPERATIONS: "GOVARA_OPERATION_CONFIG_26D_V1",
-  DOCUMENTS: "GOVARA_DOCUMENT_CONFIG_26F_V1"
-};
-
-
-/* ============================================================
-   LANGUAGE
-============================================================ */
-
-const LANGUAGES = {
-  en:"English",
-  hi:"Hindi",
-  bn:"Bengali",
-  mr:"Marathi",
-  gu:"Gujarati",
-  pa:"Punjabi",
-  ta:"Tamil",
-  te:"Telugu",
-  kn:"Kannada",
-  ml:"Malayalam",
-  ur:"Urdu",
-  ar:"Arabic",
-  es:"Spanish",
-  fr:"French"
-};
-
-const I18N = {
-
-  en:{
-    dashboard:"Dashboard",
-    system:"26A — System Configuration",
-    roles:"26B — User & Role Control",
-    policies:"26C — Business Policies",
-    operations:"26D — Operations Control",
-    financial:"26E — Financial Control",
-    documents:"26F — Documents & KYC",
-    audit:"26G — Audit & Monitoring",
-    api:"STEP 27 — Consolidated API"
-  },
-
-  hi:{
-    dashboard:"डैशबोर्ड",
-    system:"26A — सिस्टम कॉन्फ़िगरेशन",
-    roles:"26B — यूज़र और रोल कंट्रोल",
-    policies:"26C — बिज़नेस पॉलिसी",
-    operations:"26D — ऑपरेशंस कंट्रोल",
-    financial:"26E — फाइनेंशियल कंट्रोल",
-    documents:"26F — डॉक्यूमेंट और KYC",
-    audit:"26G — ऑडिट और मॉनिटरिंग",
-    api:"STEP 27 — कंसोलिडेटेड API"
-  }
-
-};
-
-
-/* ============================================================
-   26A DEFAULT CONFIG
-============================================================ */
-
-const DEFAULT_SYSTEM_CONFIG = {
-
-  systemName:"GoVara",
-  platformType:"TRANSPORT_MOBILITY",
-  systemVersion:"GOVARA-SYSTEM-26A",
-  frontendVersion:"ADMIN-CONTROL-26",
-
-  environment:"TESTING",
-  systemStatus:"ACTIVE",
-  maintenanceMessage:"GoVara system is currently under maintenance.",
-  maintenanceBehavior:"NOTICE_ONLY",
-
-  productionLock:true,
-  testingIndicator:true,
-
-  apiEndpoint:"",
-
-  defaultLanguage:"en",
-  languageSelectorMode:"SHOW",
-
-  availableLanguages:{
-    en:true,
-    hi:true,
-    bn:false,
-    mr:false,
-    gu:false,
-    pa:false,
-    ta:false,
-    te:false,
-    kn:false,
-    ml:false,
-    ur:false,
-    ar:false,
-    es:false,
-    fr:false
-  },
-
-  timezone:"Asia/Kolkata",
-  currency:"INR",
-  dateFormat:"DD-MM-YYYY",
-  timeFormat:"12H",
-
-  welfareEnabled:true,
-  welfareVisibility:true,
-
-  showMaintenanceMessage:true,
-  blockWhenSuspended:true,
-
-  configVersion:"26A-1.0",
-  lastUpdated:""
-};
-
-
-/* ============================================================
-   26B MODULE REGISTRY
-============================================================ */
-
-const ROLE_MODULES = {
-
-  Customer:{
-    description:"Customer profile, registration and customer-side journey."
-  },
-
-  Vendor:{
-    description:"Vendor/company profile and vendor operations."
-  },
-
-  Driver:{
-    description:"Driver profile and driver operations."
-  },
-
-  Vehicle:{
-    description:"Vehicle registry and vehicle assignment."
-  },
-
-  Booking:{
-    description:"Booking creation, management and lifecycle."
-  },
-
-  Duty:{
-    description:"Driver duty and operational duty management."
-  },
-
-  Fare:{
-    description:"Fare estimation and configured fare rules."
-  },
-
-  Transaction:{
-    description:"Transaction records; backend authoritative."
-  },
-
-  Wallet:{
-    description:"Wallet information; backend authoritative."
-  },
-
-  Ledger:{
-    description:"Ledger information; backend authoritative."
-  },
-
-  Settlement:{
-    description:"Settlement records; backend authoritative."
-  },
-
-  Billing:{
-    description:"Bills and billing history; backend authoritative."
-  },
-
-  Documents:{
-    description:"Documents and KYC management."
-  },
-
-  Admin:{
-    description:"Administrator control functions."
-  },
-
-  Audit:{
-    description:"Audit and monitoring information."
-  }
-
-};
-
-
-/* ============================================================
-   DEFAULT ROLE CONFIGURATION
-============================================================ */
-
-function makePermission(
-  enabled=false,
-  read=false,
-  create=false,
-  edit=false,
-  remove=false,
-  approve=false
-){
-  return {
-    enabled,
-    read,
-    create,
-    edit,
-    delete:remove,
-    approve
-  };
-}
-
-function emptyModulePermissions(){
-  const result = {};
-
-  Object.keys(ROLE_MODULES).forEach(module=>{
-    result[module] = makePermission();
-  });
-
-  return result;
-}
-
-function defaultRoles(){
-
-  const roles = {
-
-    ADMIN:{
-      code:"ADMIN",
-      name:"Admin",
-      description:"Central administrator with system-wide control.",
-      enabled:true,
-      primaryBookingRole:false,
-      permissions:emptyModulePermissions(),
-      rules:{
-        adminSystem:true,
-        adminRoles:true,
-        adminPolicies:true,
-        adminAudit:true,
-        adminKyc:true
-      }
-    },
-
-    CUSTOMER:{
-      code:"CUSTOMER",
-      name:"Customer",
-      description:"Primary booking initiator and customer-facing journey role.",
-      enabled:true,
-      primaryBookingRole:true,
-      permissions:emptyModulePermissions(),
-      rules:{
-        customerBooking:true,
-        customerFare:true,
-        customerHistory:true,
-        customerRating:true,
-        customerWallet:true
-      }
-    },
-
-    VENDOR:{
-      code:"VENDOR",
-      name:"Vendor",
-      description:"Vendor/company operations, vehicles, drivers and assigned work.",
-      enabled:true,
-      primaryBookingRole:false,
-      permissions:emptyModulePermissions(),
-      rules:{
-        vendorProfile:true,
-        vendorVehicle:true,
-        vendorDriver:true,
-        vendorOperations:true,
-        vendorKyc:true
-      }
-    },
-
-    DRIVER:{
-      code:"DRIVER",
-      name:"Driver",
-      description:"Driver duty, assigned booking and trip operations.",
-      enabled:true,
-      primaryBookingRole:false,
-      permissions:emptyModulePermissions(),
-      rules:{
-        driverDuty:true,
-        driverBooking:true,
-        driverTrip:true,
-        driverDocuments:true,
-        driverRating:true
-      }
-    }
-
-  };
-
-
-  /* ADMIN */
-
-  Object.keys(roles.ADMIN.permissions).forEach(module=>{
-    roles.ADMIN.permissions[module] =
-      makePermission(true,true,true,true,true,true);
-  });
-
-
-  /* CUSTOMER */
-
-  roles.CUSTOMER.permissions.Customer =
-    makePermission(true,true,true,true,false,false);
-
-  roles.CUSTOMER.permissions.Booking =
-    makePermission(true,true,true,true,true,false);
-
-  roles.CUSTOMER.permissions.Fare =
-    makePermission(true,true,false,false,false,false);
-
-  roles.CUSTOMER.permissions.Wallet =
-    makePermission(true,true,false,false,false,false);
-
-  roles.CUSTOMER.permissions.Transaction =
-    makePermission(true,true,false,false,false,false);
-
-  roles.CUSTOMER.permissions.Billing =
-    makePermission(true,true,false,false,false,false);
-
-  roles.CUSTOMER.permissions.Documents =
-    makePermission(true,true,true,true,false,false);
-
-  roles.CUSTOMER.permissions.Audit =
-    makePermission(false,false,false,false,false,false);
-
-
-  /* VENDOR */
-
-  roles.VENDOR.permissions.Vendor =
-    makePermission(true,true,true,true,false,false);
-
-  roles.VENDOR.permissions.Driver =
-    makePermission(true,true,true,true,false,false);
-
-  roles.VENDOR.permissions.Vehicle =
-    makePermission(true,true,true,true,false,false);
-
-  roles.VENDOR.permissions.Booking =
-    makePermission(true,true,true,true,false,false);
-
-  roles.VENDOR.permissions.Duty =
-    makePermission(true,true,true,true,false,false);
-
-  roles.VENDOR.permissions.Documents =
-    makePermission(true,true,true,true,false,false);
-
-  roles.VENDOR.permissions.Fare =
-    makePermission(true,true,false,false,false,false);
-
-  roles.VENDOR.permissions.Billing =
-    makePermission(true,true,false,false,false,false);
-
-  roles.VENDOR.permissions.Audit =
-    makePermission(false,false,false,false,false,false);
-
-
-  /* DRIVER */
-
-  roles.DRIVER.permissions.Driver =
-    makePermission(true,true,true,true,false,false);
-
-  roles.DRIVER.permissions.Duty =
-    makePermission(true,true,true,true,false,false);
-
-  roles.DRIVER.permissions.Booking =
-    makePermission(true,true,false,true,false,false);
-
-  roles.DRIVER.permissions.Vehicle =
-    makePermission(true,true,false,false,false,false);
-
-  roles.DRIVER.permissions.Documents =
-    makePermission(true,true,true,true,false,false);
-
-  roles.DRIVER.permissions.Fare =
-    makePermission(true,true,false,false,false,false);
-
-  roles.DRIVER.permissions.Audit =
-    makePermission(false,false,false,false,false,false);
-
-
-  return {
-    version:"26B-1.0",
-    lastUpdated:"",
-    roles
-  };
-}
-
-
-let roleConfig = loadJSON(STORAGE.ROLES, null);
-
-if(!roleConfig){
-  roleConfig = defaultRoles();
-  saveJSON(STORAGE.ROLES, roleConfig);
-}
-
-let selectedRole = "ADMIN";
-
-
-/* ============================================================
-   GENERIC STORAGE
-============================================================ */
-
-function loadJSON(key,fallback){
-
-  try{
-    const raw = localStorage.getItem(key);
-
-    if(!raw) return fallback;
-
-    return JSON.parse(raw);
-
-  }catch(error){
-
-    console.error(error);
-    return fallback;
-
-  }
-
-}
-
-function saveJSON(key,value){
-
-  localStorage.setItem(key,JSON.stringify(value));
-
-}
-
-
-/* ============================================================
-   AUDIT
-============================================================ */
-
-function audit(action,details=""){
-
-  const logs = loadJSON(STORAGE.AUDIT,[]);
-
-  logs.unshift({
-    time:new Date().toLocaleString(),
-    action,
-    details
-  });
-
-  localStorage.setItem(
-    STORAGE.AUDIT,
-    JSON.stringify(logs.slice(0,500))
-  );
-
-  renderAudit();
-
-}
-
-
-/* ============================================================
-   NAVIGATION
-============================================================ */
-
-document.querySelectorAll(".nav-btn").forEach(button=>{
-
-  button.addEventListener("click",()=>{
-
-    const page = button.dataset.page;
-
-    document.querySelectorAll(".nav-btn")
-      .forEach(btn=>btn.classList.remove("active"));
-
-    button.classList.add("active");
-
-    document.querySelectorAll(".page")
-      .forEach(section=>section.classList.remove("active"));
-
-    const target = document.getElementById("page-"+page);
-
-    if(target){
-      target.classList.add("active");
-    }
-
-    document.getElementById("sidebar").classList.remove("open");
-
-  });
-
-});
-
-
-document.getElementById("mobileMenuBtn")
-  .addEventListener("click",()=>{
-    document.getElementById("sidebar").classList.toggle("open");
-  });
-
-
-/* ============================================================
-   26A SYSTEM CONFIG
-============================================================ */
-
-let systemConfig =
-  loadJSON(STORAGE.SYSTEM,null) ||
-  JSON.parse(JSON.stringify(DEFAULT_SYSTEM_CONFIG));
-
-
-function fillSystemConfig(){
-
-  const ids = [
-    "systemName",
-    "platformType",
-    "systemVersion",
-    "frontendVersion",
-    "environment",
-    "systemStatus",
-    "maintenanceMessage",
-    "maintenanceBehavior",
-    "apiEndpoint",
-    "languageSelectorMode",
-    "timezone",
-    "currency",
-    "dateFormat",
-    "timeFormat",
-    "configVersion"
-  ];
-
-  ids.forEach(id=>{
-
-    const el = document.getElementById(id);
-
-    if(el && systemConfig[id] !== undefined){
-      el.value = systemConfig[id];
-    }
-
-  });
-
-
-  document.getElementById("productionLock").checked =
-    !!systemConfig.productionLock;
-
-  document.getElementById("testingIndicator").checked =
-    !!systemConfig.testingIndicator;
-
-  document.getElementById("welfareEnabled").checked =
-    !!systemConfig.welfareEnabled;
-
-  document.getElementById("welfareVisibility").checked =
-    !!systemConfig.welfareVisibility;
-
-  document.getElementById("showMaintenanceMessage").checked =
-    !!systemConfig.showMaintenanceMessage;
-
-  document.getElementById("blockWhenSuspended").checked =
-    !!systemConfig.blockWhenSuspended;
-
-  document.getElementById("lastUpdated").value =
-    systemConfig.lastUpdated || "Never";
-
-  populateDefaultLanguage();
-  renderLanguageList();
-
-  updateApiStatus();
-
-}
-
-
-function collectSystemConfig(){
-
-  systemConfig.systemName =
-    document.getElementById("systemName").value.trim();
-
-  systemConfig.platformType =
-    document.getElementById("platformType").value.trim();
-
-  systemConfig.systemVersion =
-    document.getElementById("systemVersion").value.trim();
-
-  systemConfig.frontendVersion =
-    document.getElementById("frontendVersion").value.trim();
-
-  systemConfig.environment =
-    document.getElementById("environment").value;
-
-  systemConfig.systemStatus =
-    document.getElementById("systemStatus").value;
-
-  systemConfig.maintenanceMessage =
-    document.getElementById("maintenanceMessage").value;
-
-  systemConfig.maintenanceBehavior =
-    document.getElementById("maintenanceBehavior").value;
-
-  systemConfig.productionLock =
-    document.getElementById("productionLock").checked;
-
-  systemConfig.testingIndicator =
-    document.getElementById("testingIndicator").checked;
-
-  systemConfig.apiEndpoint =
-    document.getElementById("apiEndpoint").value.trim();
-
-  systemConfig.defaultLanguage =
-    document.getElementById("defaultLanguage").value;
-
-  systemConfig.languageSelectorMode =
-    document.getElementById("languageSelectorMode").value;
-
-  systemConfig.timezone =
-    document.getElementById("timezone").value;
-
-  systemConfig.currency =
-    document.getElementById("currency").value;
-
-  systemConfig.dateFormat =
-    document.getElementById("dateFormat").value;
-
-  systemConfig.timeFormat =
-    document.getElementById("timeFormat").value;
-
-  systemConfig.welfareEnabled =
-    document.getElementById("welfareEnabled").checked;
-
-  systemConfig.welfareVisibility =
-    document.getElementById("welfareVisibility").checked;
-
-  systemConfig.showMaintenanceMessage =
-    document.getElementById("showMaintenanceMessage").checked;
-
-  systemConfig.blockWhenSuspended =
-    document.getElementById("blockWhenSuspended").checked;
-
-  systemConfig.configVersion =
-    document.getElementById("configVersion").value.trim();
-
-  systemConfig.lastUpdated =
-    new Date().toISOString();
-
-}
-
-
-function saveSystemConfig(){
-
-  collectSystemConfig();
-
-  saveJSON(STORAGE.SYSTEM,systemConfig);
-
-  document.getElementById("lastUpdated").value =
-    systemConfig.lastUpdated;
-
-  applyLanguage(systemConfig.defaultLanguage);
-
-  updateApiStatus();
-
-  audit(
-    "26A_CONFIG_SAVE",
-    "System configuration saved locally."
-  );
-
-}
-
-
-document.getElementById("save26ABtn")
-  .addEventListener("click",saveSystemConfig);
-
-
-document.getElementById("reload26ABtn")
-  .addEventListener("click",()=>{
-
-    systemConfig =
-      loadJSON(
-        STORAGE.SYSTEM,
-        JSON.parse(JSON.stringify(DEFAULT_SYSTEM_CONFIG))
-      );
-
-    fillSystemConfig();
-
-    audit(
-      "26A_CONFIG_RELOAD",
-      "System configuration reloaded."
-    );
-
-  });
-
-
-document.getElementById("reset26ABtn")
-  .addEventListener("click",()=>{
-
-    if(!confirm("Reset 26A configuration to defaults?")){
-      return;
-    }
-
-    systemConfig =
-      JSON.parse(JSON.stringify(DEFAULT_SYSTEM_CONFIG));
-
-    saveJSON(STORAGE.SYSTEM,systemConfig);
-
-    fillSystemConfig();
-
-    audit(
-      "26A_CONFIG_RESET",
-      "System configuration reset to defaults."
-    );
-
-  });
-
-
-document.getElementById("saveApiConfigBtn")
-  .addEventListener("click",saveSystemConfig);
-
-
-document.getElementById("validateEndpointBtn")
-  .addEventListener("click",()=>{
-
-    const value =
-      document.getElementById("apiEndpoint").value.trim();
-
-    if(!value){
-      alert("API endpoint is empty.");
-      return;
-    }
-
-    try{
-
-      const url = new URL(value);
-
-      if(!["http:","https:"].includes(url.protocol)){
-        throw new Error();
-      }
-
-      alert("Endpoint format is valid. Connection has NOT been tested.");
-
-      audit(
-        "API_ENDPOINT_VALIDATE",
-        "Endpoint format validated."
-      );
-
-    }catch(error){
-
-      alert("Invalid API endpoint.");
-
-    }
-
-  });
-
-
-document.getElementById("clearApiBtn")
-  .addEventListener("click",()=>{
-
-    systemConfig.apiEndpoint = "";
-
-    document.getElementById("apiEndpoint").value = "";
-
-    saveJSON(STORAGE.SYSTEM,systemConfig);
-
-    updateApiStatus();
-
-    audit(
-      "API_ENDPOINT_CLEAR",
-      "API endpoint cleared."
-    );
-
-  });
-
-
-/* ============================================================
-   LANGUAGE
-============================================================ */
-
-function populateDefaultLanguage(){
-
-  const select =
-    document.getElementById("defaultLanguage");
-
-  select.innerHTML = "";
-
-  Object.keys(LANGUAGES).forEach(code=>{
-
-    const option =
-      document.createElement("option");
-
-    option.value = code;
-    option.textContent = LANGUAGES[code];
-
-    select.appendChild(option);
-
-  });
-
-  select.value =
-    systemConfig.defaultLanguage || "en";
-
-}
-
-
-function renderLanguageList(){
-
-  const container =
-    document.getElementById("languageList");
-
-  container.innerHTML = "";
-
-  Object.keys(LANGUAGES).forEach(code=>{
-
-    const row =
-      document.createElement("div");
-
-    row.style.display = "flex";
-    row.style.justifyContent = "space-between";
-    row.style.alignItems = "center";
-    row.style.padding = "9px 0";
-    row.style.borderBottom = "1px solid #edf0f4";
-
-    const label =
-      document.createElement("span");
-
-    label.textContent =
-      LANGUAGES[code];
-
-    const wrapper =
-      document.createElement("label");
-
-    wrapper.className = "toggle";
-
-    const input =
-      document.createElement("input");
-
-    input.type = "checkbox";
-
-    input.checked =
-      !!systemConfig.availableLanguages[code];
-
-    input.disabled =
-      code === "en";
-
-    input.addEventListener("change",()=>{
-
-      systemConfig.availableLanguages[code] =
-        input.checked;
-
-      if(
-        !systemConfig.availableLanguages[
-          systemConfig.defaultLanguage
-        ]
-      ){
-
-        systemConfig.defaultLanguage = "en";
-        document.getElementById("defaultLanguage").value = "en";
-
-      }
-
-      saveJSON(STORAGE.SYSTEM,systemConfig);
-
-      populateGlobalLanguageSelector();
-
-      audit(
-        "LANGUAGE_TOGGLE",
-        code+"="+input.checked
-      );
-
-    });
-
-    const slider =
-      document.createElement("span");
-
-    slider.className = "slider";
-
-    wrapper.appendChild(input);
-    wrapper.appendChild(slider);
-
-    row.appendChild(label);
-    row.appendChild(wrapper);
-
-    container.appendChild(row);
-
-  });
-
-}
-
-
-function populateGlobalLanguageSelector(){
-
-  const selector =
-    document.getElementById("globalLanguageSelector");
-
-  selector.innerHTML = "";
-
-  Object.keys(LANGUAGES).forEach(code=>{
-
-    if(!systemConfig.availableLanguages[code]){
-      return;
-    }
-
-    const option =
-      document.createElement("option");
-
-    option.value = code;
-    option.textContent = LANGUAGES[code];
-
-    selector.appendChild(option);
-
-  });
-
-  const saved =
-    localStorage.getItem(STORAGE.UI_LANGUAGE);
-
-  selector.value =
-    saved && systemConfig.availableLanguages[saved]
-      ? saved
-      : systemConfig.defaultLanguage;
-
-  applyLanguageSelectorMode();
-
-}
-
-
-function applyLanguageSelectorMode(){
-
-  const mode =
-    systemConfig.languageSelectorMode || "SHOW";
-
-  const selector =
-    document.getElementById("globalLanguageSelector");
-
-  if(mode === "HIDE"){
-    selector.style.display = "none";
-  }else{
-    selector.style.display = "";
-  }
-
-}
-
-
-function applyLanguage(code){
-
-  if(!LANGUAGES[code]){
-    code = "en";
-  }
-
-  if(!systemConfig.availableLanguages[code]){
-    code = "en";
-  }
-
-  document.documentElement.lang = code;
-
-  document.documentElement.dir =
-    code === "ar" || code === "ur"
-      ? "rtl"
-      : "ltr";
-
-  localStorage.setItem(
-    STORAGE.UI_LANGUAGE,
-    code
-  );
-
-  populateGlobalLanguageSelector();
-
-}
-
-
-document.getElementById("globalLanguageSelector")
-  .addEventListener("change",(event)=>{
-
-    const code = event.target.value;
-
-    applyLanguage(code);
-
-    audit(
-      "LANGUAGE_CHANGED",
-      code
-    );
-
-  });
-
-
-document.getElementById("defaultLanguage")
-  .addEventListener("change",()=>{
-
-    systemConfig.defaultLanguage =
-      document.getElementById("defaultLanguage").value;
-
-    saveJSON(STORAGE.SYSTEM,systemConfig);
-
-    applyLanguage(systemConfig.defaultLanguage);
-
-    audit(
-      "DEFAULT_LANGUAGE_CHANGED",
-      systemConfig.defaultLanguage
-    );
-
-  });
-
-
-document.getElementById("languageSelectorMode")
-  .addEventListener("change",()=>{
-
-    systemConfig.languageSelectorMode =
-      document.getElementById("languageSelectorMode").value;
-
-    saveJSON(STORAGE.SYSTEM,systemConfig);
-
-    applyLanguageSelectorMode();
-
-    audit(
-      "LANGUAGE_SELECTOR_MODE_CHANGED",
-      systemConfig.languageSelectorMode
-    );
-
-  });
-
-
-/* ============================================================
-   26B ROLE RENDERING
-============================================================ */
-
-function renderRoleCards(){
-
-  const container =
-    document.getElementById("roleCards");
-
-  container.innerHTML = "";
-
-  Object.values(roleConfig.roles).forEach(role=>{
-
-    const card =
-      document.createElement("div");
-
-    card.className =
-      "role-card"+
-      (role.code === selectedRole ? " selected" : "");
-
-    card.innerHTML = `
-      <div class="role-card-title">
-        <span>${escapeHTML(role.name)}</span>
-        <span class="badge ${role.enabled ? "ready":"danger"}">
-          ${role.enabled ? "ACTIVE":"DISABLED"}
-        </span>
-      </div>
-
-      <div class="role-card-description">
-        ${escapeHTML(role.description)}
-      </div>
-
-      <div class="role-card-footer">
-        <span class="role-selected-label">
-          ${role.code === selectedRole ? "SELECTED" : ""}
+        <span id="frontendStatus">
+          FRONTEND READY
         </span>
 
-        <label class="toggle" onclick="event.stopPropagation();">
-          <input
-            type="checkbox"
-            ${role.enabled ? "checked":""}
-            onchange="toggleRoleStatus('${role.code}',this.checked)"
-          >
-          <span class="slider"></span>
-        </label>
-      </div>
-    `;
-
-    card.addEventListener("click",()=>{
-
-      selectedRole = role.code;
-
-      renderRoleCards();
-      renderSelectedRole();
-
-    });
-
-    container.appendChild(card);
-
-  });
-
-  updateRoleStats();
-
-}
-
-
-function renderSelectedRole(){
-
-  const role =
-    roleConfig.roles[selectedRole];
-
-  if(!role){
-    return;
-  }
-
-  document.getElementById("roleCode").value =
-    role.code;
-
-  document.getElementById("roleName").value =
-    role.name;
-
-  document.getElementById("roleDescription").value =
-    role.description;
-
-  document.getElementById("roleEnabled").checked =
-    !!role.enabled;
-
-  document.getElementById("primaryBookingRole").checked =
-    !!role.primaryBookingRole;
-
-  const info =
-    document.getElementById("selectedRoleInfo");
-
-  let extra = "";
-
-  if(role.code === "CUSTOMER"){
-
-    extra = `
-      <div class="notice">
-        <strong>Customer is the primary booking initiator.</strong>
-        Customer booking access must not be removed accidentally.
-      </div>
-    `;
-
-  }
-
-  if(role.code === "ADMIN"){
-
-    extra = `
-      <div class="notice">
-        Admin is the central control role for GoVara Administrator Control Center.
-      </div>
-    `;
-
-  }
-
-  info.innerHTML = extra;
-
-  renderPermissionTable();
-  renderRoleRules();
-
-}
-
-
-function renderPermissionTable(){
-
-  const body =
-    document.getElementById("permissionTableBody");
-
-  body.innerHTML = "";
-
-  const role =
-    roleConfig.roles[selectedRole];
-
-  Object.entries(ROLE_MODULES).forEach(([module,meta])=>{
-
-    const permission =
-      role.permissions[module] ||
-      makePermission();
-
-    const tr =
-      document.createElement("tr");
-
-    tr.innerHTML = `
-
-      <td class="module-name">
-        ${escapeHTML(module)}
-      </td>
-
-      <td>
-        <span class="module-note">
-          ${escapeHTML(meta.description)}
+        <span id="apiStatus">
+          API NOT CONFIGURED
         </span>
-      </td>
 
-      ${permissionCheckbox(
-        module,
-        "enabled",
-        permission.enabled
-      )}
+        <span>
+          TESTING MODE
+        </span>
 
-      ${permissionCheckbox(
-        module,
-        "read",
-        permission.read
-      )}
+        <span>
+          REAL MONEY BLOCKED
+        </span>
 
-      ${permissionCheckbox(
-        module,
-        "create",
-        permission.create
-      )}
+        <select id="languageSelect">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+        </select>
 
-      ${permissionCheckbox(
-        module,
-        "edit",
-        permission.edit
-      )}
+      </div>
 
-      ${permissionCheckbox(
-        module,
-        "delete",
-        permission.delete
-      )}
-
-      ${permissionCheckbox(
-        module,
-        "approve",
-        permission.approve
-      )}
-
-    `;
-
-    body.appendChild(tr);
-
-  });
-
-}
+    </header>
 
 
-function permissionCheckbox(module,key,checked){
+    <!-- =====================================================
+         MAIN LAYOUT
+         ===================================================== -->
 
-  return `
-    <td class="center permission-cell">
-      <input
-        type="checkbox"
-        data-permission-module="${escapeHTML(module)}"
-        data-permission-key="${key}"
-        ${checked ? "checked":""}
-      >
-    </td>
-  `;
+    <div class="layout">
 
-}
+      <!-- SIDEBAR -->
+
+      <aside class="sidebar">
+
+        <button class="nav-btn active" data-page="dashboard">
+          Dashboard
+        </button>
+
+        <button class="nav-btn" data-page="26A">
+          26A — System Configuration
+        </button>
+
+        <button class="nav-btn" data-page="26B">
+          26B — User &amp; Role Control
+        </button>
+
+        <button class="nav-btn" data-page="26C">
+          26C — Business Policies
+        </button>
+
+        <button class="nav-btn" data-page="26D">
+          26D — Operations Control
+        </button>
+
+        <button class="nav-btn" data-page="26E">
+          26E — Financial Control
+        </button>
+
+        <button class="nav-btn" data-page="26F">
+          26F — Documents &amp; KYC
+        </button>
+
+        <button class="nav-btn" data-page="26G">
+          26G — Audit &amp; Monitoring
+        </button>
+
+        <button class="nav-btn" data-page="27">
+          STEP 27 — Consolidated API
+        </button>
+
+      </aside>
 
 
-function collectPermissionTable(){
+      <!-- ===================================================
+           MAIN CONTENT
+           =================================================== -->
 
-  const role =
-    roleConfig.roles[selectedRole];
+      <main class="main">
 
-  document
-    .querySelectorAll("[data-permission-module]")
-    .forEach(input=>{
+        <!-- DASHBOARD -->
 
-      const module =
-        input.dataset.permissionModule;
+        <section
+          class="page active"
+          data-page="dashboard"
+        >
 
-      const key =
-        input.dataset.permissionKey;
+          <div class="page-head">
 
-      if(!role.permissions[module]){
-        role.permissions[module] =
-          makePermission();
+            <h1>
+              GoVara Administrator Control Center
+            </h1>
+
+            <div class="muted">
+              Modular frontend architecture.
+              Backend and database remain separate.
+            </div>
+
+          </div>
+
+
+          <div class="grid four">
+
+            <div class="card">
+              <b>FRONTEND READY</b>
+              <div class="muted">
+                Frontend status
+              </div>
+            </div>
+
+
+            <div class="card">
+
+              <b id="dashboardApiStatus">
+                API NOT CONFIGURED
+              </b>
+
+              <div class="muted">
+                Consolidated API
+              </div>
+
+            </div>
+
+
+            <div class="card">
+
+              <b>
+                TESTING MODE
+              </b>
+
+              <div class="muted">
+                Current environment
+              </div>
+
+            </div>
+
+
+            <div class="card">
+
+              <b>
+                REAL MONEY BLOCKED
+              </b>
+
+              <div class="muted">
+                Financial safety boundary
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <section class="card">
+
+            <h2>
+              Modular Frontend
+            </h2>
+
+            <p class="muted">
+              GoVara is loaded using separate CSS, Core,
+              API and Administrator module files.
+            </p>
+
+            <p class="muted">
+              Backend/database connection is not executed
+              by this frontend bootstrap.
+            </p>
+
+          </section>
+
+        </section>
+
+
+        <!-- =================================================
+             MODULE MOUNT POINTS
+             ================================================= -->
+
+        <section
+          class="page"
+          data-page="26A"
+        >
+          <div id="module-26A"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="26B"
+        >
+          <div id="module-26B"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="26C"
+        >
+          <div id="module-26C"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="26D"
+        >
+          <div id="module-26D"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="26E"
+        >
+          <div id="module-26E"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="26F"
+        >
+          <div id="module-26F"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="26G"
+        >
+          <div id="module-26G"></div>
+        </section>
+
+
+        <section
+          class="page"
+          data-page="27"
+        >
+          <div id="module-27"></div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       GOVARA CORE
+       ===================================================== -->
+
+  <script src="assets/js/core/State.js"></script>
+
+  <script src="assets/js/core/Storage.js"></script>
+
+  <script src="assets/js/core/Audit.js"></script>
+
+  <script src="assets/js/core/i18n.js"></script>
+
+  <script src="assets/js/core/Router.js"></script>
+
+  <script src="assets/js/core/API.js"></script>
+
+
+  <!-- =====================================================
+       CONSOLIDATED API
+       ===================================================== -->
+
+  <script src="assets/js/api/GoVaraAPI.js"></script>
+
+
+  <!-- =====================================================
+       ADMINISTRATOR MODULES
+       ===================================================== -->
+
+  <script src="assets/js/modules/26A-System.js"></script>
+
+  <script src="assets/js/modules/26B-Role.js"></script>
+
+  <script src="assets/js/modules/26C-Policy.js"></script>
+
+  <script src="assets/js/modules/26D-Operation.js"></script>
+
+  <script src="assets/js/modules/26E-Financial.js"></script>
+
+  <script src="assets/js/modules/26F-Document.js"></script>
+
+  <script src="assets/js/modules/26G-Audit.js"></script>
+
+  <script src="assets/js/modules/27-api.js"></script>
+
+
+  <!-- =====================================================
+       FRONTEND BOOTSTRAP
+       ===================================================== -->
+
+  <script>
+
+    (function () {
+
+      "use strict";
+
+
+      /* -----------------------------------------------
+         PAGE NAVIGATION
+         ----------------------------------------------- */
+
+      function showPage(pageName) {
+
+        document
+          .querySelectorAll(".page")
+          .forEach(function (page) {
+
+            page.classList.toggle(
+              "active",
+              page.dataset.page === pageName
+            );
+
+          });
+
+
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach(function (button) {
+
+            button.classList.toggle(
+              "active",
+              button.dataset.page === pageName
+            );
+
+          });
+
       }
 
-      role.permissions[module][key] =
-        input.checked;
 
-    });
+      document
+        .querySelectorAll(".nav-btn")
+        .forEach(function (button) {
 
-}
+          button.addEventListener(
+            "click",
+            function () {
 
+              showPage(
+                button.dataset.page
+              );
 
-function renderRoleRules(){
-
-  const role =
-    roleConfig.roles[selectedRole];
-
-  document
-    .querySelectorAll("[data-role-rule]")
-    .forEach(input=>{
-
-      const key =
-        input.dataset.roleRule;
-
-      input.checked =
-        !!(role.rules && role.rules[key]);
-
-    });
-
-}
-
-
-function collectRoleRules(){
-
-  const role =
-    roleConfig.roles[selectedRole];
-
-  if(!role.rules){
-    role.rules = {};
-  }
-
-  document
-    .querySelectorAll("[data-role-rule]")
-    .forEach(input=>{
-
-      role.rules[input.dataset.roleRule] =
-        input.checked;
-
-    });
-
-}
-
-
-function updateRoleStats(){
-
-  const roles =
-    Object.values(roleConfig.roles);
-
-  const active =
-    roles.filter(role=>role.enabled);
-
-  document.getElementById("roleCountStat")
-    .textContent = roles.length;
-
-  document.getElementById("activeRoleCountStat")
-    .textContent = active.length;
-
-  document.getElementById("dashboardRoleCount")
-    .textContent = roles.length;
-
-}
-
-
-function toggleRoleStatus(code,enabled){
-
-  if(code === "ADMIN" && !enabled){
-
-    alert("Admin cannot be disabled from the primary administrator control interface.");
-
-    renderRoleCards();
-
-    return;
-
-  }
-
-  const role =
-    roleConfig.roles[code];
-
-  if(!role){
-    return;
-  }
-
-  role.enabled = enabled;
-
-  roleConfig.lastUpdated =
-    new Date().toISOString();
-
-  saveJSON(STORAGE.ROLES,roleConfig);
-
-  renderRoleCards();
-
-  if(selectedRole === code){
-    renderSelectedRole();
-  }
-
-  audit(
-    "ROLE_STATUS_CHANGE",
-    code+"="+enabled
-  );
-
-}
-
-
-document.getElementById("saveRoleBtn")
-  .addEventListener("click",()=>{
-
-    const role =
-      roleConfig.roles[selectedRole];
-
-    role.name =
-      document.getElementById("roleName").value.trim();
-
-    role.description =
-      document.getElementById("roleDescription").value.trim();
-
-    role.enabled =
-      document.getElementById("roleEnabled").checked;
-
-    const primary =
-      document.getElementById("primaryBookingRole").checked;
-
-    if(primary){
-
-      Object.values(roleConfig.roles)
-        .forEach(other=>{
-          other.primaryBookingRole = false;
-        });
-
-      role.primaryBookingRole = true;
-
-    }else{
-
-      role.primaryBookingRole = false;
-
-    }
-
-    roleConfig.lastUpdated =
-      new Date().toISOString();
-
-    saveJSON(STORAGE.ROLES,roleConfig);
-
-    renderRoleCards();
-    renderSelectedRole();
-
-    audit(
-      "ROLE_SAVE",
-      selectedRole+" configuration saved."
-    );
-
-  });
-
-
-document.getElementById("resetRoleBtn")
-  .addEventListener("click",()=>{
-
-    if(!confirm("Reset selected role to its default configuration?")){
-      return;
-    }
-
-    const defaults =
-      defaultRoles();
-
-    if(!defaults.roles[selectedRole]){
-      return;
-    }
-
-    roleConfig.roles[selectedRole] =
-      defaults.roles[selectedRole];
-
-    roleConfig.lastUpdated =
-      new Date().toISOString();
-
-    saveJSON(STORAGE.ROLES,roleConfig);
-
-    renderRoleCards();
-    renderSelectedRole();
-
-    audit(
-      "ROLE_RESET",
-      selectedRole+" reset to default."
-    );
-
-  });
-
-
-document.getElementById("saveRoleRulesBtn")
-  .addEventListener("click",()=>{
-
-    collectRoleRules();
-
-    roleConfig.lastUpdated =
-      new Date().toISOString();
-
-    saveJSON(STORAGE.ROLES,roleConfig);
-
-    renderRoleRules();
-
-    audit(
-      "ROLE_RULES_SAVE",
-      selectedRole+" role-specific rules saved."
-    );
-
-  });
-
-
-document.getElementById("saveAllRolesBtn")
-  .addEventListener("click",()=>{
-
-    collectPermissionTable();
-    collectRoleRules();
-
-    roleConfig.version =
-      document.getElementById("roleConfigVersion").value.trim();
-
-    roleConfig.lastUpdated =
-      new Date().toISOString();
-
-    saveJSON(STORAGE.ROLES,roleConfig);
-
-    document.getElementById("roleLastUpdated").value =
-      roleConfig.lastUpdated;
-
-    renderRoleCards();
-    renderSelectedRole();
-
-    audit(
-      "ALL_ROLE_CONFIG_SAVE",
-      "Complete 26B role configuration saved."
-    );
-
-    alert("26B role configuration saved.");
-
-  });
-
-
-document.getElementById("reloadRolesBtn")
-  .addEventListener("click",()=>{
-
-    roleConfig =
-      loadJSON(
-        STORAGE.ROLES,
-        defaultRoles()
-      );
-
-    document.getElementById("roleConfigVersion").value =
-      roleConfig.version || "26B-1.0";
-
-    document.getElementById("roleLastUpdated").value =
-      roleConfig.lastUpdated || "Never";
-
-    renderRoleCards();
-    renderSelectedRole();
-
-    audit(
-      "26B_ROLE_RELOAD",
-      "Role configuration reloaded."
-    );
-
-  });
-
-
-document.getElementById("resetRolesBtn")
-  .addEventListener("click",()=>{
-
-    if(!confirm(
-      "Reset ALL 26B roles and permissions to defaults?"
-    )){
-      return;
-    }
-
-    roleConfig =
-      defaultRoles();
-
-    saveJSON(STORAGE.ROLES,roleConfig);
-
-    selectedRole = "ADMIN";
-
-    document.getElementById("roleConfigVersion").value =
-      roleConfig.version;
-
-    document.getElementById("roleLastUpdated").value =
-      "Never";
-
-    renderRoleCards();
-    renderSelectedRole();
-
-    audit(
-      "26B_ALL_ROLES_RESET",
-      "All role configuration reset to defaults."
-    );
-
-  });
-
-
-/* ============================================================
-   26C POLICY STATE
-============================================================ */
-
-const DEFAULT_POLICIES = {
-  baseFare:100,
-  perKmRate:12,
-  serviceCharge:5,
-  taxPercent:5,
-  maxDiscount:20,
-  advancePercent:20,
-  customerKyc:true,
-  vendorKyc:true,
-  driverKyc:true
-};
-
-let policies =
-  loadJSON(
-    STORAGE.POLICIES,
-    DEFAULT_POLICIES
-  );
-
-function loadPolicyUI(){
-
-  Object.keys(policies).forEach(key=>{
-
-    const el =
-      document.getElementById(key);
-
-    if(el){
-
-      if(el.type === "checkbox"){
-        el.checked = !!policies[key];
-      }else{
-        el.value = policies[key];
-      }
-
-    }
-
-  });
-
-}
-
-
-/* ============================================================
-   26D OPERATION CONTROLS
-============================================================ */
-
-const DEFAULT_OPERATIONS = {
-  bookingCreation:true,
-  bookingCancellation:true,
-  fareEstimation:true,
-  vehicleAssignment:true,
-  driverDuty:true,
-  vendorOperations:true,
-
-  cityRide:true,
-  outstation:true,
-  airport:true,
-  rental:true,
-  corporate:true,
-  delivery:true
-};
-
-let operations =
-  loadJSON(
-    STORAGE.OPERATIONS,
-    DEFAULT_OPERATIONS
-  );
-
-const operationLabels = {
-  bookingCreation:"Booking Creation",
-  bookingCancellation:"Booking Cancellation",
-  fareEstimation:"Fare Estimation",
-  vehicleAssignment:"Vehicle Assignment",
-  driverDuty:"Driver Duty",
-  vendorOperations:"Vendor Operations"
-};
-
-const serviceLabels = {
-  cityRide:"City Ride",
-  outstation:"Outstation",
-  airport:"Airport",
-  rental:"Rental",
-  corporate:"Corporate",
-  delivery:"Delivery"
-};
-
-function renderOperations(){
-
-  const container =
-    document.getElementById("operationControls");
-
-  container.innerHTML = "";
-
-  Object.entries(operationLabels)
-    .forEach(([key,label])=>{
-
-      const row =
-        document.createElement("label");
-
-      row.className = "checkbox";
-
-      row.innerHTML = `
-        <input type="checkbox" data-operation="${key}">
-        ${label}
-      `;
-
-      row.querySelector("input").checked =
-        !!operations[key];
-
-      row.querySelector("input")
-        .addEventListener("change",event=>{
-
-          operations[key] =
-            event.target.checked;
-
-          saveJSON(
-            STORAGE.OPERATIONS,
-            operations
-          );
-
-          audit(
-            "OPERATION_CONTROL_CHANGE",
-            key+"="+event.target.checked
+            }
           );
 
         });
 
-      container.appendChild(row);
 
-    });
+      /* -----------------------------------------------
+         LANGUAGE
+         ----------------------------------------------- */
 
-
-  const services =
-    document.getElementById("serviceControls");
-
-  services.innerHTML = "";
-
-  Object.entries(serviceLabels)
-    .forEach(([key,label])=>{
-
-      const row =
-        document.createElement("label");
-
-      row.className = "checkbox";
-
-      row.innerHTML = `
-        <input type="checkbox" data-service="${key}">
-        ${label}
-      `;
-
-      row.querySelector("input").checked =
-        !!operations[key];
-
-      row.querySelector("input")
-        .addEventListener("change",event=>{
-
-          operations[key] =
-            event.target.checked;
-
-          saveJSON(
-            STORAGE.OPERATIONS,
-            operations
-          );
-
-          audit(
-            "SERVICE_CONTROL_CHANGE",
-            key+"="+event.target.checked
-          );
-
-        });
-
-      services.appendChild(row);
-
-    });
-
-}
-
-
-/* ============================================================
-   26E FINANCIAL
-============================================================ */
-
-const financialModules = [
-
-  ["Wallet","BACKEND_REQUIRED"],
-  ["Transaction","BACKEND_REQUIRED"],
-  ["Ledger","BACKEND_REQUIRED"],
-  ["Settlement","BACKEND_REQUIRED"],
-  ["Billing","BACKEND_REQUIRED"],
-  ["Bank Transfer","BLOCKED"]
-
-];
-
-function renderFinancial(){
-
-  const container =
-    document.getElementById("financialModules");
-
-  container.innerHTML = "";
-
-  financialModules.forEach(([name,status])=>{
-
-    const div =
-      document.createElement("div");
-
-    div.className = "stat";
-
-    div.innerHTML = `
-      <div class="stat-label">${name}</div>
-      <div class="stat-value" style="font-size:16px;">
-        ${status}
-      </div>
-    `;
-
-    container.appendChild(div);
-
-  });
-
-}
-
-
-/* ============================================================
-   26F DOCUMENTS
-============================================================ */
-
-const DEFAULT_DOCUMENTS = {
-
-  governmentId:true,
-  drivingLicence:true,
-  vehicleRC:true,
-  insurance:true,
-  verificationRequired:true,
-  expiryMonitoring:true,
-  manualReview:true
-
-};
-
-let documents =
-  loadJSON(
-    STORAGE.DOCUMENTS,
-    DEFAULT_DOCUMENTS
-  );
-
-const documentLabels = {
-  governmentId:"Government ID",
-  drivingLicence:"Driving Licence",
-  vehicleRC:"Vehicle RC",
-  insurance:"Insurance",
-  verificationRequired:"Verification Required",
-  expiryMonitoring:"Expiry Monitoring",
-  manualReview:"Manual Review"
-};
-
-function renderDocuments(){
-
-  const container =
-    document.getElementById("documentControls");
-
-  container.innerHTML = "";
-
-  Object.entries(documentLabels)
-    .forEach(([key,label])=>{
-
-      const row =
-        document.createElement("label");
-
-      row.className = "checkbox";
-
-      row.innerHTML = `
-        <input type="checkbox">
-        ${label}
-      `;
-
-      const input =
-        row.querySelector("input");
-
-      input.checked =
-        !!documents[key];
-
-      input.addEventListener("change",event=>{
-
-        documents[key] =
-          event.target.checked;
-
-        saveJSON(
-          STORAGE.DOCUMENTS,
-          documents
+      var languageSelect =
+        document.getElementById(
+          "languageSelect"
         );
 
-        audit(
-          "DOCUMENT_CONTROL_CHANGE",
-          key+"="+event.target.checked
+
+      if (languageSelect) {
+
+        languageSelect.addEventListener(
+          "change",
+          function () {
+
+            var language =
+              languageSelect.value;
+
+            document.documentElement.lang =
+              language;
+
+            try {
+
+              localStorage.setItem(
+                "GOVARA_UI_LANGUAGE",
+                language
+              );
+
+            } catch (error) {}
+
+          }
         );
 
-      });
 
-      container.appendChild(row);
+        try {
 
-    });
+          var savedLanguage =
+            localStorage.getItem(
+              "GOVARA_UI_LANGUAGE"
+            );
 
-}
+          if (savedLanguage) {
 
+            languageSelect.value =
+              savedLanguage;
 
-/* ============================================================
-   AUDIT UI
-============================================================ */
+            document.documentElement.lang =
+              savedLanguage;
 
-function renderAudit(){
+          }
 
-  const body =
-    document.getElementById("auditBody");
+        } catch (error) {}
 
-  const logs =
-    loadJSON(STORAGE.AUDIT,[]);
-
-  body.innerHTML = "";
-
-  if(!logs.length){
-
-    body.innerHTML = `
-      <tr>
-        <td colspan="3">No local audit entries.</td>
-      </tr>
-    `;
-
-    return;
-  }
-
-  logs.forEach(log=>{
-
-    const tr =
-      document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${escapeHTML(log.time)}</td>
-      <td>${escapeHTML(log.action)}</td>
-      <td>${escapeHTML(log.details)}</td>
-    `;
-
-    body.appendChild(tr);
-
-  });
-
-}
+      }
 
 
-document.getElementById("clearAuditBtn")
-  .addEventListener("click",()=>{
+      /* -----------------------------------------------
+         API STATUS
+         
+         IMPORTANT:
+         DO NOT call testConnection().
+         ----------------------------------------------- */
 
-    if(!confirm("Clear local frontend audit log?")){
-      return;
-    }
+      try {
 
-    localStorage.removeItem(STORAGE.AUDIT);
+        if (
+          window.GoVaraAPI &&
+          typeof window.GoVaraAPI.getAPIUrl === "function"
+        ) {
 
-    renderAudit();
+          var configured =
+            !!window.GoVaraAPI.getAPIUrl();
 
-  });
+
+          document.getElementById(
+            "apiStatus"
+          ).textContent =
+            configured
+              ? "API CONFIGURED"
+              : "API NOT CONFIGURED";
 
 
-/* ============================================================
-   API BOUNDARY
-============================================================ */
+          document.getElementById(
+            "dashboardApiStatus"
+          ).textContent =
+            configured
+              ? "API CONFIGURED"
+              : "API NOT CONFIGURED";
 
-const GoVaraAPI = {
-
-  VERSION:"GOVARA-CONSOLIDATED-API-V1",
-
-  state:{
-    configured:false,
-    connected:false,
-    verified:false,
-    lastResponse:null,
-    lastError:null,
-    lastAction:null
-  },
-
-  configure(url){
-
-    const clean =
-      String(url || "").trim();
-
-    localStorage.setItem(
-      "GOVARA_API_CONFIG_V1",
-      clean
-    );
-
-    this.state.configured =
-      !!clean;
-
-    return clean;
-
-  },
-
-  getAPIUrl(){
-
-    return localStorage.getItem(
-      "GOVARA_API_CONFIG_V1"
-    ) || "";
-
-  },
-
-  async testConnection(){
-
-    const url =
-      this.getAPIUrl();
-
-    if(!url){
-
-      this.state.configured = false;
-      this.state.connected = false;
-      this.state.verified = false;
-
-      throw new Error(
-        "API endpoint is not configured."
-      );
-
-    }
-
-    this.state.lastAction =
-      "GET_HEALTH";
-
-    const response =
-      await fetch(
-        url,
-        {
-          method:"GET",
-          cache:"no-store"
         }
+
+      } catch (error) {
+
+        console.warn(
+          "GoVara API status:",
+          error
+        );
+
+      }
+
+
+      /* -----------------------------------------------
+         MODULE DETECTION
+         
+         This only checks whether the expected
+         module objects exist. It does not connect
+         to the backend.
+         ----------------------------------------------- */
+
+      console.log(
+        "GoVara modular frontend booted."
       );
 
-    if(!response.ok){
-
-      throw new Error(
-        "API HTTP status "+response.status
+      console.log(
+        "GoVaraAPI:",
+        window.GoVaraAPI
       );
 
-    }
-
-    const data =
-      await response.json();
-
-    this.state.lastResponse = data;
-
-    if(data && data.project === "GoVara"){
-
-      this.state.configured = true;
-      this.state.connected = true;
-      this.state.verified = true;
-
-      return data;
-
-    }
-
-    this.state.connected = false;
-    this.state.verified = false;
-
-    throw new Error(
-      "Backend project verification failed."
-    );
-
-  }
-
-};
-
-window.GoVaraAPI = GoVaraAPI;
-
-
-/* ============================================================
-   API UI
-============================================================ */
-
-function updateApiStatus(){
-
-  const endpoint =
-    systemConfig.apiEndpoint ||
-    GoVaraAPI.getAPIUrl() ||
-    "";
-
-  const dashboard =
-    document.getElementById("dashboardApiStatus");
-
-  const badge =
-    document.getElementById("topApiBadge");
-
-  const pageEndpoint =
-    document.getElementById("apiPageEndpoint");
-
-  if(endpoint){
-
-    if(dashboard){
-      dashboard.textContent = "CONFIGURED";
-    }
-
-    if(badge){
-      badge.textContent = "API CONFIGURED";
-      badge.className = "badge ready";
-    }
-
-    if(pageEndpoint){
-      pageEndpoint.textContent = endpoint;
-    }
-
-  }else{
-
-    if(dashboard){
-      dashboard.textContent = "NOT CONFIGURED";
-    }
-
-    if(badge){
-      badge.textContent = "API NOT CONFIGURED";
-      badge.className = "badge warning";
-    }
-
-    if(pageEndpoint){
-      pageEndpoint.textContent = "NONE";
-    }
-
-  }
-
-}
-
-
-document.getElementById("step27SaveBtn")
-  .addEventListener("click",()=>{
-
-    const endpoint =
-      document.getElementById("apiEndpoint").value.trim();
-
-    if(!endpoint){
-
-      alert("API endpoint is empty.");
-      return;
-
-    }
-
-    GoVaraAPI.configure(endpoint);
-
-    systemConfig.apiEndpoint =
-      endpoint;
-
-    saveJSON(
-      STORAGE.SYSTEM,
-      systemConfig
-    );
-
-    updateApiStatus();
-
-    audit(
-      "STEP27_API_SAVE",
-      "Consolidated API endpoint saved."
-    );
-
-  });
-
-
-document.getElementById("step27ClearBtn")
-  .addEventListener("click",()=>{
-
-    localStorage.removeItem(
-      "GOVARA_API_CONFIG_V1"
-    );
-
-    systemConfig.apiEndpoint = "";
-
-    document.getElementById("apiEndpoint").value = "";
-
-    saveJSON(
-      STORAGE.SYSTEM,
-      systemConfig
-    );
-
-    GoVaraAPI.state = {
-      configured:false,
-      connected:false,
-      verified:false,
-      lastResponse:null,
-      lastError:null,
-      lastAction:null
-    };
-
-    updateApiStatus();
-
-    audit(
-      "STEP27_API_CLEAR",
-      "Consolidated API endpoint cleared."
-    );
-
-  });
-
-
-document.getElementById("step27TestBtn")
-  .addEventListener("click",async()=>{
-
-    const status =
-      document.getElementById("apiConnectionStatus");
-
-    status.textContent =
-      "TESTING...";
-
-    try{
-
-      const data =
-        await GoVaraAPI.testConnection();
-
-      status.textContent =
-        "CONNECTED / VERIFIED";
-
-      audit(
-        "STEP27_API_TEST_PASS",
-        JSON.stringify(data)
+      console.log(
+        "GoVara27:",
+        window.GoVara27
       );
 
-      alert("Consolidated API connection verified.");
-
-    }catch(error){
-
-      GoVaraAPI.state.lastError =
-        error.message;
-
-      status.textContent =
-        "FAILED";
-
-      audit(
-        "STEP27_API_TEST_FAIL",
-        error.message
+      console.log(
+        "Backend connection test intentionally NOT executed."
       );
 
-      alert(
-        "API connection failed: "+
-        error.message
-      );
+    })();
 
-    }
-
-  });
-
-
-/* ============================================================
-   SECURITY / HTML ESCAPE
-============================================================ */
-
-function escapeHTML(value){
-
-  return String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-
-}
-
-
-/* ============================================================
-   INITIALIZATION
-============================================================ */
-
-function initialize(){
-
-  fillSystemConfig();
-
-  populateGlobalLanguageSelector();
-
-  renderRoleCards();
-  renderSelectedRole();
-
-  document.getElementById("roleConfigVersion").value =
-    roleConfig.version || "26B-1.0";
-
-  document.getElementById("roleLastUpdated").value =
-    roleConfig.lastUpdated || "Never";
-
-  loadPolicyUI();
-
-  renderOperations();
-  renderFinancial();
-  renderDocuments();
-  renderAudit();
-
-  updateApiStatus();
-
-  const savedLanguage =
-    localStorage.getItem(STORAGE.UI_LANGUAGE);
-
-  applyLanguage(
-    savedLanguage &&
-    systemConfig.availableLanguages[savedLanguage]
-      ? savedLanguage
-      : systemConfig.defaultLanguage
-  );
-
-  audit(
-    "FRONTEND_INIT",
-    "GoVara Administrator Control Center initialized."
-  );
-
-}
-
-initialize();
-
-</script>
+  </script>
 
 </body>
 </html>

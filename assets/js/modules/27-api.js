@@ -1463,6 +1463,7 @@ function render(container) {
       <div class="govara-step27-header">
 
         <div>
+
           <div style="
             font-size:12px;
             font-weight:700;
@@ -1480,16 +1481,23 @@ function render(container) {
           <p style="margin:6px 0 0;">
             ONE Frontend API Boundary
           </p>
+
         </div>
 
         <div class="govara-step27-status-box">
+
           <span id="govara-step27-status">
             NOT CONFIGURED
           </span>
+
         </div>
 
       </div>
 
+
+      <!-- ==================================================
+           API CONFIGURATION
+           ================================================== -->
 
       <div class="govara-step27-card">
 
@@ -1561,13 +1569,19 @@ function render(container) {
       </div>
 
 
+      <!-- ==================================================
+           API CONNECTION TEST
+           ================================================== -->
+
       <div class="govara-step27-card">
 
         <h3>API Connection Test</h3>
 
         <div class="muted" style="margin-bottom:14px;">
+
           Run the API health check manually.
           No automatic API request is made on page load.
+
         </div>
 
         <button
@@ -1579,6 +1593,69 @@ function render(container) {
 
       </div>
 
+
+      <!-- ==================================================
+           CUSTOMER DATABASE CHECK
+           ================================================== -->
+
+      <div class="govara-step27-card">
+
+        <h3>Customer Database Check</h3>
+
+        <div class="muted">
+          Read existing customers through the
+          GoVara Consolidated API.
+        </div>
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:12px;
+            margin-top:14px;
+          "
+        >
+
+          <button
+            type="button"
+            id="govara-step27-load-customers"
+          >
+            Load Customer List
+          </button>
+
+          <strong id="govara-step27-customer-count">
+            Total Customers: —
+          </strong>
+
+        </div>
+
+        <div
+          id="govara-step27-customer-status"
+          class="muted"
+          style="
+            margin-top:12px;
+            min-height:20px;
+          "
+        >
+          Customer list has not been loaded.
+        </div>
+
+        <div
+          id="govara-step27-customer-list"
+          style="
+            margin-top:14px;
+            overflow-x:auto;
+          "
+        >
+        </div>
+
+      </div>
+
+
+      <!-- ==================================================
+           API STATUS
+           ================================================== -->
 
       <div class="govara-step27-card">
 
@@ -1595,37 +1672,64 @@ function render(container) {
         >
 
           <div class="govara-step27-info">
-            <div class="muted">Configured</div>
+
+            <div class="muted">
+              Configured
+            </div>
+
             <strong id="govara-step27-configured">
               NO
             </strong>
+
           </div>
 
+
           <div class="govara-step27-info">
-            <div class="muted">Connected</div>
+
+            <div class="muted">
+              Connected
+            </div>
+
             <strong id="govara-step27-connected">
               NO
             </strong>
+
           </div>
 
+
           <div class="govara-step27-info">
-            <div class="muted">Verified</div>
+
+            <div class="muted">
+              Verified
+            </div>
+
             <strong id="govara-step27-verified">
               NO
             </strong>
+
           </div>
 
+
           <div class="govara-step27-info">
-            <div class="muted">Environment</div>
+
+            <div class="muted">
+              Environment
+            </div>
+
             <strong id="govara-step27-environment">
               TESTING
             </strong>
+
           </div>
 
         </div>
 
       </div>
 
+
+      <!-- ==================================================
+           TEST RESULT
+           ================================================== -->
 
       <div class="govara-step27-card">
 
@@ -1649,6 +1753,10 @@ function render(container) {
       </div>
 
 
+      <!-- ==================================================
+           LAST API ACTIVITY
+           ================================================== -->
+
       <div class="govara-step27-card">
 
         <h3>Last API Activity</h3>
@@ -1664,30 +1772,51 @@ function render(container) {
         >
 
           <div class="govara-step27-info">
-            <div class="muted">Last Action</div>
+
+            <div class="muted">
+              Last Action
+            </div>
+
             <strong id="govara-step27-last-action">
               —
             </strong>
+
           </div>
 
+
           <div class="govara-step27-info">
-            <div class="muted">Last Module</div>
+
+            <div class="muted">
+              Last Module
+            </div>
+
             <strong id="govara-step27-last-module">
               —
             </strong>
+
           </div>
 
+
           <div class="govara-step27-info">
-            <div class="muted">Last Error</div>
+
+            <div class="muted">
+              Last Error
+            </div>
+
             <strong id="govara-step27-last-error">
               —
             </strong>
+
           </div>
 
         </div>
 
       </div>
 
+
+      <!-- ==================================================
+           CONSOLIDATED API CONTRACT
+           ================================================== -->
 
       <div class="govara-step27-card">
 
@@ -1738,6 +1867,10 @@ function render(container) {
       </div>
 
 
+      <!-- ==================================================
+           SAFETY BOUNDARY
+           ================================================== -->
+
       <div class="govara-step27-card">
 
         <h3>Safety Boundary</h3>
@@ -1762,8 +1895,10 @@ function render(container) {
         </div>
 
         <div class="muted" style="margin-top:12px;">
+
           Backend remains authoritative for financial
           and business truth.
+
         </div>
 
       </div>
@@ -1777,10 +1912,16 @@ function render(container) {
       "#govara-step27-endpoint"
     );
 
-  var savedURL = getAPIUrl();
+
+  var savedURL =
+    getAPIUrl();
+
 
   if (endpointInput) {
-    endpointInput.value = savedURL || "";
+
+    endpointInput.value =
+      savedURL || "";
+
   }
 
 
@@ -1831,54 +1972,93 @@ function render(container) {
 
 
     if (configured) {
+
       configured.textContent =
-        APIState.configured ? "YES" : "NO";
+        APIState.configured
+          ? "YES"
+          : "NO";
+
     }
+
 
     if (connected) {
+
       connected.textContent =
-        APIState.connected ? "YES" : "NO";
+        APIState.connected
+          ? "YES"
+          : "NO";
+
     }
+
 
     if (verified) {
+
       verified.textContent =
-        APIState.verified ? "YES" : "NO";
+        APIState.verified
+          ? "YES"
+          : "NO";
+
     }
+
 
     if (environment) {
+
       environment.textContent =
-        CONFIG.ENVIRONMENT || "TESTING";
+        CONFIG.ENVIRONMENT ||
+        "TESTING";
+
     }
+
 
     if (lastAction) {
+
       lastAction.textContent =
-        APIState.lastAction || "—";
+        APIState.lastAction ||
+        "—";
+
     }
+
 
     if (lastModule) {
+
       lastModule.textContent =
-        APIState.lastModule || "—";
+        APIState.lastModule ||
+        "—";
+
     }
 
+
     if (lastError) {
+
       lastError.textContent =
-        APIState.lastError || "—";
+        APIState.lastError ||
+        "—";
+
     }
 
 
     if (status) {
 
       if (APIState.verified) {
-        status.textContent = "VERIFIED";
+
+        status.textContent =
+          "VERIFIED";
 
       } else if (APIState.connected) {
-        status.textContent = "CONNECTED";
+
+        status.textContent =
+          "CONNECTED";
 
       } else if (APIState.configured) {
-        status.textContent = "CONFIGURED";
+
+        status.textContent =
+          "CONFIGURED";
 
       } else {
-        status.textContent = "NOT CONFIGURED";
+
+        status.textContent =
+          "NOT CONFIGURED";
+
       }
 
     }
@@ -1891,6 +2071,7 @@ function render(container) {
       "#govara-step27-test"
     );
 
+
   if (testButton) {
 
     testButton.addEventListener(
@@ -1902,15 +2083,20 @@ function render(container) {
             "#govara-step27-diagnostics"
           );
 
+
         if (diagnostics) {
+
           diagnostics.textContent =
             "Testing Consolidated API...";
+
         }
+
 
         try {
 
           var result =
             await testConnection();
+
 
           if (diagnostics) {
 
@@ -1933,6 +2119,7 @@ function render(container) {
               ? error.message
               : String(error);
 
+
           if (diagnostics) {
 
             diagnostics.textContent =
@@ -1942,6 +2129,7 @@ function render(container) {
           }
 
         }
+
 
         refreshStep27Status();
 
@@ -1954,6 +2142,7 @@ function render(container) {
   refreshStep27Status();
 
   return true;
+
 }
   /* ==========================================================
    * 44. RENDERED STATUS

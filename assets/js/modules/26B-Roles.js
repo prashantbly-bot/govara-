@@ -1,554 +1,1705 @@
-/* ============================================================
+/* =========================================================
    GoVara — 26B User & Role Control
-   VERSION: GOVARA-26B-V1
-   FRONTEND ADMIN CONTROL MODULE
+   FRONTEND-ONLY ADMINISTRATOR MODULE
 
-   RULES:
-   - Frontend configuration only
-   - No backend call
-   - No database call
-   - No API test
-   - Backend remains authoritative
-   - Financial authority is NOT granted here
-============================================================ */
+   Version: 26B-Roles-V2
+   Backend: NOT CONNECTED
+   Database: NOT CONNECTED
+   API: NOT USED
+
+   IMPORTANT:
+   Frontend is NOT the authority.
+   Backend remains authoritative.
+
+   Real Money = BLOCKED
+   Real Payment = BLOCKED
+   Bank Transfer = BLOCKED
+   ========================================================= */
 
 window.GoVara26B = (function () {
 
   "use strict";
 
-  const STORAGE_KEY = "GOVARA_USER_ROLE_CONTROL_26B_V1";
+
+  /* =========================================================
+     STORAGE
+     ========================================================= */
+
+  const STORAGE_KEY =
+    "GOVARA_USER_ROLE_CONTROL_26B_V2";
 
 
-  /* ==========================================================
-     DEFAULT ROLE CONFIGURATION
-  ========================================================== */
+  /* =========================================================
+     PERMISSION CATALOG
+     ========================================================= */
 
-  const DEFAULT_CONFIG = {
+  const PERMISSIONS = {
 
-    systemRoles: {
+    dashboard: [
+      "dashboard.view"
+    ],
 
-      Admin: {
-        enabled: true,
-        description: "Platform administrator",
-        permissions: [
-          "dashboard.view",
-          "users.view",
-          "users.manage",
-          "roles.view",
-          "roles.manage",
-          "policies.view",
-          "operations.view",
-          "financial.view",
-          "documents.view",
-          "audit.view"
-        ]
-      },
+    customer: [
+      "customer.view",
+      "customer.create",
+      "customer.update",
+      "customer.booking",
+      "customer.fare_estimate",
+      "customer.billing",
+      "customer.documents",
+      "customer.rating"
+    ],
 
-      Customer: {
-        enabled: true,
-        description: "Primary booking initiator",
-        permissions: [
-          "profile.view",
-          "profile.edit",
-          "booking.create",
-          "booking.view",
-          "fare.estimate",
-          "billing.view",
-          "documents.view"
-        ]
-      },
+    vendor: [
+      "vendor.view",
+      "vendor.create",
+      "vendor.update",
+      "vendor.booking",
+      "vendor.vehicle",
+      "vendor.duty",
+      "vendor.documents",
+      "vendor.billing"
+    ],
 
-      Vendor: {
-        enabled: true,
-        description: "Vendor / transport company",
-        permissions: [
-          "profile.view",
-          "profile.edit",
-          "vehicle.view",
-          "vehicle.manage",
-          "booking.view",
-          "duty.view",
-          "documents.view"
-        ]
-      },
+    driver: [
+      "driver.view",
+      "driver.update",
+      "driver.booking",
+      "driver.duty",
+      "driver.documents",
+      "driver.location",
+      "driver.rating"
+    ],
 
-      Driver: {
-        enabled: true,
-        description: "Driver / service operator",
-        permissions: [
-          "profile.view",
-          "profile.edit",
-          "duty.view",
-          "duty.update",
-          "booking.view",
-          "documents.view"
-        ]
-      }
+    vehicle: [
+      "vehicle.view",
+      "vehicle.create",
+      "vehicle.update",
+      "vehicle.assign"
+    ],
 
-    },
+    booking: [
+      "booking.view",
+      "booking.create",
+      "booking.update",
+      "booking.cancel",
+      "booking.assign"
+    ],
 
+    fare: [
+      "fare.view",
+      "fare.estimate",
+      "fare.manage"
+    ],
 
-    /* ========================================================
-       ACCESS POLICY
-    ======================================================== */
+    transaction: [
+      "transaction.view",
+      "transaction.create"
+    ],
 
-    policies: {
+    wallet: [
+      "wallet.view",
+      "wallet.manage"
+    ],
 
-      userRegistration: true,
+    ledger: [
+      "ledger.view",
+      "ledger.manage"
+    ],
 
-      customerRegistration: true,
+    settlement: [
+      "settlement.view",
+      "settlement.manage"
+    ],
 
-      vendorRegistration: true,
+    billing: [
+      "billing.view",
+      "billing.create",
+      "billing.manage"
+    ],
 
-      driverRegistration: true,
+    documents: [
+      "documents.view",
+      "documents.upload",
+      "documents.verify",
+      "documents.manage"
+    ],
 
-      roleSelection: true,
+    admin: [
+      "admin.dashboard",
+      "admin.user_manage",
+      "admin.role_manage",
+      "admin.permission_manage",
+      "admin.policy_manage",
+      "admin.operation_manage",
+      "admin.financial_manage",
+      "admin.document_manage",
+      "admin.audit_view"
+    ],
 
-      multipleRoleAssignment: false,
-
-      selfRoleChange: false,
-
-      disabledUserLogin: false,
-
-      disabledRoleLogin: false,
-
-      adminApprovalRequired: false,
-
-      kycRequiredForVendor: true,
-
-      kycRequiredForDriver: true,
-
-      kycRequiredForCustomer: false
-
-    },
-
-
-    /* ========================================================
-       SECURITY
-    ======================================================== */
-
-    security: {
-
-      permissionEnforcement: true,
-
-      sessionControl: true,
-
-      auditRoleChanges: true,
-
-      auditPermissionChanges: true,
-
-      frontendAuthority: false,
-
-      backendAuthority: true
-
-    },
-
-
-    lastAction: "INITIALIZED",
-
-    lastUpdated: null
+    audit: [
+      "audit.view",
+      "audit.create"
+    ]
 
   };
 
 
-  /* ==========================================================
-     UTILITIES
-  ========================================================== */
+  /* =========================================================
+     FLATTEN PERMISSION CATALOG
+     ========================================================= */
 
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+  function getPermissionCatalog() {
+
+    const output = [];
+
+    Object.keys(PERMISSIONS).forEach(function (group) {
+
+      PERMISSIONS[group].forEach(function (permission) {
+
+        output.push({
+          id: permission,
+          group: group
+        });
+
+      });
+
+    });
+
+    return output;
   }
 
 
-  function merge(base, incoming) {
+  /* =========================================================
+     ROLE DEFINITIONS
+     ========================================================= */
 
-    if (!incoming || typeof incoming !== "object") {
-      return base;
+  const ROLE_DEFINITIONS = {
+
+    Admin: {
+
+      description:
+        "Platform administrator with configurable administrative access.",
+
+      defaultPermissions: [
+        "dashboard.view",
+
+        "customer.view",
+        "customer.create",
+        "customer.update",
+
+        "vendor.view",
+        "vendor.create",
+        "vendor.update",
+
+        "driver.view",
+        "driver.update",
+
+        "vehicle.view",
+        "vehicle.create",
+        "vehicle.update",
+        "vehicle.assign",
+
+        "booking.view",
+        "booking.create",
+        "booking.update",
+        "booking.cancel",
+        "booking.assign",
+
+        "fare.view",
+        "fare.estimate",
+        "fare.manage",
+
+        "transaction.view",
+
+        "wallet.view",
+
+        "ledger.view",
+
+        "settlement.view",
+
+        "billing.view",
+        "billing.create",
+
+        "documents.view",
+        "documents.upload",
+        "documents.verify",
+        "documents.manage",
+
+        "admin.dashboard",
+        "admin.user_manage",
+        "admin.role_manage",
+        "admin.permission_manage",
+        "admin.policy_manage",
+        "admin.operation_manage",
+        "admin.financial_manage",
+        "admin.document_manage",
+        "admin.audit_view",
+
+        "audit.view"
+      ]
+
+    },
+
+
+    Customer: {
+
+      description:
+        "Customer who initiates booking and uses customer services.",
+
+      defaultPermissions: [
+        "dashboard.view",
+
+        "customer.view",
+        "customer.create",
+        "customer.update",
+        "customer.booking",
+        "customer.fare_estimate",
+        "customer.billing",
+        "customer.documents",
+        "customer.rating",
+
+        "booking.view",
+        "booking.create",
+
+        "fare.view",
+        "fare.estimate",
+
+        "billing.view",
+
+        "documents.view",
+        "documents.upload"
+      ]
+
+    },
+
+
+    Vendor: {
+
+      description:
+        "Vendor or company managing vehicles, bookings and operations.",
+
+      defaultPermissions: [
+        "dashboard.view",
+
+        "vendor.view",
+        "vendor.create",
+        "vendor.update",
+        "vendor.booking",
+        "vendor.vehicle",
+        "vendor.duty",
+        "vendor.documents",
+        "vendor.billing",
+
+        "vehicle.view",
+        "vehicle.create",
+        "vehicle.update",
+        "vehicle.assign",
+
+        "booking.view",
+        "booking.update",
+        "booking.assign",
+
+        "fare.view",
+
+        "billing.view",
+
+        "documents.view",
+        "documents.upload"
+      ]
+
+    },
+
+
+    Driver: {
+
+      description:
+        "Driver operating assigned duties and bookings.",
+
+      defaultPermissions: [
+        "dashboard.view",
+
+        "driver.view",
+        "driver.update",
+        "driver.booking",
+        "driver.duty",
+        "driver.documents",
+        "driver.location",
+        "driver.rating",
+
+        "booking.view",
+        "booking.update",
+
+        "fare.view",
+
+        "documents.view",
+        "documents.upload"
+      ]
+
     }
 
-    Object.keys(incoming).forEach(function (key) {
+  };
+
+
+  /* =========================================================
+     DEFAULT CONFIGURATION
+     ========================================================= */
+
+  function getDefaultConfig() {
+
+    const roles = {};
+
+    Object.keys(ROLE_DEFINITIONS).forEach(function (role) {
+
+      roles[role] = {
+
+        enabled: true,
+
+        permissions:
+          ROLE_DEFINITIONS[role]
+            .defaultPermissions
+            .slice(),
+
+        registrationAllowed: true,
+
+        adminApprovalRequired:
+          role === "Admin" ? true : false,
+
+        kycRequired:
+          role === "Admin" ? false : true,
+
+        description:
+          ROLE_DEFINITIONS[role].description
+
+      };
+
+    });
+
+
+    return {
+
+      version: "26B-V2",
+
+      roles: roles,
+
+      policies: {
+
+        userRegistrationEnabled: true,
+
+        customerRegistrationEnabled: true,
+
+        vendorRegistrationEnabled: true,
+
+        driverRegistrationEnabled: true,
+
+        disabledRoleLoginBlocked: true,
+
+        disabledUserLoginBlocked: true,
+
+        multipleRolesAllowed: true,
+
+        adminApprovalEnabled: true,
+
+        roleChangeAuditEnabled: true,
+
+        permissionChangeAuditEnabled: true
+
+      },
+
+      security: {
+
+        permissionEnforcement: true,
+
+        sessionControl: true,
+
+        auditRoleChanges: true,
+
+        auditPermissionChanges: true,
+
+        selfRoleChangeAllowed: false,
+
+        frontendAuthority: false,
+
+        backendAuthority: true,
+
+        realMoney: false,
+
+        realPayment: false,
+
+        bankTransfer: false
+
+      }
+
+    };
+
+  }
+
+
+  /* =========================================================
+     CONFIG LOAD
+     ========================================================= */
+
+  function loadConfig() {
+
+    try {
+
+      const raw =
+        localStorage.getItem(STORAGE_KEY);
+
+      if (!raw) {
+
+        return getDefaultConfig();
+
+      }
+
+      const saved =
+        JSON.parse(raw);
+
+      const defaults =
+        getDefaultConfig();
+
+
+      return mergeConfig(
+        defaults,
+        saved
+      );
+
+    } catch (error) {
+
+      console.error(
+        "GoVara26B load error:",
+        error
+      );
+
+      return getDefaultConfig();
+
+    }
+
+  }
+
+
+  /* =========================================================
+     DEEP MERGE
+     ========================================================= */
+
+  function mergeConfig(base, override) {
+
+    if (
+      !override ||
+      typeof override !== "object"
+    ) {
+
+      return base;
+
+    }
+
+
+    Object.keys(override).forEach(function (key) {
 
       if (
-        incoming[key] &&
-        typeof incoming[key] === "object" &&
-        !Array.isArray(incoming[key]) &&
+        override[key] &&
+        typeof override[key] === "object" &&
+        !Array.isArray(override[key]) &&
         base[key] &&
         typeof base[key] === "object" &&
         !Array.isArray(base[key])
       ) {
 
         base[key] =
-          merge(base[key], incoming[key]);
+          mergeConfig(
+            base[key],
+            override[key]
+          );
 
       } else {
 
         base[key] =
-          incoming[key];
+          override[key];
 
       }
 
     });
 
+
     return base;
+
   }
 
 
-  function getConfig() {
+  /* =========================================================
+     CONFIG
+     ========================================================= */
+
+  let config =
+    loadConfig();
+
+
+  let selectedRole =
+    "Admin";
+
+
+  /* =========================================================
+     SAVE
+     ========================================================= */
+
+  function save() {
+
+    const validation =
+      validate();
+
+
+    if (!validation.valid) {
+
+      alert(
+        validation.errors.join("\n")
+      );
+
+      return false;
+
+    }
+
 
     try {
 
-      const saved =
-        localStorage.getItem(STORAGE_KEY);
-
-      if (!saved) {
-        return clone(DEFAULT_CONFIG);
-      }
-
-      return merge(
-        clone(DEFAULT_CONFIG),
-        JSON.parse(saved)
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(config)
       );
+
+
+      createAuditEvent(
+        "26B_CONFIG_SAVED"
+      );
+
+
+      renderAndBind();
+
+
+      return true;
 
     } catch (error) {
 
-      console.warn(
-        "GoVara26B: configuration load failed.",
+      console.error(
+        "GoVara26B save error:",
         error
       );
 
-      return clone(DEFAULT_CONFIG);
+      alert(
+        "Unable to save 26B configuration."
+      );
+
+      return false;
+
     }
+
   }
 
 
-  /* ==========================================================
-     ESCAPE
-  ========================================================== */
+  /* =========================================================
+     RESET
+     ========================================================= */
 
-  function esc(value) {
+  function reset() {
 
-    return String(
-      value === undefined || value === null
-        ? ""
-        : value
-    )
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    const confirmed =
+      window.confirm(
+        "Reset all 26B User & Role Control settings to defaults?"
+      );
+
+
+    if (!confirmed) {
+
+      return;
+
+    }
+
+
+    config =
+      getDefaultConfig();
+
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(config)
+    );
+
+
+    createAuditEvent(
+      "26B_CONFIG_RESET"
+    );
+
+
+    renderAndBind();
+
   }
 
 
-  /* ==========================================================
-     PERMISSION CATALOG
-  ========================================================== */
-
-  const PERMISSIONS = [
-
-    {
-      group: "Dashboard",
-      items: [
-        ["dashboard.view", "View Dashboard"]
-      ]
-    },
-
-    {
-      group: "Users",
-      items: [
-        ["users.view", "View Users"],
-        ["users.manage", "Manage Users"]
-      ]
-    },
-
-    {
-      group: "Roles",
-      items: [
-        ["roles.view", "View Roles"],
-        ["roles.manage", "Manage Roles"]
-      ]
-    },
-
-    {
-      group: "Profile",
-      items: [
-        ["profile.view", "View Profile"],
-        ["profile.edit", "Edit Profile"]
-      ]
-    },
-
-    {
-      group: "Booking",
-      items: [
-        ["booking.create", "Create Booking"],
-        ["booking.view", "View Booking"]
-      ]
-    },
-
-    {
-      group: "Fare",
-      items: [
-        ["fare.estimate", "Fare Estimate"]
-      ]
-    },
-
-    {
-      group: "Vehicle",
-      items: [
-        ["vehicle.view", "View Vehicle"],
-        ["vehicle.manage", "Manage Vehicle"]
-      ]
-    },
-
-    {
-      group: "Duty",
-      items: [
-        ["duty.view", "View Duty"],
-        ["duty.update", "Update Duty"]
-      ]
-    },
-
-    {
-      group: "Billing",
-      items: [
-        ["billing.view", "View Billing"]
-      ]
-    },
-
-    {
-      group: "Documents",
-      items: [
-        ["documents.view", "View Documents"]
-      ]
-    },
-
-    {
-      group: "Policies",
-      items: [
-        ["policies.view", "View Policies"],
-        ["policies.manage", "Manage Policies"]
-      ]
-    },
-
-    {
-      group: "Operations",
-      items: [
-        ["operations.view", "View Operations"],
-        ["operations.manage", "Manage Operations"]
-      ]
-    },
-
-    {
-      group: "Financial",
-      items: [
-        ["financial.view", "View Financial"],
-        ["financial.manage", "Manage Financial"]
-      ]
-    },
-
-    {
-      group: "Audit",
-      items: [
-        ["audit.view", "View Audit"],
-        ["audit.manage", "Manage Audit"]
-      ]
-    }
-
-  ];
-
-
-  /* ==========================================================
+  /* =========================================================
      VALIDATION
-  ========================================================== */
+     ========================================================= */
 
-  function validate(config) {
+  function validate() {
 
     const errors = [];
 
 
-    if (!config.systemRoles.Admin) {
+    if (
+      !config ||
+      !config.roles
+    ) {
+
       errors.push(
-        "Admin role configuration is required."
+        "Role configuration is missing."
       );
+
+    }
+
+
+    Object.keys(
+      ROLE_DEFINITIONS
+    ).forEach(function (role) {
+
+      if (
+        !config.roles[role]
+      ) {
+
+        errors.push(
+          "Missing role: " + role
+        );
+
+      }
+
+    });
+
+
+    if (
+      config.security.frontendAuthority !==
+      false
+    ) {
+
+      errors.push(
+        "Frontend authority must remain false."
+      );
+
     }
 
 
     if (
-      config.security.frontendAuthority !== false
+      config.security.backendAuthority !==
+      true
     ) {
+
       errors.push(
-        "Frontend cannot become authority."
+        "Backend authority must remain true."
       );
+
     }
 
 
     if (
-      config.security.backendAuthority !== true
+      config.security.realMoney !==
+      false
     ) {
+
       errors.push(
-        "Backend must remain authoritative."
+        "Real Money must remain blocked."
       );
+
     }
 
 
     if (
-      config.policies.selfRoleChange !== false
+      config.security.realPayment !==
+      false
     ) {
+
       errors.push(
-        "Users cannot change their own role."
+        "Real Payment must remain blocked."
       );
+
+    }
+
+
+    if (
+      config.security.bankTransfer !==
+      false
+    ) {
+
+      errors.push(
+        "Bank Transfer must remain blocked."
+      );
+
     }
 
 
     return {
-      valid: errors.length === 0,
-      errors: errors
+
+      valid:
+        errors.length === 0,
+
+      errors:
+        errors
+
     };
 
   }
 
 
-  /* ==========================================================
-     SAVE
-  ========================================================== */
+  /* =========================================================
+     AUDIT
+     ========================================================= */
 
-  function save(config) {
+  function createAuditEvent(action) {
 
-    const current =
-      merge(
-        clone(DEFAULT_CONFIG),
-        config || {}
-      );
+    const eventsKey =
+      "GOVARA_26B_AUDIT_EVENTS";
 
-
-    /* ---------- HARD SECURITY ---------- */
-
-    current.security.frontendAuthority =
-      false;
-
-    current.security.backendAuthority =
-      true;
-
-    current.policies.selfRoleChange =
-      false;
+    let events = [];
 
 
-    current.lastAction =
-      "ROLE_CONFIGURATION_SAVED";
+    try {
 
-    current.lastUpdated =
-      new Date().toISOString();
+      events =
+        JSON.parse(
+          localStorage.getItem(
+            eventsKey
+          ) || "[]"
+        );
+
+    } catch (error) {
+
+      events = [];
+
+    }
 
 
-    const validation =
-      validate(current);
+    events.push({
+
+      action: action,
+
+      module: "26B",
+
+      timestamp:
+        new Date().toISOString(),
+
+      frontendAuthority:
+        false,
+
+      backendAuthority:
+        true
+
+    });
 
 
-    if (!validation.valid) {
+    if (events.length > 100) {
 
-      return {
-        success: false,
-        validation: validation
-      };
+      events =
+        events.slice(-100);
 
     }
 
 
     localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(current)
+      eventsKey,
+      JSON.stringify(events)
     );
-
-
-    return {
-      success: true,
-      config: current,
-      validation: validation
-    };
 
   }
 
 
-  /* ==========================================================
-     RESET
-  ========================================================== */
+  /* =========================================================
+     ROLE PERMISSION HELPERS
+     ========================================================= */
 
-  function reset() {
+  function hasPermission(
+    role,
+    permission
+  ) {
 
-    localStorage.removeItem(
-      STORAGE_KEY
-    );
+    if (
+      !config.roles[role]
+    ) {
 
-    return clone(DEFAULT_CONFIG);
+      return false;
+
+    }
+
+
+    return config
+      .roles[role]
+      .permissions
+      .includes(permission);
+
   }
 
 
-  /* ==========================================================
-     ROLE CARD
-  ========================================================== */
+  function addPermission(
+    role,
+    permission
+  ) {
 
-  function roleCard(
-    roleName,
+    if (
+      !config.roles[role]
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      !permission
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      hasPermission(
+        role,
+        permission
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    config
+      .roles[role]
+      .permissions
+      .push(permission);
+
+
+    createAuditEvent(
+      "26B_PERMISSION_ADDED_" +
+      role
+    );
+
+  }
+
+
+  function removePermission(
+    role,
+    permission
+  ) {
+
+    if (
+      !config.roles[role]
+    ) {
+
+      return;
+
+    }
+
+
+    config
+      .roles[role]
+      .permissions =
+      config
+        .roles[role]
+        .permissions
+        .filter(function (item) {
+
+          return item !== permission;
+
+        });
+
+
+    createAuditEvent(
+      "26B_PERMISSION_REMOVED_" +
+      role
+    );
+
+  }
+
+
+  /* =========================================================
+     ESCAPE HTML
+     ========================================================= */
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  /* =========================================================
+     PERMISSION LABEL
+     ========================================================= */
+
+  function permissionLabel(
+    permission
+  ) {
+
+    return permission
+      .replace(/\./g, " › ")
+      .replace(/_/g, " ");
+
+  }
+
+
+  /* =========================================================
+     PERMISSION GROUP
+     ========================================================= */
+
+  function renderPermissionGroups(
     role
   ) {
 
-    return `
+    const roleConfig =
+      config.roles[role];
 
-      <div
-        class="govara26b-role-card"
-        data-role="${esc(roleName)}"
-      >
 
-        <div class="govara26b-role-head">
+    if (!roleConfig) {
 
-          <div>
+      return "";
 
-            <h3>
-              ${esc(roleName)}
-            </h3>
+    }
 
-            <p>
-              ${esc(role.description)}
-            </p>
+
+    const assigned =
+      roleConfig.permissions || [];
+
+
+    let html = "";
+
+
+    Object.keys(
+      PERMISSIONS
+    ).forEach(function (group) {
+
+      const permissions =
+        PERMISSIONS[group];
+
+
+      const assignedCount =
+        permissions.filter(
+          function (permission) {
+
+            return assigned.includes(
+              permission
+            );
+
+          }
+        ).length;
+
+
+      html += `
+
+        <div class="card"
+             style="margin-top:12px;">
+
+          <div style="
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-bottom:10px;
+          ">
+
+            <div>
+
+              <h3 style="margin:0;">
+                ${escapeHtml(group)}
+              </h3>
+
+              <div class="muted">
+                ${assignedCount}
+                /
+                ${permissions.length}
+                assigned
+              </div>
+
+            </div>
+
+            <button
+              type="button"
+              class="btn"
+              data-action="group-toggle"
+              data-role="${escapeHtml(role)}"
+              data-group="${escapeHtml(group)}"
+            >
+              Toggle Group
+            </button>
 
           </div>
 
-          <label class="govara26b-mini-toggle">
+
+          <div style="
+            display:grid;
+            grid-template-columns:
+              repeat(auto-fit,minmax(220px,1fr));
+            gap:8px;
+          ">
+
+      `;
+
+
+      permissions.forEach(
+        function (permission) {
+
+          const checked =
+            assigned.includes(
+              permission
+            );
+
+
+          html += `
+
+            <label
+              style="
+                display:flex;
+                align-items:center;
+                gap:9px;
+                padding:9px 10px;
+                border:1px solid var(--border);
+                border-radius:9px;
+                background:var(--panel-2);
+                cursor:pointer;
+              "
+            >
+
+              <input
+                type="checkbox"
+                class="permission-checkbox"
+                data-role="${escapeHtml(role)}"
+                data-permission="${escapeHtml(permission)}"
+                ${checked ? "checked" : ""}
+              />
+
+              <span>
+
+                <strong>
+                  ${escapeHtml(
+                    permissionLabel(
+                      permission
+                    )
+                  )}
+                </strong>
+
+                <br />
+
+                <span class="muted">
+                  ${escapeHtml(permission)}
+                </span>
+
+              </span>
+
+            </label>
+
+          `;
+
+        }
+      );
+
+
+      html += `
+
+          </div>
+
+        </div>
+
+      `;
+
+    });
+
+
+    return html;
+
+  }
+
+
+  /* =========================================================
+     RENDER ROLE TABS
+     ========================================================= */
+
+  function renderRoleTabs() {
+
+    let html = "";
+
+
+    Object.keys(
+      ROLE_DEFINITIONS
+    ).forEach(function (role) {
+
+      const active =
+        selectedRole === role;
+
+
+      const enabled =
+        config.roles[role].enabled;
+
+
+      const count =
+        config.roles[role]
+          .permissions
+          .length;
+
+
+      html += `
+
+        <button
+          type="button"
+          class="btn ${active ? "primary" : ""}"
+          data-action="select-role"
+          data-role="${escapeHtml(role)}"
+          style="
+            min-width:150px;
+            text-align:left;
+          "
+        >
+
+          <strong>
+            ${escapeHtml(role)}
+          </strong>
+
+          <br />
+
+          <span style="
+            font-size:10px;
+            opacity:.75;
+          ">
+            ${enabled ? "ENABLED" : "DISABLED"}
+            ·
+            ${count} permissions
+          </span>
+
+        </button>
+
+      `;
+
+    });
+
+
+    return html;
+
+  }
+
+
+  /* =========================================================
+     RENDER ADD PERMISSION AREA
+     ========================================================= */
+
+  function renderAddPermission(role) {
+
+    const assigned =
+      config.roles[role]
+        .permissions || [];
+
+
+    const available =
+      getPermissionCatalog()
+        .filter(function (item) {
+
+          return !assigned.includes(
+            item.id
+          );
+
+        });
+
+
+    let options = "";
+
+
+    available.forEach(
+      function (item) {
+
+        options += `
+
+          <option
+            value="${escapeHtml(item.id)}"
+          >
+            ${escapeHtml(item.id)}
+          </option>
+
+        `;
+
+      }
+    );
+
+
+    return `
+
+      <div class="card"
+           style="margin-top:16px;">
+
+        <h2>
+          Add Permission
+        </h2>
+
+        <div class="muted">
+          Add another permission from the
+          central permission catalog to
+          <strong>${escapeHtml(role)}</strong>.
+        </div>
+
+        <div style="height:12px;"></div>
+
+        <div style="
+          display:flex;
+          gap:9px;
+          flex-wrap:wrap;
+        ">
+
+          <select
+            id="permission-add-select"
+            style="
+              flex:1;
+              min-width:240px;
+              padding:10px;
+              border-radius:9px;
+              border:1px solid var(--border);
+              background:var(--panel-2);
+              color:var(--text);
+            "
+          >
+
+            <option value="">
+              Select permission...
+            </option>
+
+            ${options}
+
+          </select>
+
+
+          <button
+            type="button"
+            class="btn primary"
+            data-action="add-permission"
+            data-role="${escapeHtml(role)}"
+          >
+            + Add Permission
+          </button>
+
+        </div>
+
+        ${
+          available.length === 0
+            ? `
+              <div
+                class="notice success"
+                style="margin-top:12px;"
+              >
+                All catalog permissions are
+                already assigned to this role.
+              </div>
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
+
+  }
+
+
+  /* =========================================================
+     RENDER SELECTED ROLE
+     ========================================================= */
+
+  function renderSelectedRole() {
+
+    const role =
+      selectedRole;
+
+
+    const roleConfig =
+      config.roles[role];
+
+
+    if (!roleConfig) {
+
+      return "";
+
+    }
+
+
+    const permissionCount =
+      roleConfig.permissions.length;
+
+
+    const catalogCount =
+      getPermissionCatalog().length;
+
+
+    return `
+
+      <div class="card">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:15px;
+          flex-wrap:wrap;
+        ">
+
+          <div>
+
+            <h2>
+              ${escapeHtml(role)}
+            </h2>
+
+            <div class="muted">
+              ${escapeHtml(
+                roleConfig.description
+              )}
+            </div>
+
+          </div>
+
+
+          <div
+            class="notice success"
+            style="min-width:180px;"
+          >
+
+            <strong>
+              ${permissionCount}
+            </strong>
+
+            / ${catalogCount}
+
+            <br />
+
+            <span class="muted">
+              Assigned Permissions
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div style="height:16px;"></div>
+
+
+        <div class="grid four">
+
+
+          <div class="notice">
+
+            <strong>
+              ${roleConfig.enabled
+                ? "ENABLED"
+                : "DISABLED"}
+            </strong>
+
+            <br />
+
+            <span class="muted">
+              Role Status
+            </span>
+
+          </div>
+
+
+          <div class="notice">
+
+            <strong>
+              ${roleConfig.registrationAllowed
+                ? "ALLOWED"
+                : "BLOCKED"}
+            </strong>
+
+            <br />
+
+            <span class="muted">
+              Registration
+            </span>
+
+          </div>
+
+
+          <div class="notice">
+
+            <strong>
+              ${roleConfig.adminApprovalRequired
+                ? "REQUIRED"
+                : "NOT REQUIRED"}
+            </strong>
+
+            <br />
+
+            <span class="muted">
+              Admin Approval
+            </span>
+
+          </div>
+
+
+          <div class="notice">
+
+            <strong>
+              ${roleConfig.kycRequired
+                ? "REQUIRED"
+                : "NOT REQUIRED"}
+            </strong>
+
+            <br />
+
+            <span class="muted">
+              Role-based KYC
+            </span>
+
+          </div>
+
+
+        </div>
+
+
+        <div style="height:16px;"></div>
+
+
+        <h3>
+          Role Controls
+        </h3>
+
+
+        <div class="grid two">
+
+
+          <label class="notice">
 
             <input
               type="checkbox"
-              class="26b-role-enabled"
-              data-role="${esc(roleName)}"
-              ${role.enabled ? "checked" : ""}
-            >
+              data-role-toggle="enabled"
+              data-role="${escapeHtml(role)}"
+              ${roleConfig.enabled ? "checked" : ""}
+            />
 
-            <span>
-              Enabled
-            </span>
+            <strong>
+              Enable Role
+            </strong>
+
+            <div class="muted">
+              Disabled roles cannot be used
+              for normal login/access.
+            </div>
 
           </label>
 
+
+          <label class="notice">
+
+            <input
+              type="checkbox"
+              data-role-toggle="registrationAllowed"
+              data-role="${escapeHtml(role)}"
+              ${roleConfig.registrationAllowed ? "checked" : ""}
+            />
+
+            <strong>
+              Allow Registration
+            </strong>
+
+            <div class="muted">
+              Allow users to register under
+              this role.
+            </div>
+
+          </label>
+
+
+          <label class="notice">
+
+            <input
+              type="checkbox"
+              data-role-toggle="adminApprovalRequired"
+              data-role="${escapeHtml(role)}"
+              ${roleConfig.adminApprovalRequired ? "checked" : ""}
+            />
+
+            <strong>
+              Admin Approval Required
+            </strong>
+
+            <div class="muted">
+              New users under this role require
+              administrator approval.
+            </div>
+
+          </label>
+
+
+          <label class="notice">
+
+            <input
+              type="checkbox"
+              data-role-toggle="kycRequired"
+              data-role="${escapeHtml(role)}"
+              ${roleConfig.kycRequired ? "checked" : ""}
+            />
+
+            <strong>
+              KYC Required
+            </strong>
+
+            <div class="muted">
+              Role-based KYC requirement.
+            </div>
+
+          </label>
+
+
+        </div>
+
+      </div>
+
+
+      <div style="height:16px;"></div>
+
+
+      <section>
+
+        <div class="page-head">
+
+          <h1 style="font-size:20px;">
+            Permission Assignment
+          </h1>
+
+          <div class="muted">
+            Select, remove or add permissions
+            for ${escapeHtml(role)}.
+          </div>
+
         </div>
 
 
-        <div class="govara26b-permission-count">
+        ${renderPermissionGroups(role)}
 
-          ${role.permissions.length}
-          permissions assigned
+
+        ${renderAddPermission(role)}
+
+
+      </section>
+
+    `;
+
+  }
+
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
+
+  function render() {
+
+    return `
+
+      <div class="page-head">
+
+        <h1>
+          26B — User & Role Control
+        </h1>
+
+        <div class="muted">
+          Manage roles, permissions, registration
+          policies, KYC requirements and access
+          security boundaries.
+        </div>
+
+      </div>
+
+
+      <!-- ==============================================
+           ROLE SELECTOR
+           ============================================== -->
+
+      <section class="card">
+
+        <h2>
+          Roles
+        </h2>
+
+        <div class="muted">
+          Select a role to manage its controls
+          and permissions.
+        </div>
+
+        <div style="height:14px;"></div>
+
+        <div
+          style="
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+          "
+        >
+
+          ${renderRoleTabs()}
 
         </div>
 
+      </section>
 
-        <div class="govara26b-permission-list">
+
+      <div style="height:16px;"></div>
+
+
+      <!-- ==============================================
+           SELECTED ROLE
+           ============================================== -->
+
+      ${renderSelectedRole()}
+
+
+      <div style="height:16px;"></div>
+
+
+      <!-- ==============================================
+           PERMISSION CATALOG
+           ============================================== -->
+
+      <section class="card">
+
+        <h2>
+          Permission Catalog
+        </h2>
+
+        <div class="muted">
+          Central catalog from which permissions
+          can be assigned to each role.
+        </div>
+
+        <div style="height:14px;"></div>
+
+
+        <div class="grid four">
 
           ${
-            role.permissions
-              .map(function (permission) {
+            Object.keys(PERMISSIONS)
+              .map(function (group) {
 
                 return `
-                  <span class="govara26b-permission">
-                    ${esc(permission)}
-                  </span>
+
+                  <div class="notice">
+
+                    <strong>
+                      ${escapeHtml(group)}
+                    </strong>
+
+                    <br />
+
+                    <span class="muted">
+                      ${PERMISSIONS[group].length}
+                      permissions
+                    </span>
+
+                  </div>
+
                 `;
 
               })
@@ -557,1237 +1708,831 @@ window.GoVara26B = (function () {
 
         </div>
 
-      </div>
-
-    `;
-
-  }
+      </section>
 
 
-  /* ==========================================================
-     RENDER
-  ========================================================== */
-
-  function render() {
-
-    const c =
-      getConfig();
-
-    const validation =
-      validate(c);
-
-    const roles =
-      Object.keys(c.systemRoles);
+      <div style="height:16px;"></div>
 
 
-    return `
+      <!-- ==============================================
+           USER REGISTRATION POLICY
+           ============================================== -->
 
-      <style>
+      <section class="card">
 
-        .govara26b-wrap {
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
+        <h2>
+          User Registration Policy
+        </h2>
 
-        .govara26b-head {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
+        <div class="muted">
+          Frontend configuration for which
+          user types may register.
+        </div>
 
-        .govara26b-head h1 {
-          margin: 0 0 6px;
-        }
-
-        .govara26b-head p {
-          margin: 0;
-          opacity: .65;
-        }
-
-        .govara26b-status {
-          display: grid;
-          grid-template-columns:
-            repeat(auto-fit, minmax(170px, 1fr));
-          gap: 10px;
-        }
-
-        .govara26b-status-card {
-          padding: 15px;
-          border-radius: 14px;
-          background: rgba(255,255,255,.035);
-          border: 1px solid rgba(255,255,255,.08);
-        }
-
-        .govara26b-status-card strong {
-          display: block;
-          margin-bottom: 5px;
-        }
-
-        .govara26b-status-card small {
-          opacity: .55;
-        }
-
-        .govara26b-section {
-          padding: 20px;
-          border-radius: 16px;
-          border: 1px solid rgba(255,255,255,.08);
-          background: rgba(255,255,255,.025);
-        }
-
-        .govara26b-section h2 {
-          margin: 0 0 6px;
-        }
-
-        .govara26b-desc {
-          margin: 0 0 18px;
-          opacity: .6;
-          font-size: 13px;
-        }
-
-        .govara26b-role-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(auto-fit, minmax(260px, 1fr));
-          gap: 14px;
-        }
-
-        .govara26b-role-card {
-          padding: 16px;
-          border-radius: 14px;
-          border: 1px solid rgba(255,255,255,.08);
-          background: rgba(0,0,0,.13);
-        }
-
-        .govara26b-role-head {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          align-items: flex-start;
-        }
-
-        .govara26b-role-head h3 {
-          margin: 0 0 5px;
-        }
-
-        .govara26b-role-head p {
-          margin: 0;
-          font-size: 12px;
-          opacity: .55;
-        }
-
-        .govara26b-mini-toggle {
-          display: flex;
-          gap: 6px;
-          align-items: center;
-          font-size: 11px;
-          white-space: nowrap;
-        }
-
-        .govara26b-permission-count {
-          margin-top: 15px;
-          font-size: 11px;
-          opacity: .55;
-        }
-
-        .govara26b-permission-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-top: 10px;
-        }
-
-        .govara26b-permission {
-          padding: 5px 7px;
-          border-radius: 7px;
-          font-size: 10px;
-          background: rgba(255,255,255,.06);
-        }
-
-        .govara26b-policy-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(auto-fit, minmax(270px, 1fr));
-          gap: 8px;
-        }
-
-        .govara26b-policy {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 12px;
-          padding: 13px;
-          border-radius: 11px;
-          background: rgba(255,255,255,.025);
-          border: 1px solid rgba(255,255,255,.06);
-        }
-
-        .govara26b-policy strong {
-          display: block;
-          font-size: 13px;
-        }
-
-        .govara26b-policy small {
-          opacity: .5;
-        }
-
-        .govara26b-security {
-          display: grid;
-          grid-template-columns:
-            repeat(auto-fit, minmax(200px, 1fr));
-          gap: 10px;
-        }
-
-        .govara26b-security-card {
-          padding: 15px;
-          border-radius: 12px;
-          background: rgba(255,255,255,.035);
-          border: 1px solid rgba(255,255,255,.07);
-        }
-
-        .govara26b-security-card strong {
-          display: block;
-          margin-bottom: 6px;
-        }
-
-        .govara26b-actions {
-          position: sticky;
-          bottom: 12px;
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-          flex-wrap: wrap;
-          padding: 12px;
-          border-radius: 15px;
-          background: rgba(10,12,18,.94);
-          border: 1px solid rgba(255,255,255,.09);
-          backdrop-filter: blur(12px);
-        }
-
-        .govara26b-actions button {
-          padding: 11px 17px;
-          border-radius: 10px;
-          border: 1px solid rgba(255,255,255,.10);
-          background: rgba(255,255,255,.06);
-          color: inherit;
-          cursor: pointer;
-          font-weight: 800;
-        }
-
-        .govara26b-save {
-          background: rgba(70,150,255,.20) !important;
-        }
-
-        .govara26b-notice {
-          padding: 14px 16px;
-          border-radius: 12px;
-          background: rgba(255,190,70,.08);
-          border: 1px solid rgba(255,190,70,.15);
-          font-size: 13px;
-        }
-
-        .govara26b-permission-groups {
-          display: grid;
-          grid-template-columns:
-            repeat(auto-fit, minmax(220px, 1fr));
-          gap: 12px;
-        }
-
-        .govara26b-permission-group {
-          padding: 14px;
-          border-radius: 12px;
-          background: rgba(255,255,255,.025);
-          border: 1px solid rgba(255,255,255,.06);
-        }
-
-        .govara26b-permission-group h4 {
-          margin: 0 0 10px;
-        }
-
-        .govara26b-permission-row {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          margin: 7px 0;
-          font-size: 12px;
-        }
-
-        .govara26b-meta {
-          display: flex;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 10px;
-          opacity: .5;
-          font-size: 11px;
-        }
-
-      </style>
+        <div style="height:14px;"></div>
 
 
-      <div class="govara26b-wrap">
+        <div class="grid two">
 
 
-        <!-- HEADER -->
+          ${renderPolicyCheckbox(
+            "userRegistrationEnabled",
+            "User Registration",
+            "Allow platform user registration."
+          )}
 
-        <div class="govara26b-head">
 
-          <div>
+          ${renderPolicyCheckbox(
+            "customerRegistrationEnabled",
+            "Customer Registration",
+            "Allow Customer registration."
+          )}
 
-            <h1>
-              26B — User & Role Control
-            </h1>
 
-            <p>
-              Central role, permission and user-access
-              control for the GoVara platform.
-            </p>
+          ${renderPolicyCheckbox(
+            "vendorRegistrationEnabled",
+            "Vendor Registration",
+            "Allow Vendor registration."
+          )}
+
+
+          ${renderPolicyCheckbox(
+            "driverRegistrationEnabled",
+            "Driver Registration",
+            "Allow Driver registration."
+          )}
+
+
+          ${renderPolicyCheckbox(
+            "disabledRoleLoginBlocked",
+            "Disabled Role Login Block",
+            "Prevent login using disabled roles."
+          )}
+
+
+          ${renderPolicyCheckbox(
+            "disabledUserLoginBlocked",
+            "Disabled User Login Block",
+            "Prevent disabled users from logging in."
+          )}
+
+
+          ${renderPolicyCheckbox(
+            "multipleRolesAllowed",
+            "Multiple Roles Allowed",
+            "Allow users to hold multiple roles."
+          )}
+
+
+          ${renderPolicyCheckbox(
+            "adminApprovalEnabled",
+            "Admin Approval",
+            "Enable administrator approval workflow."
+          )}
+
+        </div>
+
+      </section>
+
+
+      <div style="height:16px;"></div>
+
+
+      <!-- ==============================================
+           ROLE BASED KYC
+           ============================================== -->
+
+      <section class="card">
+
+        <h2>
+          Role-Based KYC
+        </h2>
+
+        <div class="muted">
+          Configure KYC requirement separately
+          for every role.
+        </div>
+
+        <div style="height:14px;"></div>
+
+
+        <div class="grid four">
+
+          ${renderKycCard("Admin")}
+
+          ${renderKycCard("Customer")}
+
+          ${renderKycCard("Vendor")}
+
+          ${renderKycCard("Driver")}
+
+        </div>
+
+      </section>
+
+
+      <div style="height:16px;"></div>
+
+
+      <!-- ==============================================
+           ACCESS SECURITY BOUNDARY
+           ============================================== -->
+
+      <section class="card">
+
+        <h2>
+          Access Security Boundary
+        </h2>
+
+        <div class="muted">
+          Security boundaries are intentionally
+          controlled here and remain safe.
+        </div>
+
+        <div style="height:14px;"></div>
+
+
+        <div class="grid two">
+
+
+          <div class="notice success">
+
+            <strong>
+              Permission Enforcement
+            </strong>
+
+            <br />
+
+            ${
+              config.security.permissionEnforcement
+                ? "ENABLED"
+                : "DISABLED"
+            }
 
           </div>
+
+
+          <div class="notice success">
+
+            <strong>
+              Session Control
+            </strong>
+
+            <br />
+
+            ${
+              config.security.sessionControl
+                ? "ENABLED"
+                : "DISABLED"
+            }
+
+          </div>
+
+
+          <div class="notice success">
+
+            <strong>
+              Role Change Audit
+            </strong>
+
+            <br />
+
+            ${
+              config.security.auditRoleChanges
+                ? "ENABLED"
+                : "DISABLED"
+            }
+
+          </div>
+
+
+          <div class="notice success">
+
+            <strong>
+              Permission Change Audit
+            </strong>
+
+            <br />
+
+            ${
+              config.security.auditPermissionChanges
+                ? "ENABLED"
+                : "DISABLED"
+            }
+
+          </div>
+
 
         </div>
 
 
-        <!-- STATUS -->
-
-        <div class="govara26b-status">
-
-          <div class="govara26b-status-card">
-
-            <strong>
-              ${roles.length}
-            </strong>
-
-            <small>
-              System Roles
-            </small>
-
-          </div>
+        <div style="height:14px;"></div>
 
 
-          <div class="govara26b-status-card">
-
-            <strong>
-              ${
-                roles.filter(
-                  r => c.systemRoles[r].enabled
-                ).length
-              }
-            </strong>
-
-            <small>
-              Enabled Roles
-            </small>
-
-          </div>
-
-
-          <div class="govara26b-status-card">
-
-            <strong>
-              ${
-                validation.valid
-                  ? "VALID"
-                  : "ERROR"
-              }
-            </strong>
-
-            <small>
-              Configuration
-            </small>
-
-          </div>
-
-
-          <div class="govara26b-status-card">
-
-            <strong>
-              BACKEND
-            </strong>
-
-            <small>
-              Authority
-            </small>
-
-          </div>
-
-        </div>
-
-
-        <!-- NOTICE -->
-
-        <div class="govara26b-notice">
+        <div class="notice warn">
 
           <strong>
-            Access Control Boundary
+            Authority Boundary
           </strong>
 
-          <div>
-            This module defines frontend administrative
-            configuration only. Actual authentication,
-            authorization and persistent user records remain
-            backend-controlled.
-          </div>
+          <br /><br />
+
+          Frontend Authority:
+          <strong>FALSE</strong>
+
+          <br />
+
+          Backend Authority:
+          <strong>TRUE</strong>
+
+          <br /><br />
+
+          Self Role Change:
+          <strong>BLOCKED</strong>
 
         </div>
 
 
-        <!-- ROLES -->
+        <div style="height:14px;"></div>
 
-        <section class="govara26b-section">
 
-          <h2>
-            1. System Roles
-          </h2>
+        <div class="notice danger">
 
-          <p class="govara26b-desc">
-            Core GoVara roles. Customer remains the primary
-            booking initiator.
-          </p>
+          <strong>
+            Financial Safety
+          </strong>
 
-          <div class="govara26b-role-grid">
+          <br /><br />
 
-            ${
-              roles
-                .map(function (roleName) {
+          Real Money:
+          <strong>BLOCKED</strong>
 
-                  return roleCard(
-                    roleName,
-                    c.systemRoles[roleName]
-                  );
+          <br />
 
-                })
-                .join("")
-            }
+          Real Payment:
+          <strong>BLOCKED</strong>
 
-          </div>
+          <br />
 
-        </section>
+          Bank Transfer:
+          <strong>BLOCKED</strong>
 
+        </div>
 
-        <!-- PERMISSION CATALOG -->
+      </section>
 
-        <section class="govara26b-section">
 
-          <h2>
-            2. Permission Catalog
-          </h2>
+      <div style="height:18px;"></div>
 
-          <p class="govara26b-desc">
-            Central permission vocabulary for future role
-            mapping. Actual enforcement will remain backend
-            authoritative.
-          </p>
 
-          <div class="govara26b-permission-groups">
+      <!-- ==============================================
+           SAVE / RESET
+           ============================================== -->
 
-            ${
-              PERMISSIONS
-                .map(function (group) {
+      <section class="card">
 
-                  return `
-
-                    <div
-                      class="govara26b-permission-group"
-                    >
-
-                      <h4>
-                        ${esc(group.group)}
-                      </h4>
-
-                      ${
-                        group.items
-                          .map(function (item) {
-
-                            return `
-
-                              <label
-                                class="govara26b-permission-row"
-                              >
-
-                                <input
-                                  type="checkbox"
-                                  disabled
-                                  ${
-                                    c.systemRoles.Admin
-                                      .permissions
-                                      .includes(item[0])
-                                      ? "checked"
-                                      : ""
-                                  }
-                                >
-
-                                <span>
-                                  ${esc(item[1])}
-                                </span>
-
-                              </label>
-
-                            `;
-
-                          })
-                          .join("")
-                      }
-
-                    </div>
-
-                  `;
-
-                })
-                .join("")
-            }
-
-          </div>
-
-        </section>
-
-
-        <!-- USER POLICIES -->
-
-        <section class="govara26b-section">
-
-          <h2>
-            3. User & Registration Policies
-          </h2>
-
-          <p class="govara26b-desc">
-            Global policies controlling how users and roles
-            are introduced into the platform.
-          </p>
-
-
-          <div class="govara26b-policy-grid">
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  User Registration
-                </strong>
-
-                <small>
-                  Allow new users
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-userRegistration"
-                ${
-                  c.policies.userRegistration
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Customer Registration
-                </strong>
-
-                <small>
-                  Customer onboarding
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-customerRegistration"
-                ${
-                  c.policies.customerRegistration
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Vendor Registration
-                </strong>
-
-                <small>
-                  Vendor/company onboarding
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-vendorRegistration"
-                ${
-                  c.policies.vendorRegistration
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Driver Registration
-                </strong>
-
-                <small>
-                  Driver onboarding
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-driverRegistration"
-                ${
-                  c.policies.driverRegistration
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Role Selection
-                </strong>
-
-                <small>
-                  Allow role selection during onboarding
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-roleSelection"
-                ${
-                  c.policies.roleSelection
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Multiple Role Assignment
-                </strong>
-
-                <small>
-                  More than one role per user
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-multipleRoleAssignment"
-                ${
-                  c.policies.multipleRoleAssignment
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Disabled User Login
-                </strong>
-
-                <small>
-                  Login for disabled accounts
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-disabledUserLogin"
-                ${
-                  c.policies.disabledUserLogin
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Disabled Role Login
-                </strong>
-
-                <small>
-                  Login using disabled role
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-disabledRoleLogin"
-                ${
-                  c.policies.disabledRoleLogin
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Admin Approval
-                </strong>
-
-                <small>
-                  Require administrator approval
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-adminApprovalRequired"
-                ${
-                  c.policies.adminApprovalRequired
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- KYC -->
-
-        <section class="govara26b-section">
-
-          <h2>
-            4. Role-Based KYC Policy
-          </h2>
-
-          <p class="govara26b-desc">
-            KYC requirement controls are configurable here;
-            actual verification remains backend-controlled.
-          </p>
-
-
-          <div class="govara26b-policy-grid">
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Customer KYC
-                </strong>
-
-                <small>
-                  Customer identity verification
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-kycCustomer"
-                ${
-                  c.policies.kycRequiredForCustomer
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Vendor KYC
-                </strong>
-
-                <small>
-                  Vendor/company verification
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-kycVendor"
-                ${
-                  c.policies.kycRequiredForVendor
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-
-            <div class="govara26b-policy">
-
-              <div>
-                <strong>
-                  Driver KYC
-                </strong>
-
-                <small>
-                  Driver verification
-                </small>
-              </div>
-
-              <input
-                type="checkbox"
-                id="26b-kycDriver"
-                ${
-                  c.policies.kycRequiredForDriver
-                    ? "checked"
-                    : ""
-                }
-              >
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- SECURITY -->
-
-        <section class="govara26b-section">
-
-          <h2>
-            5. Access Security Boundary
-          </h2>
-
-          <p class="govara26b-desc">
-            Security controls that define the authority
-            boundary between frontend and backend.
-          </p>
-
-
-          <div class="govara26b-security">
-
-
-            <div class="govara26b-security-card">
-
-              <strong>
-                Permission Enforcement
-              </strong>
-
-              <span>
-                ${
-                  c.security.permissionEnforcement
-                    ? "ENABLED"
-                    : "DISABLED"
-                }
-              </span>
-
-            </div>
-
-
-            <div class="govara26b-security-card">
-
-              <strong>
-                Session Control
-              </strong>
-
-              <span>
-                ${
-                  c.security.sessionControl
-                    ? "ENABLED"
-                    : "DISABLED"
-                }
-              </span>
-
-            </div>
-
-
-            <div class="govara26b-security-card">
-
-              <strong>
-                Role Change Audit
-              </strong>
-
-              <span>
-                ${
-                  c.security.auditRoleChanges
-                    ? "ENABLED"
-                    : "DISABLED"
-                }
-              </span>
-
-            </div>
-
-
-            <div class="govara26b-security-card">
-
-              <strong>
-                Permission Audit
-              </strong>
-
-              <span>
-                ${
-                  c.security.auditPermissionChanges
-                    ? "ENABLED"
-                    : "DISABLED"
-                }
-              </span>
-
-            </div>
-
-
-            <div class="govara26b-security-card">
-
-              <strong>
-                Frontend Authority
-              </strong>
-
-              <span>
-                NO
-              </span>
-
-            </div>
-
-
-            <div class="govara26b-security-card">
-
-              <strong>
-                Backend Authority
-              </strong>
-
-              <span>
-                YES
-              </span>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- ACTIONS -->
-
-        <div class="govara26b-actions">
+        <div class="button-row">
 
           <button
             type="button"
-            id="26b-reload"
+            class="btn primary"
+            data-action="save"
+          >
+            Save 26B Configuration
+          </button>
+
+
+          <button
+            type="button"
+            class="btn warning"
+            data-action="reset"
+          >
+            Reset to Defaults
+          </button>
+
+
+          <button
+            type="button"
+            class="btn"
+            data-action="reload"
           >
             Reload
           </button>
 
-          <button
-            type="button"
-            id="26b-reset"
-          >
-            Reset Defaults
-          </button>
-
-          <button
-            type="button"
-            id="26b-save"
-            class="govara26b-save"
-          >
-            Save Configuration
-          </button>
-
         </div>
 
 
-        <div class="govara26b-meta">
+        <div style="height:10px;"></div>
 
-          <span>
-            26B — User & Role Control
-          </span>
 
-          <span>
-            Last Action:
-            ${esc(c.lastAction)}
-          </span>
-
-          <span>
-            ${
-              c.lastUpdated
-                ? esc(c.lastUpdated)
-                : "Not saved yet"
-            }
-          </span>
-
+        <div class="muted">
+          Current configuration is stored locally
+          in the browser for frontend testing.
+          No backend or database operation is
+          executed.
         </div>
 
-
-      </div>
+      </section>
 
     `;
 
   }
 
 
-  /* ==========================================================
-     READ FORM
-  ========================================================== */
+  /* =========================================================
+     POLICY CHECKBOX
+     ========================================================= */
 
-  function readForm() {
+  function renderPolicyCheckbox(
+    key,
+    title,
+    description
+  ) {
 
-    const c =
-      getConfig();
+    const checked =
+      config.policies[key];
 
 
-    function checked(id) {
+    return `
 
-      const el =
-        document.getElementById(id);
+      <label class="notice">
 
-      return el
-        ? !!el.checked
-        : false;
+        <input
+          type="checkbox"
+          data-policy="${escapeHtml(key)}"
+          ${checked ? "checked" : ""}
+        />
+
+        <strong>
+          ${escapeHtml(title)}
+        </strong>
+
+        <div class="muted">
+          ${escapeHtml(description)}
+        </div>
+
+      </label>
+
+    `;
+
+  }
+
+
+  /* =========================================================
+     KYC CARD
+     ========================================================= */
+
+  function renderKycCard(role) {
+
+    const value =
+      config.roles[role]
+        .kycRequired;
+
+
+    return `
+
+      <label class="notice">
+
+        <strong>
+          ${escapeHtml(role)}
+        </strong>
+
+        <br /><br />
+
+        <input
+          type="checkbox"
+          data-role-toggle="kycRequired"
+          data-role="${escapeHtml(role)}"
+          ${value ? "checked" : ""}
+        />
+
+        KYC Required
+
+      </label>
+
+    `;
+
+  }
+
+
+  /* =========================================================
+     GROUP TOGGLE
+     ========================================================= */
+
+  function toggleGroup(
+    role,
+    group
+  ) {
+
+    const permissions =
+      PERMISSIONS[group];
+
+
+    if (
+      !permissions ||
+      !config.roles[role]
+    ) {
+
+      return;
+
     }
 
 
-    /* ---------- ROLE ENABLE/DISABLE ---------- */
+    const allAssigned =
+      permissions.every(
+        function (permission) {
 
-    Object.keys(c.systemRoles)
-      .forEach(function (roleName) {
-
-        const selector =
-          document.querySelector(
-            '.26b-role-enabled[data-role="' +
-            roleName +
-            '"]'
+          return hasPermission(
+            role,
+            permission
           );
 
-        if (selector) {
-          c.systemRoles[roleName].enabled =
-            selector.checked;
         }
+      );
+
+
+    if (allAssigned) {
+
+      permissions.forEach(
+        function (permission) {
+
+          removePermission(
+            role,
+            permission
+          );
+
+        }
+      );
+
+    } else {
+
+      permissions.forEach(
+        function (permission) {
+
+          addPermission(
+            role,
+            permission
+          );
+
+        }
+      );
+
+    }
+
+
+    renderAndBind();
+
+  }
+
+
+  /* =========================================================
+     BIND
+     ========================================================= */
+
+  function bind() {
+
+
+    /* -------------------------------------------------------
+       ROLE SELECT
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-action="select-role"]'
+      )
+      .forEach(function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            selectedRole =
+              this.dataset.role;
+
+            renderAndBind();
+
+          }
+        );
 
       });
 
 
-    /* ---------- USER POLICIES ---------- */
+    /* -------------------------------------------------------
+       ROLE TOGGLES
+       ------------------------------------------------------- */
 
-    c.policies.userRegistration =
-      checked("26b-userRegistration");
+    document
+      .querySelectorAll(
+        "[data-role-toggle]"
+      )
+      .forEach(function (checkbox) {
 
-    c.policies.customerRegistration =
-      checked("26b-customerRegistration");
+        checkbox.addEventListener(
+          "change",
+          function () {
 
-    c.policies.vendorRegistration =
-      checked("26b-vendorRegistration");
+            const role =
+              this.dataset.role;
 
-    c.policies.driverRegistration =
-      checked("26b-driverRegistration");
-
-    c.policies.roleSelection =
-      checked("26b-roleSelection");
-
-    c.policies.multipleRoleAssignment =
-      checked("26b-multipleRoleAssignment");
-
-    c.policies.disabledUserLogin =
-      checked("26b-disabledUserLogin");
-
-    c.policies.disabledRoleLogin =
-      checked("26b-disabledRoleLogin");
-
-    c.policies.adminApprovalRequired =
-      checked("26b-adminApprovalRequired");
+            const key =
+              this.dataset.roleToggle;
 
 
-    /* ---------- KYC ---------- */
+            if (
+              !config.roles[role]
+            ) {
 
-    c.policies.kycRequiredForCustomer =
-      checked("26b-kycCustomer");
+              return;
 
-    c.policies.kycRequiredForVendor =
-      checked("26b-kycVendor");
-
-    c.policies.kycRequiredForDriver =
-      checked("26b-kycDriver");
+            }
 
 
-    /* ---------- HARD SECURITY ---------- */
-
-    c.security.frontendAuthority =
-      false;
-
-    c.security.backendAuthority =
-      true;
-
-    c.policies.selfRoleChange =
-      false;
+            config
+              .roles[role][key] =
+              this.checked;
 
 
-    return c;
-  }
-
-
-  /* ==========================================================
-     BIND
-  ========================================================== */
-
-  function bind() {
-
-    const saveButton =
-      document.getElementById("26b-save");
-
-    const resetButton =
-      document.getElementById("26b-reset");
-
-    const reloadButton =
-      document.getElementById("26b-reload");
-
-
-    /* ---------- SAVE ---------- */
-
-    if (saveButton) {
-
-      saveButton.onclick =
-        function () {
-
-          const config =
-            readForm();
-
-          const result =
-            save(config);
-
-
-          if (!result.success) {
-
-            alert(
-              "26B validation failed:\n\n" +
-              result.validation.errors.join("\n")
+            createAuditEvent(
+              "26B_ROLE_SETTING_CHANGED_" +
+              role
             );
 
-            return;
+
+            renderAndBind();
+
           }
+        );
+
+      });
 
 
-          saveButton.textContent =
-            "Saved ✓";
+    /* -------------------------------------------------------
+       POLICY TOGGLES
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        "[data-policy]"
+      )
+      .forEach(function (checkbox) {
+
+        checkbox.addEventListener(
+          "change",
+          function () {
+
+            const key =
+              this.dataset.policy;
 
 
-          setTimeout(function () {
-
-            saveButton.textContent =
-              "Save Configuration";
-
-          }, 1500);
+            config.policies[key] =
+              this.checked;
 
 
-          renderAndBind();
+            createAuditEvent(
+              "26B_POLICY_CHANGED_" +
+              key
+            );
 
-        };
 
-    }
+            renderAndBind();
 
-
-    /* ---------- RESET ---------- */
-
-    if (resetButton) {
-
-      resetButton.onclick =
-        function () {
-
-          if (
-            !window.confirm(
-              "Reset 26B User & Role Configuration?"
-            )
-          ) {
-            return;
           }
+        );
+
+      });
 
 
-          reset();
+    /* -------------------------------------------------------
+       PERMISSION CHECKBOXES
+       ------------------------------------------------------- */
 
-          renderAndBind();
+    document
+      .querySelectorAll(
+        ".permission-checkbox"
+      )
+      .forEach(function (checkbox) {
 
-        };
+        checkbox.addEventListener(
+          "change",
+          function () {
 
-    }
+            const role =
+              this.dataset.role;
+
+            const permission =
+              this.dataset.permission;
 
 
-    /* ---------- RELOAD ---------- */
+            if (
+              this.checked
+            ) {
 
-    if (reloadButton) {
+              addPermission(
+                role,
+                permission
+              );
 
-      reloadButton.onclick =
-        function () {
+            } else {
 
-          renderAndBind();
+              removePermission(
+                role,
+                permission
+              );
 
-        };
+            }
 
-    }
+
+            renderAndBind();
+
+          }
+        );
+
+      });
+
+
+    /* -------------------------------------------------------
+       ADD PERMISSION
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-action="add-permission"]'
+      )
+      .forEach(function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            const role =
+              this.dataset.role;
+
+
+            const select =
+              document.getElementById(
+                "permission-add-select"
+              );
+
+
+            if (
+              !select ||
+              !select.value
+            ) {
+
+              alert(
+                "Please select a permission first."
+              );
+
+              return;
+
+            }
+
+
+            addPermission(
+              role,
+              select.value
+            );
+
+
+            renderAndBind();
+
+          }
+        );
+
+      });
+
+
+    /* -------------------------------------------------------
+       GROUP TOGGLE
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-action="group-toggle"]'
+      )
+      .forEach(function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            toggleGroup(
+              this.dataset.role,
+              this.dataset.group
+            );
+
+          }
+        );
+
+      });
+
+
+    /* -------------------------------------------------------
+       SAVE
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-action="save"]'
+      )
+      .forEach(function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            save();
+
+          }
+        );
+
+      });
+
+
+    /* -------------------------------------------------------
+       RESET
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-action="reset"]'
+      )
+      .forEach(function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            reset();
+
+          }
+        );
+
+      });
+
+
+    /* -------------------------------------------------------
+       RELOAD
+       ------------------------------------------------------- */
+
+    document
+      .querySelectorAll(
+        '[data-action="reload"]'
+      )
+      .forEach(function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            config =
+              loadConfig();
+
+            renderAndBind();
+
+          }
+        );
+
+      });
 
   }
 
 
-  /* ==========================================================
+  /* =========================================================
      RENDER + BIND
-  ========================================================== */
+     ========================================================= */
 
   function renderAndBind() {
 
     const mount =
-      document.getElementById("module-26B");
+      document.getElementById(
+        "module-26B"
+      );
+
 
     if (!mount) {
 
       console.error(
-        "GoVara26B: #module-26B mount not found."
+        "GoVara26B mount #module-26B not found."
       );
 
       return;
+
     }
 
 
     mount.innerHTML =
       render();
 
+
     bind();
 
   }
 
 
-  /* ==========================================================
+  /* =========================================================
      PUBLIC API
-  ========================================================== */
+     ========================================================= */
 
   return {
 
@@ -1801,7 +2546,13 @@ window.GoVara26B = (function () {
       renderAndBind,
 
     getConfig:
-      getConfig,
+      function () {
+
+        return JSON.parse(
+          JSON.stringify(config)
+        );
+
+      },
 
     save:
       save,
@@ -1812,12 +2563,25 @@ window.GoVara26B = (function () {
     validate:
       validate,
 
+    hasPermission:
+      hasPermission,
+
+    addPermission:
+      addPermission,
+
+    removePermission:
+      removePermission,
+
     permissions:
       PERMISSIONS,
+
+    roles:
+      ROLE_DEFINITIONS,
 
     STORAGE_KEY:
       STORAGE_KEY
 
   };
+
 
 })();

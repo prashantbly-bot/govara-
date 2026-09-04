@@ -1439,38 +1439,522 @@
   }
 
 
-  /* ==========================================================
-   * 43. FRONTEND RENDER
-   *
-   * No automatic API request.
-   * ========================================================== */
+/* ==========================================================
+ * 43. FRONTEND RENDER
+ *
+ * No automatic API request.
+ * ========================================================== */
 
- case "27":
+function render(container) {
 
-  if (
-    window.GoVara27 &&
-    typeof window.GoVara27.render === "function"
-  ) {
+  var target = container;
 
-    var step27Container =
-      document.getElementById("module-27");
+  if (typeof target === "string") {
+    target = document.querySelector(target);
+  }
 
-    if (step27Container) {
-      window.GoVara27.render(step27Container);
+  if (!target) {
+    return false;
+  }
+
+  target.innerHTML = `
+    <div class="govara-step27-panel">
+
+      <div class="govara-step27-header">
+
+        <div>
+          <div style="
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:1px;
+            opacity:.7;
+            margin-bottom:6px;
+          ">
+            STEP 27
+          </div>
+
+          <h2 style="margin:0;">
+            Consolidated API
+          </h2>
+
+          <p style="margin:6px 0 0;">
+            ONE Frontend API Boundary
+          </p>
+        </div>
+
+        <div class="govara-step27-status-box">
+          <span id="govara-step27-status">
+            NOT CONFIGURED
+          </span>
+        </div>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>API Configuration</h3>
+
+        <div class="muted">
+          Configure the single GoVara Consolidated API endpoint.
+        </div>
+
+        <label
+          for="govara-step27-endpoint"
+          style="
+            display:block;
+            margin-top:16px;
+            margin-bottom:7px;
+            font-weight:600;
+          "
+        >
+          Consolidated API Endpoint
+        </label>
+
+        <input
+          id="govara-step27-endpoint"
+          type="url"
+          autocomplete="off"
+          placeholder="https://script.google.com/macros/s/.../exec"
+          style="
+            width:100%;
+            box-sizing:border-box;
+            padding:12px 14px;
+            border-radius:8px;
+            border:1px solid #ccc;
+          "
+        />
+
+        <div
+          class="govara-step27-actions"
+          style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            margin-top:14px;
+          "
+        >
+
+          <button
+            type="button"
+            id="govara-step27-validate"
+          >
+            Validate Endpoint
+          </button>
+
+          <button
+            type="button"
+            id="govara-step27-save"
+          >
+            Save API Configuration
+          </button>
+
+          <button
+            type="button"
+            id="govara-step27-clear"
+          >
+            Clear API
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>API Connection Test</h3>
+
+        <div class="muted" style="margin-bottom:14px;">
+          Run the API health check manually.
+          No automatic API request is made on page load.
+        </div>
+
+        <button
+          type="button"
+          id="govara-step27-test"
+        >
+          Test Connection
+        </button>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>API Status</h3>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(auto-fit,minmax(160px,1fr));
+            gap:12px;
+            margin-top:14px;
+          "
+        >
+
+          <div class="govara-step27-info">
+            <div class="muted">Configured</div>
+            <strong id="govara-step27-configured">
+              NO
+            </strong>
+          </div>
+
+          <div class="govara-step27-info">
+            <div class="muted">Connected</div>
+            <strong id="govara-step27-connected">
+              NO
+            </strong>
+          </div>
+
+          <div class="govara-step27-info">
+            <div class="muted">Verified</div>
+            <strong id="govara-step27-verified">
+              NO
+            </strong>
+          </div>
+
+          <div class="govara-step27-info">
+            <div class="muted">Environment</div>
+            <strong id="govara-step27-environment">
+              TESTING
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>Test Result</h3>
+
+        <div
+          id="govara-step27-diagnostics"
+          style="
+            margin-top:12px;
+            min-height:70px;
+            padding:14px;
+            border-radius:8px;
+            background:rgba(0,0,0,.035);
+            white-space:pre-wrap;
+            word-break:break-word;
+          "
+        >
+          API test has not been run.
+        </div>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>Last API Activity</h3>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(auto-fit,minmax(180px,1fr));
+            gap:12px;
+            margin-top:14px;
+          "
+        >
+
+          <div class="govara-step27-info">
+            <div class="muted">Last Action</div>
+            <strong id="govara-step27-last-action">
+              —
+            </strong>
+          </div>
+
+          <div class="govara-step27-info">
+            <div class="muted">Last Module</div>
+            <strong id="govara-step27-last-module">
+              —
+            </strong>
+          </div>
+
+          <div class="govara-step27-info">
+            <div class="muted">Last Error</div>
+            <strong id="govara-step27-last-error">
+              —
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>Consolidated API Contract</h3>
+
+        <div class="muted" style="margin:8px 0 14px;">
+          Single API boundary for GoVara frontend modules.
+        </div>
+
+        <div
+          style="
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+          "
+        >
+
+          <span class="govara-step27-contract">
+            GET_HEALTH
+          </span>
+
+          <span class="govara-step27-contract">
+            LIST
+          </span>
+
+          <span class="govara-step27-contract">
+            GET
+          </span>
+
+          <span class="govara-step27-contract">
+            VALIDATE
+          </span>
+
+          <span class="govara-step27-contract">
+            CREATE
+          </span>
+
+          <span class="govara-step27-contract">
+            UPDATE
+          </span>
+
+          <span class="govara-step27-contract">
+            CUSTOMER_REGISTER
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="govara-step27-card">
+
+        <h3>Safety Boundary</h3>
+
+        <div style="margin-top:12px;line-height:1.8;">
+
+          <div>
+            Real Money:
+            <strong>BLOCKED</strong>
+          </div>
+
+          <div>
+            Real Payment:
+            <strong>BLOCKED</strong>
+          </div>
+
+          <div>
+            Bank Transfer:
+            <strong>BLOCKED</strong>
+          </div>
+
+        </div>
+
+        <div class="muted" style="margin-top:12px;">
+          Backend remains authoritative for financial
+          and business truth.
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+
+  var endpointInput =
+    target.querySelector(
+      "#govara-step27-endpoint"
+    );
+
+  var savedURL = getAPIUrl();
+
+  if (endpointInput) {
+    endpointInput.value = savedURL || "";
+  }
+
+
+  bindRenderEvents(target);
+
+
+  function refreshStep27Status() {
+
+    var status =
+      target.querySelector(
+        "#govara-step27-status"
+      );
+
+    var configured =
+      target.querySelector(
+        "#govara-step27-configured"
+      );
+
+    var connected =
+      target.querySelector(
+        "#govara-step27-connected"
+      );
+
+    var verified =
+      target.querySelector(
+        "#govara-step27-verified"
+      );
+
+    var environment =
+      target.querySelector(
+        "#govara-step27-environment"
+      );
+
+    var lastAction =
+      target.querySelector(
+        "#govara-step27-last-action"
+      );
+
+    var lastModule =
+      target.querySelector(
+        "#govara-step27-last-module"
+      );
+
+    var lastError =
+      target.querySelector(
+        "#govara-step27-last-error"
+      );
+
+
+    if (configured) {
+      configured.textContent =
+        APIState.configured ? "YES" : "NO";
     }
 
-  } else {
+    if (connected) {
+      connected.textContent =
+        APIState.connected ? "YES" : "NO";
+    }
 
-    renderGoVaraModule(
-      window.GoVara27 || window.GoVaraAPI,
-      "module-27"
+    if (verified) {
+      verified.textContent =
+        APIState.verified ? "YES" : "NO";
+    }
+
+    if (environment) {
+      environment.textContent =
+        CONFIG.ENVIRONMENT || "TESTING";
+    }
+
+    if (lastAction) {
+      lastAction.textContent =
+        APIState.lastAction || "—";
+    }
+
+    if (lastModule) {
+      lastModule.textContent =
+        APIState.lastModule || "—";
+    }
+
+    if (lastError) {
+      lastError.textContent =
+        APIState.lastError || "—";
+    }
+
+
+    if (status) {
+
+      if (APIState.verified) {
+        status.textContent = "VERIFIED";
+
+      } else if (APIState.connected) {
+        status.textContent = "CONNECTED";
+
+      } else if (APIState.configured) {
+        status.textContent = "CONFIGURED";
+
+      } else {
+        status.textContent = "NOT CONFIGURED";
+      }
+
+    }
+
+  }
+
+
+  var testButton =
+    target.querySelector(
+      "#govara-step27-test"
+    );
+
+  if (testButton) {
+
+    testButton.addEventListener(
+      "click",
+      async function () {
+
+        var diagnostics =
+          target.querySelector(
+            "#govara-step27-diagnostics"
+          );
+
+        if (diagnostics) {
+          diagnostics.textContent =
+            "Testing Consolidated API...";
+        }
+
+        try {
+
+          var result =
+            await testConnection();
+
+          if (diagnostics) {
+
+            diagnostics.textContent =
+              typeof result === "string"
+                ? result
+                : JSON.stringify(
+                    result,
+                    null,
+                    2
+                  );
+
+          }
+
+        } catch (error) {
+
+          APIState.lastError =
+            error &&
+            error.message
+              ? error.message
+              : String(error);
+
+          if (diagnostics) {
+
+            diagnostics.textContent =
+              "API TEST FAILED\n\n" +
+              APIState.lastError;
+
+          }
+
+        }
+
+        refreshStep27Status();
+
+      }
     );
 
   }
 
-  break;
 
+  refreshStep27Status();
 
+  return true;
+}
   /* ==========================================================
    * 44. RENDERED STATUS
    * ========================================================== */

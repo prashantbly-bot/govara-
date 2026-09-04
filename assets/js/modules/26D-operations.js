@@ -1,131 +1,466 @@
 /* =========================================================
-   GoVara — 26D Operations Control
-   Frontend-only Operations Administration
-   Version: 26D-V1
+   GoVara — 26D Operations Control Center
+   Version: 26D-V2
+   Frontend-only / LocalStorage
+   Backend + API + Database: NOT CONNECTED
    ========================================================= */
 
 window.GoVara26D = (function () {
 
   "use strict";
 
-  const STORAGE_KEY = "GOVARA_OPERATIONS_CONTROL_26D_V1";
+  const STORAGE_KEY = "GOVARA_OPERATIONS_CONTROL_26D_V2";
 
   const DEFAULT_CONFIG = {
 
-    version: "26D-V1",
+    version: "26D-V2",
 
-    operations: {
-      platformOperational: true,
+    /* =====================================================
+       PLATFORM OPERATIONS
+       ===================================================== */
+
+    platform: {
+      operational: true,
       bookingOperational: true,
-      customerServiceOperational: true,
-      vendorOperationsOperational: true,
-      driverOperationsOperational: true,
-
-      autoAssignmentEnabled: false,
-      manualAssignmentAllowed: true,
-
-      dutyTrackingEnabled: true,
-      vehicleTrackingEnabled: true,
-      locationTrackingEnabled: false
+      customerOperations: true,
+      vendorOperations: true,
+      driverOperations: true,
+      vehicleOperations: true,
+      supportOperations: true
     },
 
+
+    /* =====================================================
+       OPERATING HOURS
+       ===================================================== */
+
+    operatingHours: {
+      enabled: false,
+      twentyFourSeven: true,
+
+      monday:    { enabled: true, start: "00:00", end: "23:59" },
+      tuesday:   { enabled: true, start: "00:00", end: "23:59" },
+      wednesday: { enabled: true, start: "00:00", end: "23:59" },
+      thursday:  { enabled: true, start: "00:00", end: "23:59" },
+      friday:    { enabled: true, start: "00:00", end: "23:59" },
+      saturday:  { enabled: true, start: "00:00", end: "23:59" },
+      sunday:    { enabled: true, start: "00:00", end: "23:59" }
+    },
+
+
+    /* =====================================================
+       BOOKING OPERATIONS
+       ===================================================== */
+
     booking: {
+
+      intakeEnabled: true,
+
       newBookingEnabled: true,
       acceptBookingEnabled: true,
       rejectBookingEnabled: true,
       cancelBookingEnabled: true,
-      modifyBookingEnabled: true,
+      modificationEnabled: true,
+
+      customerBookingAllowed: true,
+      vendorBookingAllowed: true,
+
+      futureBookingAllowed: true,
+      sameDayBookingAllowed: true,
 
       assignmentRequired: true,
-      autoAssignment: false,
 
       maxPendingMinutes: 15,
-      maxAssignmentAttempts: 3
+      maxAssignmentAttempts: 3,
+
+      reassignmentEnabled: true,
+      maxReassignmentAttempts: 3,
+
+      unassignedEscalationEnabled: true,
+      unassignedEscalationMinutes: 10,
+
+      noShowEnabled: true,
+
+      statuses: {
+        NEW: true,
+        PENDING: true,
+        ASSIGNED: true,
+        ACCEPTED: true,
+        REJECTED: true,
+        DRIVER_ARRIVING: true,
+        TRIP_STARTED: true,
+        TRIP_COMPLETED: true,
+        CANCELLED: true,
+        NO_SHOW: true
+      }
     },
 
-    driver: {
-      dutyEnabled: true,
+
+    /* =====================================================
+       DISPATCH
+       ===================================================== */
+
+    dispatch: {
+
+      enabled: true,
+
+      manualDispatchEnabled: true,
+      autoDispatchEnabled: false,
+
+      reassignmentEnabled: true,
+
+      driverSelectionEnabled: true,
+      vendorSelectionEnabled: true,
+      vehicleSelectionEnabled: true,
+
+      unassignedQueueEnabled: true,
+
+      dispatchTimeoutMinutes: 10,
+
+      maxAssignmentAttempts: 3,
+      maxReassignmentAttempts: 3,
+
+      requireDriverAvailability: true,
+      requireVehicleAvailability: true,
+
+      blockOfflineDriver: true,
+      blockBusyDriver: true,
+      blockUnavailableVehicle: true,
+
+      escalationEnabled: true,
+      escalationMinutes: 10
+    },
+
+
+    /* =====================================================
+       DUTY / DRIVER OPERATIONS
+       ===================================================== */
+
+    duty: {
+
+      enabled: true,
+
+      dutyStartEnabled: true,
+      dutyEndEnabled: true,
+
+      breakEnabled: true,
+      unavailableStatusEnabled: true,
+
       onlineStatusEnabled: true,
       offlineStatusEnabled: true,
 
-      tripStartAllowed: true,
-      tripEndAllowed: true,
+      tripStartEnabled: true,
+      tripEndEnabled: true,
 
-      locationSharingEnabled: false
+      maximumDutyDurationHours: 12,
+      minimumRestHours: 8,
+
+      approvalRequired: false,
+
+      states: {
+        OFFLINE: true,
+        ONLINE: true,
+        ON_DUTY: true,
+        BREAK: true,
+        ON_TRIP: true,
+        UNAVAILABLE: true
+      }
     },
 
-    vendor: {
-      vendorOperationsEnabled: true,
-      bookingManagementEnabled: true,
-      vehicleManagementEnabled: true,
-      driverManagementEnabled: true,
-      dutyManagementEnabled: true
+
+    /* =====================================================
+       DRIVER OPERATIONS
+       ===================================================== */
+
+    driver: {
+
+      managementEnabled: true,
+
+      registrationOperational: true,
+      profileUpdateEnabled: true,
+
+      bookingAcceptanceEnabled: true,
+      bookingRejectionEnabled: true,
+
+      dutyManagementEnabled: true,
+
+      locationSharingEnabled: false,
+      tripTrackingEnabled: false,
+
+      driverAvailabilityRequired: true,
+
+      ratingVisibleToDriver: true,
+
+      blockedDriverCannotReceiveBooking: true,
+      offlineDriverCannotReceiveBooking: true,
+      onTripDriverCannotReceiveBooking: true
     },
+
+
+    /* =====================================================
+       VEHICLE OPERATIONS
+       ===================================================== */
 
     vehicle: {
-      vehicleManagementEnabled: true,
-      vehicleAssignmentEnabled: true,
-      vehicleAvailabilityTracking: true,
+
+      managementEnabled: true,
+      registrationEnabled: true,
+
+      assignmentEnabled: true,
+      availabilityTrackingEnabled: true,
 
       inactiveVehicleBookingBlocked: true,
-      expiredDocumentVehicleBlocked: true
+      maintenanceVehicleBookingBlocked: true,
+      blockedVehicleBookingBlocked: true,
+      expiredDocumentVehicleBlocked: true,
+
+      states: {
+        AVAILABLE: true,
+        ASSIGNED: true,
+        ON_TRIP: true,
+        OFFLINE: true,
+        MAINTENANCE: true,
+        BLOCKED: true,
+        DOCUMENT_EXPIRED: true
+      }
     },
 
-    service: {
+
+    /* =====================================================
+       VENDOR OPERATIONS
+       ===================================================== */
+
+    vendor: {
+
+      managementEnabled: true,
+
+      bookingManagementEnabled: true,
+      driverManagementEnabled: true,
+      vehicleManagementEnabled: true,
+      dutyManagementEnabled: true,
+
+      assignmentManagementEnabled: true,
+
+      vendorCanAssignDriver: true,
+      vendorCanAssignVehicle: true,
+
+      blockedVendorCannotReceiveBooking: true,
+      inactiveVendorCannotReceiveBooking: true,
+
+      approvalRequired: false
+    },
+
+
+    /* =====================================================
+       VENDOR / VEHICLE / DRIVER RELATIONSHIP
+       ===================================================== */
+
+    assignment: {
+
+      relationshipControlEnabled: true,
+
+      vendorDriverAssignment: true,
+      vendorVehicleAssignment: true,
+
+      driverVehicleAssignment: true,
+
+      requireVendorForVendorVehicle: true,
+      requireDriverForTrip: true,
+      requireVehicleForTrip: true,
+
+      preventCrossVendorAssignment: true,
+
+      assignmentHistoryEnabled: true
+    },
+
+
+    /* =====================================================
+       LOCATION / TRACKING
+       ===================================================== */
+
+    tracking: {
+
+      locationTrackingEnabled: false,
+
+      driverLocationEnabled: false,
+      vehicleLocationEnabled: false,
+
+      trackingDuringDuty: false,
+      trackingDuringTrip: false,
+
+      locationUpdateIntervalSeconds: 30,
+
+      trackingFailureHandlingEnabled: true,
+
+      maximumLocationFailureMinutes: 5,
+
+      notifyOnTrackingFailure: true
+    },
+
+
+    /* =====================================================
+       CAPACITY CONTROL
+       ===================================================== */
+
+    capacity: {
+
+      capacityControlEnabled: false,
+
+      bookingIntakeLimitEnabled: false,
+      dispatchCapacityEnabled: false,
+
+      vendorCapacityEnabled: false,
+      driverCapacityEnabled: false,
+      vehicleCapacityEnabled: false,
+
+      maximumPendingBookings: 100,
+      maximumDispatchQueue: 50,
+
+      maximumBookingsPerVendor: 50,
+      maximumBookingsPerDriver: 5,
+      maximumBookingsPerVehicle: 1,
+
+      rejectWhenCapacityReached: true,
+      queueWhenCapacityReached: true
+    },
+
+
+    /* =====================================================
+       CUSTOMER SUPPORT
+       ===================================================== */
+
+    support: {
+
+      enabled: true,
+
       customerSupportEnabled: true,
       complaintHandlingEnabled: true,
+
+      ticketCreationEnabled: true,
+      ticketAssignmentEnabled: true,
+
       escalationEnabled: true,
 
-      emergencyWorkflowEnabled: false,
-
       supportResponseMinutes: 30,
-      escalationAfterMinutes: 60
+      escalationAfterMinutes: 60,
+
+      emergencySupportEnabled: false,
+
+      complaintCategories: {
+        BOOKING: true,
+        DRIVER: true,
+        VEHICLE: true,
+        VENDOR: true,
+        FARE: true,
+        PAYMENT: true,
+        DOCUMENT: true,
+        OTHER: true
+      }
     },
 
+
+    /* =====================================================
+       INCIDENT / EMERGENCY
+       ===================================================== */
+
+    incident: {
+
+      incidentManagementEnabled: true,
+
+      emergencyMode: false,
+
+      emergencyBookingFreeze: false,
+      emergencyDispatchFreeze: false,
+      emergencyDriverFreeze: false,
+      emergencyVendorFreeze: false,
+
+      incidentCreationEnabled: true,
+      incidentEscalationEnabled: true,
+
+      emergencyNotificationEnabled: true,
+
+      incidentTypes: {
+        ACCIDENT: true,
+        DRIVER_ISSUE: true,
+        VEHICLE_ISSUE: true,
+        CUSTOMER_ISSUE: true,
+        SERVICE_FAILURE: true,
+        SAFETY: true,
+        SYSTEM: true,
+        OTHER: true
+      }
+    },
+
+
+    /* =====================================================
+       NOTIFICATIONS
+       ===================================================== */
+
     notifications: {
+
       bookingCreated: true,
       bookingAssigned: true,
-      bookingStarted: true,
-      bookingCompleted: true,
+      bookingAccepted: true,
+      bookingRejected: true,
+
+      driverArriving: true,
+
+      tripStarted: true,
+      tripCompleted: true,
+
       bookingCancelled: true,
+      bookingNoShow: true,
 
       driverDutyChange: true,
       vehicleAssignment: true,
+
+      dispatchTimeout: true,
+      unassignedEscalation: true,
+
       supportUpdate: true,
-      escalationAlert: true
+      escalationAlert: true,
+
+      incidentAlert: true,
+      emergencyAlert: true,
+
+      trackingFailure: true
     },
 
+
+    /* =====================================================
+       OPERATIONAL SAFETY
+       ===================================================== */
+
     safety: {
-      emergencyMode: false,
+
       globalBookingFreeze: false,
+      globalDispatchFreeze: false,
+
+      customerBookingFreeze: false,
+      vendorBookingFreeze: false,
       driverDispatchFreeze: false,
-      vendorDispatchFreeze: false,
+
+      maintenanceMode: false,
+
+      emergencyMode: false,
 
       realMoney: false,
       realPayment: false,
       bankTransfer: false,
+
       frontendAuthority: false,
       backendAuthority: true
     }
+
   };
 
 
   /* =========================================================
-     Helpers
+     HELPERS
      ========================================================= */
 
   function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
-  }
-
-
-  function number(value, fallback) {
-
-    const n = Number(value);
-
-    return Number.isFinite(n)
-      ? n
-      : (fallback || 0);
   }
 
 
@@ -137,6 +472,16 @@ window.GoVara26D = (function () {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+
+  function number(value, fallback = 0) {
+
+    const n = Number(value);
+
+    return Number.isFinite(n)
+      ? n
+      : fallback;
   }
 
 
@@ -156,7 +501,10 @@ window.GoVara26D = (function () {
         typeof target[key] === "object"
       ) {
 
-        mergeDeep(target[key], source[key]);
+        mergeDeep(
+          target[key],
+          source[key]
+        );
 
       } else {
 
@@ -189,7 +537,7 @@ window.GoVara26D = (function () {
     } catch (error) {
 
       console.warn(
-        "26D: Unable to load saved configuration.",
+        "26D: configuration load failed.",
         error
       );
 
@@ -199,100 +547,211 @@ window.GoVara26D = (function () {
 
 
   /* =========================================================
-     Validation
+     VALIDATION
      ========================================================= */
 
   function validate(config) {
 
     const errors = [];
 
-    if (number(config.booking.maxPendingMinutes) < 0) {
-      errors.push(
-        "Maximum pending booking time cannot be negative."
-      );
-    }
-
-    if (number(config.booking.maxAssignmentAttempts) < 1) {
-      errors.push(
-        "Assignment attempts must be at least 1."
-      );
-    }
-
-    if (number(config.service.supportResponseMinutes) < 0) {
-      errors.push(
-        "Support response time cannot be negative."
-      );
-    }
-
-    if (number(config.service.escalationAfterMinutes) < 0) {
-      errors.push(
-        "Escalation time cannot be negative."
-      );
-    }
 
     if (
-      number(config.service.escalationAfterMinutes) <
-      number(config.service.supportResponseMinutes)
+      number(config.booking.maxPendingMinutes) < 0
     ) {
 
       errors.push(
-        "Escalation time cannot be less than support response time."
+        "Maximum pending booking time cannot be negative."
       );
+
     }
 
 
-    /* Hard financial boundary */
+    if (
+      number(config.booking.maxAssignmentAttempts) < 1
+    ) {
+
+      errors.push(
+        "Maximum assignment attempts must be at least 1."
+      );
+
+    }
+
+
+    if (
+      number(config.booking.maxReassignmentAttempts) < 0
+    ) {
+
+      errors.push(
+        "Maximum reassignment attempts cannot be negative."
+      );
+
+    }
+
+
+    if (
+      number(config.dispatch.dispatchTimeoutMinutes) < 0
+    ) {
+
+      errors.push(
+        "Dispatch timeout cannot be negative."
+      );
+
+    }
+
+
+    if (
+      number(config.duty.maximumDutyDurationHours) <= 0
+    ) {
+
+      errors.push(
+        "Maximum duty duration must be greater than zero."
+      );
+
+    }
+
+
+    if (
+      number(config.duty.minimumRestHours) < 0
+    ) {
+
+      errors.push(
+        "Minimum rest hours cannot be negative."
+      );
+
+    }
+
+
+    if (
+      number(config.tracking.locationUpdateIntervalSeconds) <= 0
+    ) {
+
+      errors.push(
+        "Location update interval must be greater than zero."
+      );
+
+    }
+
+
+    if (
+      number(config.tracking.maximumLocationFailureMinutes) < 0
+    ) {
+
+      errors.push(
+        "Maximum location failure time cannot be negative."
+      );
+
+    }
+
+
+    if (
+      number(config.capacity.maximumPendingBookings) < 0 ||
+      number(config.capacity.maximumDispatchQueue) < 0
+    ) {
+
+      errors.push(
+        "Capacity limits cannot be negative."
+      );
+
+    }
+
+
+    if (
+      number(config.capacity.maximumBookingsPerVendor) < 0 ||
+      number(config.capacity.maximumBookingsPerDriver) < 0 ||
+      number(config.capacity.maximumBookingsPerVehicle) < 0
+    ) {
+
+      errors.push(
+        "Entity capacity limits cannot be negative."
+      );
+
+    }
+
+
+    if (
+      number(config.support.escalationAfterMinutes) <
+      number(config.support.supportResponseMinutes)
+    ) {
+
+      errors.push(
+        "Support escalation time cannot be less than response time."
+      );
+
+    }
+
+
+    /* =====================================================
+       HARD FINANCIAL SAFETY
+       ===================================================== */
 
     if (config.safety.realMoney !== false) {
+
       errors.push(
         "Real Money must remain BLOCKED."
       );
+
     }
 
+
     if (config.safety.realPayment !== false) {
+
       errors.push(
         "Real Payment must remain BLOCKED."
       );
+
     }
 
+
     if (config.safety.bankTransfer !== false) {
+
       errors.push(
         "Bank Transfer must remain BLOCKED."
       );
+
     }
+
 
     if (config.safety.frontendAuthority !== false) {
+
       errors.push(
-        "Frontend authority must remain disabled."
+        "Frontend financial authority must remain FALSE."
       );
+
     }
 
+
     if (config.safety.backendAuthority !== true) {
+
       errors.push(
-        "Backend must remain authoritative."
+        "Backend authority must remain TRUE."
       );
+
     }
 
 
     return {
+
       valid: errors.length === 0,
+
       errors
+
     };
   }
 
 
   /* =========================================================
-     Persistence
+     PERSISTENCE
      ========================================================= */
 
   function save(config) {
 
-    const result = validate(config);
+    const validation =
+      validate(config);
 
-    if (!result.valid) {
+    if (!validation.valid) {
 
       showNotice(
-        result.errors.join(" | "),
+        validation.errors.join(" | "),
         "error"
       );
 
@@ -301,11 +760,13 @@ window.GoVara26D = (function () {
 
 
     /*
-     * Immutable safety boundary.
+     * Immutable architecture boundary.
      */
+
     config.safety.realMoney = false;
     config.safety.realPayment = false;
     config.safety.bankTransfer = false;
+
     config.safety.frontendAuthority = false;
     config.safety.backendAuthority = true;
 
@@ -317,29 +778,34 @@ window.GoVara26D = (function () {
         JSON.stringify(config)
       );
 
+
       createAuditEvent(
         "26D_OPERATIONS_SAVE",
         "Operations configuration saved locally."
       );
 
+
       showNotice(
-        "Operations configuration saved successfully.",
+        "26D Operations configuration saved successfully.",
         "success"
       );
+
 
       return true;
 
     } catch (error) {
 
       console.error(
-        "26D save error:",
+        "26D save failed:",
         error
       );
 
+
       showNotice(
-        "Unable to save operations configuration.",
+        "Unable to save 26D configuration.",
         "error"
       );
+
 
       return false;
     }
@@ -354,24 +820,28 @@ window.GoVara26D = (function () {
         STORAGE_KEY
       );
 
+
       createAuditEvent(
         "26D_OPERATIONS_RESET",
         "Operations configuration reset to defaults."
       );
 
+
       renderAndBind();
 
+
       showNotice(
-        "Operations configuration reset to defaults.",
+        "26D reset to default configuration.",
         "success"
       );
+
 
       return true;
 
     } catch (error) {
 
       console.error(
-        "26D reset error:",
+        "26D reset failed:",
         error
       );
 
@@ -381,10 +851,13 @@ window.GoVara26D = (function () {
 
 
   /* =========================================================
-     Audit
+     AUDIT
      ========================================================= */
 
-  function createAuditEvent(action, message) {
+  function createAuditEvent(
+    action,
+    message
+  ) {
 
     try {
 
@@ -396,26 +869,33 @@ window.GoVara26D = (function () {
           localStorage.getItem(key) || "[]"
         );
 
+
       events.push({
 
-        id: "26D-" + Date.now(),
+        id:
+          "26D-" + Date.now(),
 
         timestamp:
           new Date().toISOString(),
 
-        module: "26D",
+        module:
+          "26D",
 
         action,
 
         message,
 
-        mode: "TESTING"
+        mode:
+          "TESTING"
 
       });
 
+
       localStorage.setItem(
         key,
-        JSON.stringify(events.slice(-200))
+        JSON.stringify(
+          events.slice(-200)
+        )
       );
 
     } catch (error) {
@@ -429,10 +909,14 @@ window.GoVara26D = (function () {
 
 
   /* =========================================================
-     UI
+     UI HELPERS
      ========================================================= */
 
-  function toggle(label, field, checked) {
+  function toggle(
+    label,
+    field,
+    checked
+  ) {
 
     return `
       <label class="switch-row">
@@ -452,7 +936,11 @@ window.GoVara26D = (function () {
   }
 
 
-  function input(label, field, value) {
+  function input(
+    label,
+    field,
+    value
+  ) {
 
     return `
       <label class="field">
@@ -473,7 +961,35 @@ window.GoVara26D = (function () {
   }
 
 
-  function section(title, subtitle, body) {
+  function timeInput(
+    label,
+    field,
+    value
+  ) {
+
+    return `
+      <label class="field">
+
+        <span>
+          ${escapeHTML(label)}
+        </span>
+
+        <input
+          type="time"
+          data-field="${escapeHTML(field)}"
+          value="${escapeHTML(value)}"
+        >
+
+      </label>
+    `;
+  }
+
+
+  function section(
+    title,
+    subtitle,
+    body
+  ) {
 
     return `
       <section class="card policy-section">
@@ -503,13 +1019,39 @@ window.GoVara26D = (function () {
   }
 
 
+  function stateCard(
+    label,
+    enabled
+  ) {
+
+    return `
+      <div class="card inner-card">
+
+        <strong>
+          ${escapeHTML(label)}
+        </strong>
+
+        <div class="badge ${
+          enabled ? "good" : "warn"
+        }">
+
+          ${enabled ? "ENABLED" : "DISABLED"}
+
+        </div>
+
+      </div>
+    `;
+  }
+
+
   /* =========================================================
-     Render
+     RENDER
      ========================================================= */
 
   function render() {
 
     const c = getConfig();
+
 
     return `
 
@@ -522,12 +1064,16 @@ window.GoVara26D = (function () {
           </h1>
 
           <div class="muted">
-            Central operational controls for booking,
-            dispatch, duty, vehicles, vendors, support
-            and operational safety.
+
+            Complete operational control center for
+            platform availability, booking, dispatch,
+            duty, driver, vendor, vehicle, tracking,
+            capacity, support and incidents.
+
           </div>
 
         </div>
+
 
         <div class="status-row">
 
@@ -556,69 +1102,51 @@ window.GoVara26D = (function () {
 
       ${section(
         "Platform Operations",
-        "Global operational availability controls.",
+        "Global operational availability.",
         `
 
           <div class="grid three">
 
             ${toggle(
               "Platform Operational",
-              "operations.platformOperational",
-              c.operations.platformOperational
+              "platform.operational",
+              c.platform.operational
             )}
 
             ${toggle(
-              "Booking Operational",
-              "operations.bookingOperational",
-              c.operations.bookingOperational
+              "Booking Operations",
+              "platform.bookingOperational",
+              c.platform.bookingOperational
             )}
 
             ${toggle(
-              "Customer Service Operational",
-              "operations.customerServiceOperational",
-              c.operations.customerServiceOperational
+              "Customer Operations",
+              "platform.customerOperations",
+              c.platform.customerOperations
             )}
 
             ${toggle(
               "Vendor Operations",
-              "operations.vendorOperationsOperational",
-              c.operations.vendorOperationsOperational
+              "platform.vendorOperations",
+              c.platform.vendorOperations
             )}
 
             ${toggle(
               "Driver Operations",
-              "operations.driverOperationsOperational",
-              c.operations.driverOperationsOperational
+              "platform.driverOperations",
+              c.platform.driverOperations
             )}
 
             ${toggle(
-              "Auto Assignment",
-              "operations.autoAssignmentEnabled",
-              c.operations.autoAssignmentEnabled
+              "Vehicle Operations",
+              "platform.vehicleOperations",
+              c.platform.vehicleOperations
             )}
 
             ${toggle(
-              "Manual Assignment",
-              "operations.manualAssignmentAllowed",
-              c.operations.manualAssignmentAllowed
-            )}
-
-            ${toggle(
-              "Duty Tracking",
-              "operations.dutyTrackingEnabled",
-              c.operations.dutyTrackingEnabled
-            )}
-
-            ${toggle(
-              "Vehicle Tracking",
-              "operations.vehicleTrackingEnabled",
-              c.operations.vehicleTrackingEnabled
-            )}
-
-            ${toggle(
-              "Location Tracking",
-              "operations.locationTrackingEnabled",
-              c.operations.locationTrackingEnabled
+              "Support Operations",
+              "platform.supportOperations",
+              c.platform.supportOperations
             )}
 
           </div>
@@ -628,82 +1156,543 @@ window.GoVara26D = (function () {
 
 
       ${section(
-        "Booking Operations",
-        "Operational controls for the booking lifecycle.",
+        "Operating Hours",
+        "Platform service availability by operating schedule.",
+        `
+
+          ${toggle(
+            "Operating Hours Control",
+            "operatingHours.enabled",
+            c.operatingHours.enabled
+          )}
+
+          ${toggle(
+            "24 × 7 Operations",
+            "operatingHours.twentyFourSeven",
+            c.operatingHours.twentyFourSeven
+          )}
+
+
+          <div class="grid three">
+
+            ${timeInput(
+              "Monday Start",
+              "operatingHours.monday.start",
+              c.operatingHours.monday.start
+            )}
+
+            ${timeInput(
+              "Monday End",
+              "operatingHours.monday.end",
+              c.operatingHours.monday.end
+            )}
+
+            ${toggle(
+              "Monday",
+              "operatingHours.monday.enabled",
+              c.operatingHours.monday.enabled
+            )}
+
+
+            ${timeInput(
+              "Tuesday Start",
+              "operatingHours.tuesday.start",
+              c.operatingHours.tuesday.start
+            )}
+
+            ${timeInput(
+              "Tuesday End",
+              "operatingHours.tuesday.end",
+              c.operatingHours.tuesday.end
+            )}
+
+            ${toggle(
+              "Tuesday",
+              "operatingHours.tuesday.enabled",
+              c.operatingHours.tuesday.enabled
+            )}
+
+
+            ${timeInput(
+              "Wednesday Start",
+              "operatingHours.wednesday.start",
+              c.operatingHours.wednesday.start
+            )}
+
+            ${timeInput(
+              "Wednesday End",
+              "operatingHours.wednesday.end",
+              c.operatingHours.wednesday.end
+            )}
+
+            ${toggle(
+              "Wednesday",
+              "operatingHours.wednesday.enabled",
+              c.operatingHours.wednesday.enabled
+            )}
+
+
+            ${timeInput(
+              "Thursday Start",
+              "operatingHours.thursday.start",
+              c.operatingHours.thursday.start
+            )}
+
+            ${timeInput(
+              "Thursday End",
+              "operatingHours.thursday.end",
+              c.operatingHours.thursday.end
+            )}
+
+            ${toggle(
+              "Thursday",
+              "operatingHours.thursday.enabled",
+              c.operatingHours.thursday.enabled
+            )}
+
+
+            ${timeInput(
+              "Friday Start",
+              "operatingHours.friday.start",
+              c.operatingHours.friday.start
+            )}
+
+            ${timeInput(
+              "Friday End",
+              "operatingHours.friday.end",
+              c.operatingHours.friday.end
+            )}
+
+            ${toggle(
+              "Friday",
+              "operatingHours.friday.enabled",
+              c.operatingHours.friday.enabled
+            )}
+
+
+            ${timeInput(
+              "Saturday Start",
+              "operatingHours.saturday.start",
+              c.operatingHours.saturday.start
+            )}
+
+            ${timeInput(
+              "Saturday End",
+              "operatingHours.saturday.end",
+              c.operatingHours.saturday.end
+            )}
+
+            ${toggle(
+              "Saturday",
+              "operatingHours.saturday.enabled",
+              c.operatingHours.saturday.enabled
+            )}
+
+
+            ${timeInput(
+              "Sunday Start",
+              "operatingHours.sunday.start",
+              c.operatingHours.sunday.start
+            )}
+
+            ${timeInput(
+              "Sunday End",
+              "operatingHours.sunday.end",
+              c.operatingHours.sunday.end
+            )}
+
+            ${toggle(
+              "Sunday",
+              "operatingHours.sunday.enabled",
+              c.operatingHours.sunday.enabled
+            )}
+
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Booking Lifecycle",
+        "Complete operational booking status controls.",
         `
 
           <div class="grid three">
 
-            <div>
+            ${toggle(
+              "Booking Intake",
+              "booking.intakeEnabled",
+              c.booking.intakeEnabled
+            )}
 
-              <h3>
-                Booking Lifecycle
-              </h3>
+            ${toggle(
+              "New Booking",
+              "booking.newBookingEnabled",
+              c.booking.newBookingEnabled
+            )}
 
-              ${toggle(
-                "New Booking",
-                "booking.newBookingEnabled",
-                c.booking.newBookingEnabled
-              )}
+            ${toggle(
+              "Accept Booking",
+              "booking.acceptBookingEnabled",
+              c.booking.acceptBookingEnabled
+            )}
 
-              ${toggle(
-                "Accept Booking",
-                "booking.acceptBookingEnabled",
-                c.booking.acceptBookingEnabled
-              )}
+            ${toggle(
+              "Reject Booking",
+              "booking.rejectBookingEnabled",
+              c.booking.rejectBookingEnabled
+            )}
 
-              ${toggle(
-                "Reject Booking",
-                "booking.rejectBookingEnabled",
-                c.booking.rejectBookingEnabled
-              )}
+            ${toggle(
+              "Cancel Booking",
+              "booking.cancelBookingEnabled",
+              c.booking.cancelBookingEnabled
+            )}
 
-              ${toggle(
-                "Cancel Booking",
-                "booking.cancelBookingEnabled",
-                c.booking.cancelBookingEnabled
-              )}
+            ${toggle(
+              "Modification",
+              "booking.modificationEnabled",
+              c.booking.modificationEnabled
+            )}
 
-              ${toggle(
-                "Modify Booking",
-                "booking.modifyBookingEnabled",
-                c.booking.modifyBookingEnabled
-              )}
+            ${toggle(
+              "Customer Booking",
+              "booking.customerBookingAllowed",
+              c.booking.customerBookingAllowed
+            )}
 
-            </div>
+            ${toggle(
+              "Vendor Booking",
+              "booking.vendorBookingAllowed",
+              c.booking.vendorBookingAllowed
+            )}
+
+            ${toggle(
+              "Future Booking",
+              "booking.futureBookingAllowed",
+              c.booking.futureBookingAllowed
+            )}
+
+            ${toggle(
+              "Same Day Booking",
+              "booking.sameDayBookingAllowed",
+              c.booking.sameDayBookingAllowed
+            )}
+
+            ${toggle(
+              "Assignment Required",
+              "booking.assignmentRequired",
+              c.booking.assignmentRequired
+            )}
+
+            ${toggle(
+              "Reassignment",
+              "booking.reassignmentEnabled",
+              c.booking.reassignmentEnabled
+            )}
+
+            ${toggle(
+              "Unassigned Escalation",
+              "booking.unassignedEscalationEnabled",
+              c.booking.unassignedEscalationEnabled
+            )}
+
+            ${toggle(
+              "No-Show Workflow",
+              "booking.noShowEnabled",
+              c.booking.noShowEnabled
+            )}
+
+          </div>
 
 
-            <div>
+          <h3>
+            Booking Timing
+          </h3>
 
-              <h3>
-                Assignment
-              </h3>
+          <div class="grid four">
 
-              ${toggle(
-                "Assignment Required",
-                "booking.assignmentRequired",
-                c.booking.assignmentRequired
-              )}
+            ${input(
+              "Max Pending (minutes)",
+              "booking.maxPendingMinutes",
+              c.booking.maxPendingMinutes
+            )}
 
-              ${toggle(
-                "Auto Assignment",
-                "booking.autoAssignment",
-                c.booking.autoAssignment
-              )}
+            ${input(
+              "Max Assignment Attempts",
+              "booking.maxAssignmentAttempts",
+              c.booking.maxAssignmentAttempts
+            )}
 
-              ${input(
-                "Max Pending Time (minutes)",
-                "booking.maxPendingMinutes",
-                c.booking.maxPendingMinutes
-              )}
+            ${input(
+              "Max Reassignment Attempts",
+              "booking.maxReassignmentAttempts",
+              c.booking.maxReassignmentAttempts
+            )}
 
-              ${input(
-                "Max Assignment Attempts",
-                "booking.maxAssignmentAttempts",
-                c.booking.maxAssignmentAttempts
-              )}
+            ${input(
+              "Unassigned Escalation (minutes)",
+              "booking.unassignedEscalationMinutes",
+              c.booking.unassignedEscalationMinutes
+            )}
 
-            </div>
+          </div>
+
+
+          <h3>
+            Booking Statuses
+          </h3>
+
+          <div class="grid five">
+
+            ${stateCard("NEW", c.booking.statuses.NEW)}
+            ${stateCard("PENDING", c.booking.statuses.PENDING)}
+            ${stateCard("ASSIGNED", c.booking.statuses.ASSIGNED)}
+            ${stateCard("ACCEPTED", c.booking.statuses.ACCEPTED)}
+            ${stateCard("REJECTED", c.booking.statuses.REJECTED)}
+            ${stateCard("DRIVER ARRIVING", c.booking.statuses.DRIVER_ARRIVING)}
+            ${stateCard("TRIP STARTED", c.booking.statuses.TRIP_STARTED)}
+            ${stateCard("TRIP COMPLETED", c.booking.statuses.TRIP_COMPLETED)}
+            ${stateCard("CANCELLED", c.booking.statuses.CANCELLED)}
+            ${stateCard("NO SHOW", c.booking.statuses.NO_SHOW)}
+
+          </div>
+
+          <div class="notice warn">
+            Booking status cards are currently configuration indicators.
+            Backend enforcement will be connected during API integration.
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Dispatch Control",
+        "Manual, automatic and reassignment controls.",
+        `
+
+          <div class="grid three">
+
+            ${toggle(
+              "Dispatch Enabled",
+              "dispatch.enabled",
+              c.dispatch.enabled
+            )}
+
+            ${toggle(
+              "Manual Dispatch",
+              "dispatch.manualDispatchEnabled",
+              c.dispatch.manualDispatchEnabled
+            )}
+
+            ${toggle(
+              "Auto Dispatch",
+              "dispatch.autoDispatchEnabled",
+              c.dispatch.autoDispatchEnabled
+            )}
+
+            ${toggle(
+              "Reassignment",
+              "dispatch.reassignmentEnabled",
+              c.dispatch.reassignmentEnabled
+            )}
+
+            ${toggle(
+              "Driver Selection",
+              "dispatch.driverSelectionEnabled",
+              c.dispatch.driverSelectionEnabled
+            )}
+
+            ${toggle(
+              "Vendor Selection",
+              "dispatch.vendorSelectionEnabled",
+              c.dispatch.vendorSelectionEnabled
+            )}
+
+            ${toggle(
+              "Vehicle Selection",
+              "dispatch.vehicleSelectionEnabled",
+              c.dispatch.vehicleSelectionEnabled
+            )}
+
+            ${toggle(
+              "Unassigned Queue",
+              "dispatch.unassignedQueueEnabled",
+              c.dispatch.unassignedQueueEnabled
+            )}
+
+            ${toggle(
+              "Require Driver Availability",
+              "dispatch.requireDriverAvailability",
+              c.dispatch.requireDriverAvailability
+            )}
+
+            ${toggle(
+              "Require Vehicle Availability",
+              "dispatch.requireVehicleAvailability",
+              c.dispatch.requireVehicleAvailability
+            )}
+
+            ${toggle(
+              "Block Offline Driver",
+              "dispatch.blockOfflineDriver",
+              c.dispatch.blockOfflineDriver
+            )}
+
+            ${toggle(
+              "Block Busy Driver",
+              "dispatch.blockBusyDriver",
+              c.dispatch.blockBusyDriver
+            )}
+
+            ${toggle(
+              "Block Unavailable Vehicle",
+              "dispatch.blockUnavailableVehicle",
+              c.dispatch.blockUnavailableVehicle
+            )}
+
+            ${toggle(
+              "Dispatch Escalation",
+              "dispatch.escalationEnabled",
+              c.dispatch.escalationEnabled
+            )}
+
+          </div>
+
+
+          <div class="grid four">
+
+            ${input(
+              "Dispatch Timeout (minutes)",
+              "dispatch.dispatchTimeoutMinutes",
+              c.dispatch.dispatchTimeoutMinutes
+            )}
+
+            ${input(
+              "Assignment Attempts",
+              "dispatch.maxAssignmentAttempts",
+              c.dispatch.maxAssignmentAttempts
+            )}
+
+            ${input(
+              "Reassignment Attempts",
+              "dispatch.maxReassignmentAttempts",
+              c.dispatch.maxReassignmentAttempts
+            )}
+
+            ${input(
+              "Escalation After (minutes)",
+              "dispatch.escalationMinutes",
+              c.dispatch.escalationMinutes
+            )}
+
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Driver Duty & Lifecycle",
+        "Complete duty and driver operational states.",
+        `
+
+          <div class="grid three">
+
+            ${toggle(
+              "Duty Control",
+              "duty.enabled",
+              c.duty.enabled
+            )}
+
+            ${toggle(
+              "Duty Start",
+              "duty.dutyStartEnabled",
+              c.duty.dutyStartEnabled
+            )}
+
+            ${toggle(
+              "Duty End",
+              "duty.dutyEndEnabled",
+              c.duty.dutyEndEnabled
+            )}
+
+            ${toggle(
+              "Break",
+              "duty.breakEnabled",
+              c.duty.breakEnabled
+            )}
+
+            ${toggle(
+              "Unavailable Status",
+              "duty.unavailableStatusEnabled",
+              c.duty.unavailableStatusEnabled
+            )}
+
+            ${toggle(
+              "Online Status",
+              "duty.onlineStatusEnabled",
+              c.duty.onlineStatusEnabled
+            )}
+
+            ${toggle(
+              "Offline Status",
+              "duty.offlineStatusEnabled",
+              c.duty.offlineStatusEnabled
+            )}
+
+            ${toggle(
+              "Trip Start",
+              "duty.tripStartEnabled",
+              c.duty.tripStartEnabled
+            )}
+
+            ${toggle(
+              "Trip End",
+              "duty.tripEndEnabled",
+              c.duty.tripEndEnabled
+            )}
+
+            ${toggle(
+              "Duty Approval Required",
+              "duty.approvalRequired",
+              c.duty.approvalRequired
+            )}
+
+          </div>
+
+
+          <div class="grid two">
+
+            ${input(
+              "Maximum Duty Duration (hours)",
+              "duty.maximumDutyDurationHours",
+              c.duty.maximumDutyDurationHours
+            )}
+
+            ${input(
+              "Minimum Rest (hours)",
+              "duty.minimumRestHours",
+              c.duty.minimumRestHours
+            )}
+
+          </div>
+
+
+          <h3>
+            Driver Operational States
+          </h3>
+
+          <div class="grid three">
+
+            ${stateCard("OFFLINE", c.duty.states.OFFLINE)}
+            ${stateCard("ONLINE", c.duty.states.ONLINE)}
+            ${stateCard("ON DUTY", c.duty.states.ON_DUTY)}
+            ${stateCard("BREAK", c.duty.states.BREAK)}
+            ${stateCard("ON TRIP", c.duty.states.ON_TRIP)}
+            ${stateCard("UNAVAILABLE", c.duty.states.UNAVAILABLE)}
 
           </div>
 
@@ -713,39 +1702,45 @@ window.GoVara26D = (function () {
 
       ${section(
         "Driver Operations",
-        "Driver duty, trip and operational status controls.",
+        "Driver account and trip-operation boundaries.",
         `
 
           <div class="grid three">
 
             ${toggle(
+              "Driver Management",
+              "driver.managementEnabled",
+              c.driver.managementEnabled
+            )}
+
+            ${toggle(
+              "Driver Registration",
+              "driver.registrationOperational",
+              c.driver.registrationOperational
+            )}
+
+            ${toggle(
+              "Profile Update",
+              "driver.profileUpdateEnabled",
+              c.driver.profileUpdateEnabled
+            )}
+
+            ${toggle(
+              "Booking Acceptance",
+              "driver.bookingAcceptanceEnabled",
+              c.driver.bookingAcceptanceEnabled
+            )}
+
+            ${toggle(
+              "Booking Rejection",
+              "driver.bookingRejectionEnabled",
+              c.driver.bookingRejectionEnabled
+            )}
+
+            ${toggle(
               "Duty Management",
-              "driver.dutyEnabled",
-              c.driver.dutyEnabled
-            )}
-
-            ${toggle(
-              "Online Status",
-              "driver.onlineStatusEnabled",
-              c.driver.onlineStatusEnabled
-            )}
-
-            ${toggle(
-              "Offline Status",
-              "driver.offlineStatusEnabled",
-              c.driver.offlineStatusEnabled
-            )}
-
-            ${toggle(
-              "Trip Start",
-              "driver.tripStartAllowed",
-              c.driver.tripStartAllowed
-            )}
-
-            ${toggle(
-              "Trip End",
-              "driver.tripEndAllowed",
-              c.driver.tripEndAllowed
+              "driver.dutyManagementEnabled",
+              c.driver.dutyManagementEnabled
             )}
 
             ${toggle(
@@ -754,47 +1749,40 @@ window.GoVara26D = (function () {
               c.driver.locationSharingEnabled
             )}
 
-          </div>
-
-        `
-      )}
-
-
-      ${section(
-        "Vendor Operations",
-        "Operational controls for vendor/company management.",
-        `
-
-          <div class="grid three">
-
             ${toggle(
-              "Vendor Operations",
-              "vendor.vendorOperationsEnabled",
-              c.vendor.vendorOperationsEnabled
+              "Trip Tracking",
+              "driver.tripTrackingEnabled",
+              c.driver.tripTrackingEnabled
             )}
 
             ${toggle(
-              "Booking Management",
-              "vendor.bookingManagementEnabled",
-              c.vendor.bookingManagementEnabled
+              "Availability Required",
+              "driver.driverAvailabilityRequired",
+              c.driver.driverAvailabilityRequired
             )}
 
             ${toggle(
-              "Vehicle Management",
-              "vendor.vehicleManagementEnabled",
-              c.vendor.vehicleManagementEnabled
+              "Rating Visible",
+              "driver.ratingVisibleToDriver",
+              c.driver.ratingVisibleToDriver
             )}
 
             ${toggle(
-              "Driver Management",
-              "vendor.driverManagementEnabled",
-              c.vendor.driverManagementEnabled
+              "Block Driver When Blocked",
+              "driver.blockedDriverCannotReceiveBooking",
+              c.driver.blockedDriverCannotReceiveBooking
             )}
 
             ${toggle(
-              "Duty Management",
-              "vendor.dutyManagementEnabled",
-              c.vendor.dutyManagementEnabled
+              "Block Offline Driver",
+              "driver.offlineDriverCannotReceiveBooking",
+              c.driver.offlineDriverCannotReceiveBooking
+            )}
+
+            ${toggle(
+              "Block Driver On Trip",
+              "driver.onTripDriverCannotReceiveBooking",
+              c.driver.onTripDriverCannotReceiveBooking
             )}
 
           </div>
@@ -805,33 +1793,51 @@ window.GoVara26D = (function () {
 
       ${section(
         "Vehicle Operations",
-        "Vehicle availability, assignment and safety controls.",
+        "Vehicle availability, assignment and operational states.",
         `
 
           <div class="grid three">
 
             ${toggle(
               "Vehicle Management",
-              "vehicle.vehicleManagementEnabled",
-              c.vehicle.vehicleManagementEnabled
+              "vehicle.managementEnabled",
+              c.vehicle.managementEnabled
+            )}
+
+            ${toggle(
+              "Vehicle Registration",
+              "vehicle.registrationEnabled",
+              c.vehicle.registrationEnabled
             )}
 
             ${toggle(
               "Vehicle Assignment",
-              "vehicle.vehicleAssignmentEnabled",
-              c.vehicle.vehicleAssignmentEnabled
+              "vehicle.assignmentEnabled",
+              c.vehicle.assignmentEnabled
             )}
 
             ${toggle(
               "Availability Tracking",
-              "vehicle.vehicleAvailabilityTracking",
-              c.vehicle.vehicleAvailabilityTracking
+              "vehicle.availabilityTrackingEnabled",
+              c.vehicle.availabilityTrackingEnabled
             )}
 
             ${toggle(
-              "Block Inactive Vehicles",
+              "Block Inactive Vehicle",
               "vehicle.inactiveVehicleBookingBlocked",
               c.vehicle.inactiveVehicleBookingBlocked
+            )}
+
+            ${toggle(
+              "Block Maintenance Vehicle",
+              "vehicle.maintenanceVehicleBookingBlocked",
+              c.vehicle.maintenanceVehicleBookingBlocked
+            )}
+
+            ${toggle(
+              "Block Blocked Vehicle",
+              "vehicle.blockedVehicleBookingBlocked",
+              c.vehicle.blockedVehicleBookingBlocked
             )}
 
             ${toggle(
@@ -842,69 +1848,598 @@ window.GoVara26D = (function () {
 
           </div>
 
+
+          <h3>
+            Vehicle Operational States
+          </h3>
+
+          <div class="grid four">
+
+            ${stateCard("AVAILABLE", c.vehicle.states.AVAILABLE)}
+            ${stateCard("ASSIGNED", c.vehicle.states.ASSIGNED)}
+            ${stateCard("ON TRIP", c.vehicle.states.ON_TRIP)}
+            ${stateCard("OFFLINE", c.vehicle.states.OFFLINE)}
+            ${stateCard("MAINTENANCE", c.vehicle.states.MAINTENANCE)}
+            ${stateCard("BLOCKED", c.vehicle.states.BLOCKED)}
+            ${stateCard("DOCUMENT EXPIRED", c.vehicle.states.DOCUMENT_EXPIRED)}
+
+          </div>
+
         `
       )}
 
 
       ${section(
-        "Customer Service & Escalation",
-        "Support and escalation workflow controls.",
+        "Vendor Operations",
+        "Vendor/company operational controls.",
         `
 
           <div class="grid three">
 
-            <div>
+            ${toggle(
+              "Vendor Management",
+              "vendor.managementEnabled",
+              c.vendor.managementEnabled
+            )}
 
-              <h3>
-                Support
-              </h3>
+            ${toggle(
+              "Booking Management",
+              "vendor.bookingManagementEnabled",
+              c.vendor.bookingManagementEnabled
+            )}
 
-              ${toggle(
-                "Customer Support",
-                "service.customerSupportEnabled",
-                c.service.customerSupportEnabled
-              )}
+            ${toggle(
+              "Driver Management",
+              "vendor.driverManagementEnabled",
+              c.vendor.driverManagementEnabled
+            )}
 
-              ${toggle(
-                "Complaint Handling",
-                "service.complaintHandlingEnabled",
-                c.service.complaintHandlingEnabled
-              )}
+            ${toggle(
+              "Vehicle Management",
+              "vendor.vehicleManagementEnabled",
+              c.vendor.vehicleManagementEnabled
+            )}
 
-              ${toggle(
-                "Escalation",
-                "service.escalationEnabled",
-                c.service.escalationEnabled
-              )}
+            ${toggle(
+              "Duty Management",
+              "vendor.dutyManagementEnabled",
+              c.vendor.dutyManagementEnabled
+            )}
 
-              ${toggle(
-                "Emergency Workflow",
-                "service.emergencyWorkflowEnabled",
-                c.service.emergencyWorkflowEnabled
-              )}
+            ${toggle(
+              "Assignment Management",
+              "vendor.assignmentManagementEnabled",
+              c.vendor.assignmentManagementEnabled
+            )}
 
-            </div>
+            ${toggle(
+              "Vendor Can Assign Driver",
+              "vendor.vendorCanAssignDriver",
+              c.vendor.vendorCanAssignDriver
+            )}
+
+            ${toggle(
+              "Vendor Can Assign Vehicle",
+              "vendor.vendorCanAssignVehicle",
+              c.vendor.vendorCanAssignVehicle
+            )}
+
+            ${toggle(
+              "Block Inactive Vendor",
+              "vendor.inactiveVendorCannotReceiveBooking",
+              c.vendor.inactiveVendorCannotReceiveBooking
+            )}
+
+            ${toggle(
+              "Block Vendor",
+              "vendor.blockedVendorCannotReceiveBooking",
+              c.vendor.blockedVendorCannotReceiveBooking
+            )}
+
+            ${toggle(
+              "Vendor Approval Required",
+              "vendor.approvalRequired",
+              c.vendor.approvalRequired
+            )}
+
+          </div>
+
+        `
+      )}
 
 
-            <div>
+      ${section(
+        "Vendor ↔ Vehicle ↔ Driver Assignment",
+        "Operational relationship and assignment boundaries.",
+        `
 
-              <h3>
-                Response Targets
-              </h3>
+          <div class="grid three">
 
-              ${input(
-                "Support Response (minutes)",
-                "service.supportResponseMinutes",
-                c.service.supportResponseMinutes
-              )}
+            ${toggle(
+              "Relationship Control",
+              "assignment.relationshipControlEnabled",
+              c.assignment.relationshipControlEnabled
+            )}
 
-              ${input(
-                "Escalation After (minutes)",
-                "service.escalationAfterMinutes",
-                c.service.escalationAfterMinutes
-              )}
+            ${toggle(
+              "Vendor → Driver",
+              "assignment.vendorDriverAssignment",
+              c.assignment.vendorDriverAssignment
+            )}
 
-            </div>
+            ${toggle(
+              "Vendor → Vehicle",
+              "assignment.vendorVehicleAssignment",
+              c.assignment.vendorVehicleAssignment
+            )}
+
+            ${toggle(
+              "Driver → Vehicle",
+              "assignment.driverVehicleAssignment",
+              c.assignment.driverVehicleAssignment
+            )}
+
+            ${toggle(
+              "Vehicle Requires Vendor",
+              "assignment.requireVendorForVendorVehicle",
+              c.assignment.requireVendorForVendorVehicle
+            )}
+
+            ${toggle(
+              "Trip Requires Driver",
+              "assignment.requireDriverForTrip",
+              c.assignment.requireDriverForTrip
+            )}
+
+            ${toggle(
+              "Trip Requires Vehicle",
+              "assignment.requireVehicleForTrip",
+              c.assignment.requireVehicleForTrip
+            )}
+
+            ${toggle(
+              "Prevent Cross-Vendor Assignment",
+              "assignment.preventCrossVendorAssignment",
+              c.assignment.preventCrossVendorAssignment
+            )}
+
+            ${toggle(
+              "Assignment History",
+              "assignment.assignmentHistoryEnabled",
+              c.assignment.assignmentHistoryEnabled
+            )}
+
+          </div>
+
+
+          <div class="notice info">
+
+            Operational relationship:
+
+            <strong>
+              Vendor → Vehicle → Driver → Duty → Booking
+            </strong>
+
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Location & Tracking",
+        "Location-sharing and trip-tracking controls.",
+        `
+
+          <div class="grid three">
+
+            ${toggle(
+              "Location Tracking",
+              "tracking.locationTrackingEnabled",
+              c.tracking.locationTrackingEnabled
+            )}
+
+            ${toggle(
+              "Driver Location",
+              "tracking.driverLocationEnabled",
+              c.tracking.driverLocationEnabled
+            )}
+
+            ${toggle(
+              "Vehicle Location",
+              "tracking.vehicleLocationEnabled",
+              c.tracking.vehicleLocationEnabled
+            )}
+
+            ${toggle(
+              "Tracking During Duty",
+              "tracking.trackingDuringDuty",
+              c.tracking.trackingDuringDuty
+            )}
+
+            ${toggle(
+              "Tracking During Trip",
+              "tracking.trackingDuringTrip",
+              c.tracking.trackingDuringTrip
+            )}
+
+            ${toggle(
+              "Tracking Failure Handling",
+              "tracking.trackingFailureHandlingEnabled",
+              c.tracking.trackingFailureHandlingEnabled
+            )}
+
+            ${toggle(
+              "Notify Tracking Failure",
+              "tracking.notifyOnTrackingFailure",
+              c.tracking.notifyOnTrackingFailure
+            )}
+
+          </div>
+
+
+          <div class="grid two">
+
+            ${input(
+              "Location Update Interval (seconds)",
+              "tracking.locationUpdateIntervalSeconds",
+              c.tracking.locationUpdateIntervalSeconds
+            )}
+
+            ${input(
+              "Maximum Tracking Failure (minutes)",
+              "tracking.maximumLocationFailureMinutes",
+              c.tracking.maximumLocationFailureMinutes
+            )}
+
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Capacity Control",
+        "Booking, dispatch, vendor, driver and vehicle capacity limits.",
+        `
+
+          <div class="grid three">
+
+            ${toggle(
+              "Capacity Control",
+              "capacity.capacityControlEnabled",
+              c.capacity.capacityControlEnabled
+            )}
+
+            ${toggle(
+              "Booking Intake Limit",
+              "capacity.bookingIntakeLimitEnabled",
+              c.capacity.bookingIntakeLimitEnabled
+            )}
+
+            ${toggle(
+              "Dispatch Capacity",
+              "capacity.dispatchCapacityEnabled",
+              c.capacity.dispatchCapacityEnabled
+            )}
+
+            ${toggle(
+              "Vendor Capacity",
+              "capacity.vendorCapacityEnabled",
+              c.capacity.vendorCapacityEnabled
+            )}
+
+            ${toggle(
+              "Driver Capacity",
+              "capacity.driverCapacityEnabled",
+              c.capacity.driverCapacityEnabled
+            )}
+
+            ${toggle(
+              "Vehicle Capacity",
+              "capacity.vehicleCapacityEnabled",
+              c.capacity.vehicleCapacityEnabled
+            )}
+
+            ${toggle(
+              "Reject At Capacity",
+              "capacity.rejectWhenCapacityReached",
+              c.capacity.rejectWhenCapacityReached
+            )}
+
+            ${toggle(
+              "Queue At Capacity",
+              "capacity.queueWhenCapacityReached",
+              c.capacity.queueWhenCapacityReached
+            )}
+
+          </div>
+
+
+          <div class="grid five">
+
+            ${input(
+              "Max Pending Bookings",
+              "capacity.maximumPendingBookings",
+              c.capacity.maximumPendingBookings
+            )}
+
+            ${input(
+              "Max Dispatch Queue",
+              "capacity.maximumDispatchQueue",
+              c.capacity.maximumDispatchQueue
+            )}
+
+            ${input(
+              "Max / Vendor",
+              "capacity.maximumBookingsPerVendor",
+              c.capacity.maximumBookingsPerVendor
+            )}
+
+            ${input(
+              "Max / Driver",
+              "capacity.maximumBookingsPerDriver",
+              c.capacity.maximumBookingsPerDriver
+            )}
+
+            ${input(
+              "Max / Vehicle",
+              "capacity.maximumBookingsPerVehicle",
+              c.capacity.maximumBookingsPerVehicle
+            )}
+
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Customer Support & Escalation",
+        "Support, complaint and escalation workflow.",
+        `
+
+          <div class="grid three">
+
+            ${toggle(
+              "Support",
+              "support.enabled",
+              c.support.enabled
+            )}
+
+            ${toggle(
+              "Customer Support",
+              "support.customerSupportEnabled",
+              c.support.customerSupportEnabled
+            )}
+
+            ${toggle(
+              "Complaint Handling",
+              "support.complaintHandlingEnabled",
+              c.support.complaintHandlingEnabled
+            )}
+
+            ${toggle(
+              "Ticket Creation",
+              "support.ticketCreationEnabled",
+              c.support.ticketCreationEnabled
+            )}
+
+            ${toggle(
+              "Ticket Assignment",
+              "support.ticketAssignmentEnabled",
+              c.support.ticketAssignmentEnabled
+            )}
+
+            ${toggle(
+              "Escalation",
+              "support.escalationEnabled",
+              c.support.escalationEnabled
+            )}
+
+            ${toggle(
+              "Emergency Support",
+              "support.emergencySupportEnabled",
+              c.support.emergencySupportEnabled
+            )}
+
+          </div>
+
+
+          <div class="grid two">
+
+            ${input(
+              "Support Response (minutes)",
+              "support.supportResponseMinutes",
+              c.support.supportResponseMinutes
+            )}
+
+            ${input(
+              "Escalation After (minutes)",
+              "support.escalationAfterMinutes",
+              c.support.escalationAfterMinutes
+            )}
+
+          </div>
+
+
+          <h3>
+            Complaint Categories
+          </h3>
+
+          <div class="grid four">
+
+            ${toggle(
+              "Booking",
+              "support.complaintCategories.BOOKING",
+              c.support.complaintCategories.BOOKING
+            )}
+
+            ${toggle(
+              "Driver",
+              "support.complaintCategories.DRIVER",
+              c.support.complaintCategories.DRIVER
+            )}
+
+            ${toggle(
+              "Vehicle",
+              "support.complaintCategories.VEHICLE",
+              c.support.complaintCategories.VEHICLE
+            )}
+
+            ${toggle(
+              "Vendor",
+              "support.complaintCategories.VENDOR",
+              c.support.complaintCategories.VENDOR
+            )}
+
+            ${toggle(
+              "Fare",
+              "support.complaintCategories.FARE",
+              c.support.complaintCategories.FARE
+            )}
+
+            ${toggle(
+              "Payment",
+              "support.complaintCategories.PAYMENT",
+              c.support.complaintCategories.PAYMENT
+            )}
+
+            ${toggle(
+              "Document",
+              "support.complaintCategories.DOCUMENT",
+              c.support.complaintCategories.DOCUMENT
+            )}
+
+            ${toggle(
+              "Other",
+              "support.complaintCategories.OTHER",
+              c.support.complaintCategories.OTHER
+            )}
+
+          </div>
+
+        `
+      )}
+
+
+      ${section(
+        "Incident & Emergency Control",
+        "Incident management and emergency response controls.",
+        `
+
+          <div class="grid three">
+
+            ${toggle(
+              "Incident Management",
+              "incident.incidentManagementEnabled",
+              c.incident.incidentManagementEnabled
+            )}
+
+            ${toggle(
+              "Emergency Mode",
+              "incident.emergencyMode",
+              c.incident.emergencyMode
+            )}
+
+            ${toggle(
+              "Emergency Booking Freeze",
+              "incident.emergencyBookingFreeze",
+              c.incident.emergencyBookingFreeze
+            )}
+
+            ${toggle(
+              "Emergency Dispatch Freeze",
+              "incident.emergencyDispatchFreeze",
+              c.incident.emergencyDispatchFreeze
+            )}
+
+            ${toggle(
+              "Emergency Driver Freeze",
+              "incident.emergencyDriverFreeze",
+              c.incident.emergencyDriverFreeze
+            )}
+
+            ${toggle(
+              "Emergency Vendor Freeze",
+              "incident.emergencyVendorFreeze",
+              c.incident.emergencyVendorFreeze
+            )}
+
+            ${toggle(
+              "Incident Creation",
+              "incident.incidentCreationEnabled",
+              c.incident.incidentCreationEnabled
+            )}
+
+            ${toggle(
+              "Incident Escalation",
+              "incident.incidentEscalationEnabled",
+              c.incident.incidentEscalationEnabled
+            )}
+
+            ${toggle(
+              "Emergency Notifications",
+              "incident.emergencyNotificationEnabled",
+              c.incident.emergencyNotificationEnabled
+            )}
+
+          </div>
+
+
+          <h3>
+            Incident Types
+          </h3>
+
+          <div class="grid four">
+
+            ${toggle(
+              "Accident",
+              "incident.incidentTypes.ACCIDENT",
+              c.incident.incidentTypes.ACCIDENT
+            )}
+
+            ${toggle(
+              "Driver Issue",
+              "incident.incidentTypes.DRIVER_ISSUE",
+              c.incident.incidentTypes.DRIVER_ISSUE
+            )}
+
+            ${toggle(
+              "Vehicle Issue",
+              "incident.incidentTypes.VEHICLE_ISSUE",
+              c.incident.incidentTypes.VEHICLE_ISSUE
+            )}
+
+            ${toggle(
+              "Customer Issue",
+              "incident.incidentTypes.CUSTOMER_ISSUE",
+              c.incident.incidentTypes.CUSTOMER_ISSUE
+            )}
+
+            ${toggle(
+              "Service Failure",
+              "incident.incidentTypes.SERVICE_FAILURE",
+              c.incident.incidentTypes.SERVICE_FAILURE
+            )}
+
+            ${toggle(
+              "Safety",
+              "incident.incidentTypes.SAFETY",
+              c.incident.incidentTypes.SAFETY
+            )}
+
+            ${toggle(
+              "System",
+              "incident.incidentTypes.SYSTEM",
+              c.incident.incidentTypes.SYSTEM
+            )}
+
+            ${toggle(
+              "Other",
+              "incident.incidentTypes.OTHER",
+              c.incident.incidentTypes.OTHER
+            )}
 
           </div>
 
@@ -932,21 +2467,45 @@ window.GoVara26D = (function () {
             )}
 
             ${toggle(
-              "Booking Started",
-              "notifications.bookingStarted",
-              c.notifications.bookingStarted
+              "Booking Accepted",
+              "notifications.bookingAccepted",
+              c.notifications.bookingAccepted
             )}
 
             ${toggle(
-              "Booking Completed",
-              "notifications.bookingCompleted",
-              c.notifications.bookingCompleted
+              "Booking Rejected",
+              "notifications.bookingRejected",
+              c.notifications.bookingRejected
+            )}
+
+            ${toggle(
+              "Driver Arriving",
+              "notifications.driverArriving",
+              c.notifications.driverArriving
+            )}
+
+            ${toggle(
+              "Trip Started",
+              "notifications.tripStarted",
+              c.notifications.tripStarted
+            )}
+
+            ${toggle(
+              "Trip Completed",
+              "notifications.tripCompleted",
+              c.notifications.tripCompleted
             )}
 
             ${toggle(
               "Booking Cancelled",
               "notifications.bookingCancelled",
               c.notifications.bookingCancelled
+            )}
+
+            ${toggle(
+              "No Show",
+              "notifications.bookingNoShow",
+              c.notifications.bookingNoShow
             )}
 
             ${toggle(
@@ -962,6 +2521,18 @@ window.GoVara26D = (function () {
             )}
 
             ${toggle(
+              "Dispatch Timeout",
+              "notifications.dispatchTimeout",
+              c.notifications.dispatchTimeout
+            )}
+
+            ${toggle(
+              "Unassigned Escalation",
+              "notifications.unassignedEscalation",
+              c.notifications.unassignedEscalation
+            )}
+
+            ${toggle(
               "Support Update",
               "notifications.supportUpdate",
               c.notifications.supportUpdate
@@ -973,6 +2544,24 @@ window.GoVara26D = (function () {
               c.notifications.escalationAlert
             )}
 
+            ${toggle(
+              "Incident Alert",
+              "notifications.incidentAlert",
+              c.notifications.incidentAlert
+            )}
+
+            ${toggle(
+              "Emergency Alert",
+              "notifications.emergencyAlert",
+              c.notifications.emergencyAlert
+            )}
+
+            ${toggle(
+              "Tracking Failure",
+              "notifications.trackingFailure",
+              c.notifications.trackingFailure
+            )}
+
           </div>
 
         `
@@ -980,22 +2569,34 @@ window.GoVara26D = (function () {
 
 
       ${section(
-        "Operational Safety Controls",
-        "Emergency and dispatch freeze controls.",
+        "Global Operational Safety",
+        "High-impact operational freeze controls.",
         `
 
-          <div class="grid four">
-
-            ${toggle(
-              "Emergency Mode",
-              "safety.emergencyMode",
-              c.safety.emergencyMode
-            )}
+          <div class="grid three">
 
             ${toggle(
               "Global Booking Freeze",
               "safety.globalBookingFreeze",
               c.safety.globalBookingFreeze
+            )}
+
+            ${toggle(
+              "Global Dispatch Freeze",
+              "safety.globalDispatchFreeze",
+              c.safety.globalDispatchFreeze
+            )}
+
+            ${toggle(
+              "Customer Booking Freeze",
+              "safety.customerBookingFreeze",
+              c.safety.customerBookingFreeze
+            )}
+
+            ${toggle(
+              "Vendor Booking Freeze",
+              "safety.vendorBookingFreeze",
+              c.safety.vendorBookingFreeze
             )}
 
             ${toggle(
@@ -1005,18 +2606,26 @@ window.GoVara26D = (function () {
             )}
 
             ${toggle(
-              "Vendor Dispatch Freeze",
-              "safety.vendorDispatchFreeze",
-              c.safety.vendorDispatchFreeze
+              "Maintenance Mode",
+              "safety.maintenanceMode",
+              c.safety.maintenanceMode
+            )}
+
+            ${toggle(
+              "Emergency Mode",
+              "safety.emergencyMode",
+              c.safety.emergencyMode
             )}
 
           </div>
 
+
           <div class="notice warn">
 
-            These operational safety switches only represent
-            frontend configuration at this stage.
-            Backend enforcement will be connected later.
+            These controls currently represent frontend
+            configuration only. Actual operational enforcement
+            will be performed by the authoritative backend
+            after API integration.
 
           </div>
 
@@ -1026,34 +2635,44 @@ window.GoVara26D = (function () {
 
       ${section(
         "Financial Safety Boundary",
-        "These controls are locked by the platform architecture.",
+        "Locked architectural safeguards.",
         `
 
           <div class="grid five">
 
             <div class="card inner-card">
               <strong>Real Money</strong>
-              <div class="badge danger">BLOCKED</div>
+              <div class="badge danger">
+                BLOCKED
+              </div>
             </div>
 
             <div class="card inner-card">
               <strong>Real Payment</strong>
-              <div class="badge danger">BLOCKED</div>
+              <div class="badge danger">
+                BLOCKED
+              </div>
             </div>
 
             <div class="card inner-card">
               <strong>Bank Transfer</strong>
-              <div class="badge danger">BLOCKED</div>
+              <div class="badge danger">
+                BLOCKED
+              </div>
             </div>
 
             <div class="card inner-card">
               <strong>Frontend Authority</strong>
-              <div class="badge danger">FALSE</div>
+              <div class="badge danger">
+                FALSE
+              </div>
             </div>
 
             <div class="card inner-card">
               <strong>Backend Authority</strong>
-              <div class="badge good">TRUE</div>
+              <div class="badge good">
+                TRUE
+              </div>
             </div>
 
           </div>
@@ -1073,8 +2692,10 @@ window.GoVara26D = (function () {
             </h2>
 
             <div class="muted">
+
               Save, reload, reset and validate the
-              frontend operations configuration.
+              complete 26D frontend configuration.
+
             </div>
 
           </div>
@@ -1119,14 +2740,21 @@ window.GoVara26D = (function () {
 
 
   /* =========================================================
-     Field handling
+     COLLECT FORM DATA
      ========================================================= */
 
-  function setPath(obj, path, value) {
+  function setPath(
+    object,
+    path,
+    value
+  ) {
 
-    const parts = path.split(".");
+    const parts =
+      path.split(".");
 
-    let current = obj;
+    let current =
+      object;
+
 
     for (
       let i = 0;
@@ -1134,23 +2762,37 @@ window.GoVara26D = (function () {
       i++
     ) {
 
-      if (!current[parts[i]]) {
+      if (
+        !current[parts[i]] ||
+        typeof current[parts[i]] !== "object"
+      ) {
+
         current[parts[i]] = {};
+
       }
 
-      current = current[parts[i]];
+      current =
+        current[parts[i]];
     }
 
-    current[parts[parts.length - 1]] = value;
+
+    current[
+      parts[parts.length - 1]
+    ] = value;
   }
 
 
   function collectConfig() {
 
-    const config = getConfig();
+    const config =
+      getConfig();
+
 
     const mount =
-      document.getElementById("module-26D");
+      document.getElementById(
+        "module-26D"
+      );
+
 
     if (!mount) {
       return config;
@@ -1159,25 +2801,38 @@ window.GoVara26D = (function () {
 
     mount
       .querySelectorAll("[data-field]")
-      .forEach(function (el) {
+      .forEach(function (element) {
 
         const field =
-          el.getAttribute("data-field");
+          element.getAttribute(
+            "data-field"
+          );
+
 
         let value;
 
 
-        if (el.type === "checkbox") {
+        if (
+          element.type === "checkbox"
+        ) {
 
-          value = el.checked;
+          value =
+            element.checked;
 
-        } else if (el.type === "number") {
+        } else if (
+          element.type === "number"
+        ) {
 
-          value = number(el.value, 0);
+          value =
+            number(
+              element.value,
+              0
+            );
 
         } else {
 
-          value = el.value;
+          value =
+            element.value;
 
         }
 
@@ -1192,12 +2847,14 @@ window.GoVara26D = (function () {
 
 
     /*
-     * Immutable financial safety boundary.
+     * Financial safety cannot be changed
+     * through the frontend.
      */
 
     config.safety.realMoney = false;
     config.safety.realPayment = false;
     config.safety.bankTransfer = false;
+
     config.safety.frontendAuthority = false;
     config.safety.backendAuthority = true;
 
@@ -1207,37 +2864,52 @@ window.GoVara26D = (function () {
 
 
   /* =========================================================
-     Notice
+     NOTICE
      ========================================================= */
 
-  function showNotice(message, type) {
+  function showNotice(
+    message,
+    type
+  ) {
 
-    const el =
+    const element =
       document.getElementById(
         "module-26D-notice"
       );
 
-    if (!el) {
+
+    if (!element) {
       return;
     }
 
-    el.className =
-      "notice " + (type || "info");
 
-    el.textContent = message;
+    element.className =
+      "notice " + (
+        type || "info"
+      );
 
 
-    window.setTimeout(function () {
+    element.textContent =
+      message;
 
-      el.textContent = "";
-      el.className = "notice";
 
-    }, 4000);
+    window.setTimeout(
+      function () {
+
+        element.textContent =
+          "";
+
+        element.className =
+          "notice";
+
+      },
+      4500
+    );
   }
 
 
   /* =========================================================
-     Bind
+     BIND
      ========================================================= */
 
   function bind() {
@@ -1288,7 +2960,7 @@ window.GoVara26D = (function () {
           renderAndBind();
 
           showNotice(
-            "Operations configuration reloaded.",
+            "26D configuration reloaded.",
             "info"
           );
 
@@ -1306,8 +2978,9 @@ window.GoVara26D = (function () {
 
           const confirmed =
             window.confirm(
-              "Reset all 26D Operations settings to default values?"
+              "Reset the complete 26D Operations configuration to defaults?"
             );
+
 
           if (confirmed) {
             reset();
@@ -1356,7 +3029,7 @@ window.GoVara26D = (function () {
 
 
   /* =========================================================
-     Router integration
+     ROUTER
      ========================================================= */
 
   function renderAndBind() {
@@ -1365,6 +3038,7 @@ window.GoVara26D = (function () {
       document.getElementById(
         "module-26D"
       );
+
 
     if (!mount) {
 
@@ -1379,14 +3053,16 @@ window.GoVara26D = (function () {
     mount.innerHTML =
       render();
 
+
     bind();
+
 
     return true;
   }
 
 
   /* =========================================================
-     Public API
+     PUBLIC API
      ========================================================= */
 
   return {

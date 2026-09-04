@@ -1,516 +1,1138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>GoVara — Administrator Control Center</title>
+<title>GoVara — Administrator Control Center</title>
 
-  <!-- GoVara CSS -->
-  <link rel="stylesheet" href="assets/css/GoVara.css">
+<link rel="stylesheet" href="assets/css/GoVara.css">
+
+<style>
+/* =========================================================
+   GOVARA ADMIN CONTROL CENTER — UI SHELL
+   ========================================================= */
+
+:root{
+  --bg:#f4f7fb;
+  --panel:#ffffff;
+  --sidebar:#111827;
+  --sidebar2:#1f2937;
+  --text:#172033;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --accent:#2563eb;
+  --accent-soft:#eff6ff;
+  --success:#15803d;
+  --warning:#b45309;
+  --danger:#b91c1c;
+  --shadow:0 8px 28px rgba(15,23,42,.08);
+  --radius:14px;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,
+    "Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+button,
+select,
+input,
+textarea{
+  font:inherit;
+}
+
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+#app{
+  min-height:100vh;
+}
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+.topbar{
+  min-height:72px;
+  background:#ffffff;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:12px 24px;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 2px 10px rgba(15,23,42,.04);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:220px;
+}
+
+.brand-mark{
+  width:42px;
+  height:42px;
+  border-radius:11px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--accent);
+  color:#fff;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+.brand-text{
+  display:flex;
+  flex-direction:column;
+}
+
+.brand-title{
+  font-size:18px;
+  font-weight:800;
+  line-height:1.1;
+}
+
+.brand-subtitle{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:3px;
+}
+
+.topbar-status{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.status{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:5px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#f8fafc;
+  color:#475569;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.3px;
+  white-space:nowrap;
+}
+
+.status.ready{
+  background:#f0fdf4;
+  color:var(--success);
+  border-color:#bbf7d0;
+}
+
+.status.warning{
+  background:#fffbeb;
+  color:var(--warning);
+  border-color:#fde68a;
+}
+
+.status.blocked{
+  background:#fef2f2;
+  color:var(--danger);
+  border-color:#fecaca;
+}
+
+#languageSelect{
+  height:34px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  color:var(--text);
+  cursor:pointer;
+}
+
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.layout{
+  display:flex;
+  min-height:calc(100vh - 72px);
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar{
+  width:270px;
+  flex:0 0 270px;
+  background:linear-gradient(180deg,var(--sidebar),#0f172a);
+  padding:18px 14px;
+  overflow-y:auto;
+}
+
+.sidebar-header{
+  padding:8px 10px 14px;
+  color:#9ca3af;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.nav-group{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.nav-btn{
+  width:100%;
+  min-height:44px;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#d1d5db;
+  padding:10px 13px;
+  text-align:left;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:650;
+  transition:
+    background .15s ease,
+    color .15s ease,
+    transform .15s ease;
+}
+
+.nav-btn:hover{
+  background:rgba(255,255,255,.07);
+  color:#fff;
+}
+
+.nav-btn.active{
+  background:var(--accent);
+  color:#fff;
+  box-shadow:0 5px 14px rgba(37,99,235,.25);
+}
+
+.nav-separator{
+  height:1px;
+  background:rgba(255,255,255,.08);
+  margin:12px 8px;
+}
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.main{
+  flex:1;
+  min-width:0;
+  padding:26px;
+  overflow-x:hidden;
+}
+
+.page{
+  display:none;
+  animation:pageIn .16s ease;
+}
+
+.page.active{
+  display:block;
+}
+
+@keyframes pageIn{
+  from{
+    opacity:0;
+    transform:translateY(4px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
+
+.page-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:22px;
+}
+
+.page-head h1{
+  margin:0;
+  font-size:25px;
+  line-height:1.2;
+  font-weight:800;
+}
+
+.page-head p,
+.page-head .muted{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+  margin-bottom:18px;
+}
+
+.card h2{
+  margin:0 0 7px;
+  font-size:17px;
+}
+
+.card h3{
+  margin:0 0 6px;
+  font-size:14px;
+}
+
+.card p{
+  margin:6px 0;
+}
+
+.muted{
+  color:var(--muted);
+  font-size:13px;
+}
+
+
+/* =========================================================
+   DASHBOARD CARDS
+   ========================================================= */
+
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+  margin-bottom:20px;
+}
+
+.stat-card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:9px;
+}
+
+.stat-value{
+  font-size:15px;
+  font-weight:800;
+}
+
+
+/* =========================================================
+   MODULE AREA
+   ========================================================= */
+
+.module-mount{
+  min-height:120px;
+}
+
+
+/* =========================================================
+   API NOTICE
+   ========================================================= */
+
+.notice{
+  border-radius:10px;
+  padding:13px 15px;
+  font-size:13px;
+  margin-top:15px;
+}
+
+.notice.warn{
+  background:#fffbeb;
+  border:1px solid #fde68a;
+  color:#92400e;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:1050px){
+
+  .topbar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .topbar-status{
+    justify-content:flex-start;
+  }
+
+  .layout{
+    min-height:calc(100vh - 125px);
+  }
+
+  .dashboard-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+}
+
+@media(max-width:760px){
+
+  .layout{
+    display:block;
+  }
+
+  .sidebar{
+    width:100%;
+    padding:10px;
+  }
+
+  .sidebar-header{
+    display:none;
+  }
+
+  .nav-group{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .nav-btn{
+    font-size:12px;
+  }
+
+  .main{
+    padding:16px;
+  }
+
+  .dashboard-grid{
+    grid-template-columns:1fr;
+  }
+
+  .page-head{
+    flex-direction:column;
+  }
+
+}
+
+@media(max-width:460px){
+
+  .topbar{
+    padding:12px 15px;
+  }
+
+  .topbar-status{
+    gap:5px;
+  }
+
+  .status{
+    font-size:10px;
+  }
+
+  .nav-group{
+    grid-template-columns:1fr;
+  }
+
+}
+</style>
+
 </head>
+
 
 <body>
 
-  <div id="app">
+<div id="app">
 
-    <!-- =====================================================
-         TOP BAR
-         ===================================================== -->
-    <header class="topbar">
+  <!-- =======================================================
+       TOPBAR
+       ======================================================= -->
 
-      <div>
-        <strong>GoVara</strong>
-        <span class="muted">Administrator Control Center</span>
+  <header class="topbar">
+
+    <div class="brand">
+
+      <div class="brand-mark">
+        GV
       </div>
 
-      <div class="topbar-status">
+      <div class="brand-text">
 
-        <span id="frontendStatus">
-          FRONTEND READY
-        </span>
+        <div class="brand-title">
+          GoVara
+        </div>
 
-        <span id="apiStatus">
-          API NOT CONFIGURED
-        </span>
-
-        <span>
-          TESTING MODE
-        </span>
-
-        <span>
-          REAL MONEY BLOCKED
-        </span>
-
-        <select id="languageSelect">
-          <option value="en">English</option>
-          <option value="hi">हिन्दी</option>
-        </select>
+        <div class="brand-subtitle">
+          Administrator Control Center
+        </div>
 
       </div>
 
-    </header>
+    </div>
+
+
+    <div class="topbar-status">
+
+      <span class="status ready">
+        FRONTEND READY
+      </span>
+
+      <span
+        class="status warning"
+        id="apiStatus"
+      >
+        API NOT CONFIGURED
+      </span>
+
+      <span class="status">
+        TESTING MODE
+      </span>
+
+      <span class="status blocked">
+        REAL MONEY BLOCKED
+      </span>
+
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+      </select>
+
+    </div>
+
+  </header>
+
+
+  <!-- =======================================================
+       APPLICATION LAYOUT
+       ======================================================= -->
+
+  <div class="layout">
 
 
     <!-- =====================================================
-         MAIN LAYOUT
+         SIDEBAR
          ===================================================== -->
 
-    <div class="layout">
+    <aside class="sidebar">
 
-      <!-- SIDEBAR -->
+      <div class="sidebar-header">
+        Administration
+      </div>
 
-      <aside class="sidebar">
 
-        <button class="nav-btn active" data-page="dashboard">
+      <div class="nav-group">
+
+        <button
+          class="nav-btn active"
+          data-page="dashboard"
+        >
           Dashboard
         </button>
 
-        <button class="nav-btn" data-page="26A">
+
+        <button
+          class="nav-btn"
+          data-page="26A"
+        >
           26A — System Configuration
         </button>
 
-        <button class="nav-btn" data-page="26B">
+
+        <button
+          class="nav-btn"
+          data-page="26B"
+        >
           26B — User &amp; Role Control
         </button>
 
-        <button class="nav-btn" data-page="26C">
+
+        <button
+          class="nav-btn"
+          data-page="26C"
+        >
           26C — Business Policies
         </button>
 
-        <button class="nav-btn" data-page="26D">
+
+        <button
+          class="nav-btn"
+          data-page="26D"
+        >
           26D — Operations Control
         </button>
 
-        <button class="nav-btn" data-page="26E">
+
+        <button
+          class="nav-btn"
+          data-page="26E"
+        >
           26E — Financial Control
         </button>
 
-        <button class="nav-btn" data-page="26F">
+
+        <button
+          class="nav-btn"
+          data-page="26F"
+        >
           26F — Documents &amp; KYC
         </button>
 
-        <button class="nav-btn" data-page="26G">
+
+        <button
+          class="nav-btn"
+          data-page="26G"
+        >
           26G — Audit &amp; Monitoring
         </button>
 
-        <button class="nav-btn" data-page="27">
+
+        <div class="nav-separator"></div>
+
+
+        <button
+          class="nav-btn"
+          data-page="27"
+        >
           STEP 27 — Consolidated API
         </button>
 
-      </aside>
+      </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <main class="main">
 
 
       <!-- ===================================================
-           MAIN CONTENT
+           DASHBOARD
            =================================================== -->
 
-      <main class="main">
+      <section
+        class="page active"
+        data-page="dashboard"
+      >
 
-        <!-- DASHBOARD -->
+        <div class="page-head">
 
-        <section
-          class="page active"
-          data-page="dashboard"
-        >
-
-          <div class="page-head">
+          <div>
 
             <h1>
               GoVara Administrator Control Center
             </h1>
 
             <div class="muted">
-              Modular frontend architecture.
-              Backend and database remain separate.
+              Central administration for system,
+              roles, policies, operations and monitoring.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="dashboard-grid">
+
+
+          <div class="stat-card">
+
+            <div class="stat-label">
+              Frontend
+            </div>
+
+            <div class="stat-value">
+              FRONTEND READY
             </div>
 
           </div>
 
 
-          <div class="grid four">
+          <div class="stat-card">
 
-            <div class="card">
-              <b>FRONTEND READY</b>
-              <div class="muted">
-                Frontend status
-              </div>
+            <div class="stat-label">
+              Consolidated API
             </div>
 
-
-            <div class="card">
-
-              <b id="dashboardApiStatus">
-                API NOT CONFIGURED
-              </b>
-
-              <div class="muted">
-                Consolidated API
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <b>
-                TESTING MODE
-              </b>
-
-              <div class="muted">
-                Current environment
-              </div>
-
-            </div>
-
-
-            <div class="card">
-
-              <b>
-                REAL MONEY BLOCKED
-              </b>
-
-              <div class="muted">
-                Financial safety boundary
-              </div>
-
+            <div
+              class="stat-value"
+              id="dashboardApiStatus"
+            >
+              API NOT CONFIGURED
             </div>
 
           </div>
 
 
-          <section class="card">
+          <div class="stat-card">
 
-            <h2>
-              Modular Frontend
-            </h2>
+            <div class="stat-label">
+              Environment
+            </div>
 
-            <p class="muted">
-              GoVara is loaded using separate CSS, Core,
-              API and Administrator module files.
-            </p>
+            <div class="stat-value">
+              TESTING MODE
+            </div>
 
-            <p class="muted">
-              Backend/database connection is not executed
-              by this frontend bootstrap.
-            </p>
+          </div>
 
-          </section>
+
+          <div class="stat-card">
+
+            <div class="stat-label">
+              Financial Boundary
+            </div>
+
+            <div class="stat-value">
+              REAL MONEY BLOCKED
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <section class="card">
+
+          <h2>
+            Administrator Modules
+          </h2>
+
+          <p class="muted">
+            Use the administration menu to open
+            System Configuration, User &amp; Role Control,
+            Business Policies, Operations, Financial Control,
+            Documents &amp; KYC, Audit and Consolidated API.
+          </p>
 
         </section>
 
 
-        <!-- =================================================
-             MODULE MOUNT POINTS
-             ================================================= -->
+        <section class="card">
 
-        <section
-          class="page"
-          data-page="26A"
-        >
-          <div id="module-26A"></div>
+          <h2>
+            Safety Boundary
+          </h2>
+
+          <div class="notice warn">
+
+            Backend and database remain separate.
+            This frontend does not establish a real-money,
+            payment or bank-transfer operation.
+
+          </div>
+
         </section>
 
-
-        <section
-          class="page"
-          data-page="26B"
-        >
-          <div id="module-26B"></div>
-        </section>
+      </section>
 
 
-        <section
-          class="page"
-          data-page="26C"
-        >
-          <div id="module-26C"></div>
-        </section>
+      <!-- ===================================================
+           26A
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="26A"
+      >
+
+        <div
+          id="module-26A"
+          class="module-mount"
+        ></div>
+
+      </section>
 
 
-        <section
-          class="page"
-          data-page="26D"
-        >
-          <div id="module-26D"></div>
-        </section>
+      <!-- ===================================================
+           26B
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="26B"
+      >
+
+        <div
+          id="module-26B"
+          class="module-mount"
+        ></div>
+
+      </section>
 
 
-        <section
-          class="page"
-          data-page="26E"
-        >
-          <div id="module-26E"></div>
-        </section>
+      <!-- ===================================================
+           26C
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="26C"
+      >
+
+        <div
+          id="module-26C"
+          class="module-mount"
+        ></div>
+
+      </section>
 
 
-        <section
-          class="page"
-          data-page="26F"
-        >
-          <div id="module-26F"></div>
-        </section>
+      <!-- ===================================================
+           26D
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="26D"
+      >
+
+        <div
+          id="module-26D"
+          class="module-mount"
+        ></div>
+
+      </section>
 
 
-        <section
-          class="page"
-          data-page="26G"
-        >
-          <div id="module-26G"></div>
-        </section>
+      <!-- ===================================================
+           26E
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="26E"
+      >
+
+        <div
+          id="module-26E"
+          class="module-mount"
+        ></div>
+
+      </section>
 
 
-        <section
-          class="page"
-          data-page="27"
-        >
-          <div id="module-27"></div>
-        </section>
+      <!-- ===================================================
+           26F
+           =================================================== -->
 
-      </main>
+      <section
+        class="page"
+        data-page="26F"
+      >
 
-    </div>
+        <div
+          id="module-26F"
+          class="module-mount"
+        ></div>
+
+      </section>
+
+
+      <!-- ===================================================
+           26G
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="26G"
+      >
+
+        <div
+          id="module-26G"
+          class="module-mount"
+        ></div>
+
+      </section>
+
+
+      <!-- ===================================================
+           STEP 27
+           =================================================== -->
+
+      <section
+        class="page"
+        data-page="27"
+      >
+
+        <div
+          id="module-27"
+          class="module-mount"
+        ></div>
+
+      </section>
+
+
+    </main>
 
   </div>
 
-
-  <!-- =====================================================
-       GOVARA CORE
-       ===================================================== -->
-
-  <script src="assets/js/core/State.js"></script>
-
-  <script src="assets/js/core/Storage.js"></script>
-
-  <script src="assets/js/core/Audit.js"></script>
-
-  <script src="assets/js/core/i18n.js"></script>
-
-  <script src="assets/js/core/Router.js"></script>
-
-  <script src="assets/js/core/API.js"></script>
+</div>
 
 
-  <!-- =====================================================
-       CONSOLIDATED API
-       ===================================================== -->
+<!-- =========================================================
+     CORE
+     ========================================================= -->
 
-  <script src="assets/js/api/GoVaraAPI.js"></script>
-
-
-  <!-- =====================================================
-       ADMINISTRATOR MODULES
-       ===================================================== -->
-
-  <script src="assets/js/modules/26A-System.js"></script>
-
-  <script src="assets/js/modules/26B-Role.js"></script>
-
-  <script src="assets/js/modules/26C-Policy.js"></script>
-
-  <script src="assets/js/modules/26D-Operation.js"></script>
-
-  <script src="assets/js/modules/26E-Financial.js"></script>
-
-  <script src="assets/js/modules/26F-Document.js"></script>
-
-  <script src="assets/js/modules/26G-Audit.js"></script>
-
-  <script src="assets/js/modules/27-api.js"></script>
+<script src="assets/js/core/State.js"></script>
+<script src="assets/js/core/Storage.js"></script>
+<script src="assets/js/core/Audit.js"></script>
+<script src="assets/js/core/i18n.js"></script>
+<script src="assets/js/core/Router.js"></script>
+<script src="assets/js/core/API.js"></script>
 
 
-  <!-- =====================================================
-       FRONTEND BOOTSTRAP
-       ===================================================== -->
+<!-- =========================================================
+     CONSOLIDATED API
+     ========================================================= -->
 
-  <script>
-
-    (function () {
-
-      "use strict";
+<script src="assets/js/api/GoVaraAPI.js"></script>
 
 
-      /* -----------------------------------------------
-         PAGE NAVIGATION
-         ----------------------------------------------- */
+<!-- =========================================================
+     ADMIN MODULES
+     ========================================================= -->
 
-      function showPage(pageName) {
-
-        document
-          .querySelectorAll(".page")
-          .forEach(function (page) {
-
-            page.classList.toggle(
-              "active",
-              page.dataset.page === pageName
-            );
-
-          });
+<script src="assets/js/modules/26A-System.js"></script>
+<script src="assets/js/modules/26B-Role.js"></script>
+<script src="assets/js/modules/26C-Policy.js"></script>
+<script src="assets/js/modules/26D-Operation.js"></script>
+<script src="assets/js/modules/26E-Financial.js"></script>
+<script src="assets/js/modules/26F-Document.js"></script>
+<script src="assets/js/modules/26G-Audit.js"></script>
+<script src="assets/js/modules/27-api.js"></script>
 
 
-        document
-          .querySelectorAll(".nav-btn")
-          .forEach(function (button) {
+<!-- =========================================================
+     FRONTEND NAVIGATION
+     ========================================================= -->
 
-            button.classList.toggle(
-              "active",
-              button.dataset.page === pageName
-            );
+<script>
 
-          });
+(function(){
 
-      }
+  "use strict";
 
 
-      document
-        .querySelectorAll(".nav-btn")
-        .forEach(function (button) {
+  function showPage(pageName){
 
-          button.addEventListener(
-            "click",
-            function () {
+    document
+      .querySelectorAll(".page")
+      .forEach(function(page){
 
-              showPage(
-                button.dataset.page
-              );
+        page.classList.toggle(
+          "active",
+          page.getAttribute("data-page") === pageName
+        );
 
-            }
+      });
+
+
+    document
+      .querySelectorAll(".nav-btn")
+      .forEach(function(button){
+
+        button.classList.toggle(
+          "active",
+          button.getAttribute("data-page") === pageName
+        );
+
+      });
+
+  }
+
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(function(button){
+
+      button.addEventListener(
+        "click",
+        function(){
+
+          showPage(
+            button.getAttribute("data-page")
           );
 
-        });
-
-
-      /* -----------------------------------------------
-         LANGUAGE
-         ----------------------------------------------- */
-
-      var languageSelect =
-        document.getElementById(
-          "languageSelect"
-        );
-
-
-      if (languageSelect) {
-
-        languageSelect.addEventListener(
-          "change",
-          function () {
-
-            var language =
-              languageSelect.value;
-
-            document.documentElement.lang =
-              language;
-
-            try {
-
-              localStorage.setItem(
-                "GOVARA_UI_LANGUAGE",
-                language
-              );
-
-            } catch (error) {}
-
-          }
-        );
-
-
-        try {
-
-          var savedLanguage =
-            localStorage.getItem(
-              "GOVARA_UI_LANGUAGE"
-            );
-
-          if (savedLanguage) {
-
-            languageSelect.value =
-              savedLanguage;
-
-            document.documentElement.lang =
-              savedLanguage;
-
-          }
-
-        } catch (error) {}
-
-      }
-
-
-      /* -----------------------------------------------
-         API STATUS
-         
-         IMPORTANT:
-         DO NOT call testConnection().
-         ----------------------------------------------- */
-
-      try {
-
-        if (
-          window.GoVaraAPI &&
-          typeof window.GoVaraAPI.getAPIUrl === "function"
-        ) {
-
-          var configured =
-            !!window.GoVaraAPI.getAPIUrl();
-
-
-          document.getElementById(
-            "apiStatus"
-          ).textContent =
-            configured
-              ? "API CONFIGURED"
-              : "API NOT CONFIGURED";
-
-
-          document.getElementById(
-            "dashboardApiStatus"
-          ).textContent =
-            configured
-              ? "API CONFIGURED"
-              : "API NOT CONFIGURED";
-
         }
+      );
 
-      } catch (error) {
+    });
 
-        console.warn(
-          "GoVara API status:",
-          error
+
+  /* =======================================================
+     LANGUAGE
+     ======================================================= */
+
+  var languageSelect =
+    document.getElementById("languageSelect");
+
+
+  if(languageSelect){
+
+    languageSelect.addEventListener(
+      "change",
+      function(){
+
+        var language =
+          languageSelect.value;
+
+        document.documentElement.lang =
+          language;
+
+        try{
+
+          localStorage.setItem(
+            "GOVARA_UI_LANGUAGE",
+            language
+          );
+
+        }catch(error){}
+
+      }
+    );
+
+
+    try{
+
+      var savedLanguage =
+        localStorage.getItem(
+          "GOVARA_UI_LANGUAGE"
         );
+
+      if(savedLanguage){
+
+        languageSelect.value =
+          savedLanguage;
+
+        document.documentElement.lang =
+          savedLanguage;
+
+      }
+
+    }catch(error){}
+
+  }
+
+
+  /* =======================================================
+     API STATUS ONLY
+     
+     IMPORTANT:
+     testConnection() IS NOT CALLED.
+     ======================================================= */
+
+  try{
+
+    if(
+      window.GoVaraAPI &&
+      typeof window.GoVaraAPI.getAPIUrl === "function"
+    ){
+
+      var configured =
+        !!window.GoVaraAPI.getAPIUrl();
+
+
+      var statusText =
+        configured
+          ? "API CONFIGURED"
+          : "API NOT CONFIGURED";
+
+
+      var apiStatus =
+        document.getElementById("apiStatus");
+
+      var dashboardApiStatus =
+        document.getElementById(
+          "dashboardApiStatus"
+        );
+
+
+      if(apiStatus){
+
+        apiStatus.textContent =
+          statusText;
 
       }
 
 
-      /* -----------------------------------------------
-         MODULE DETECTION
-         
-         This only checks whether the expected
-         module objects exist. It does not connect
-         to the backend.
-         ----------------------------------------------- */
+      if(dashboardApiStatus){
 
-      console.log(
-        "GoVara modular frontend booted."
-      );
+        dashboardApiStatus.textContent =
+          statusText;
 
-      console.log(
-        "GoVaraAPI:",
-        window.GoVaraAPI
-      );
+      }
 
-      console.log(
-        "GoVara27:",
-        window.GoVara27
-      );
+    }
 
-      console.log(
-        "Backend connection test intentionally NOT executed."
-      );
+  }catch(error){
 
-    })();
+    console.warn(
+      "GoVara API status:",
+      error
+    );
 
-  </script>
+  }
+
+
+  console.log(
+    "GoVara Administrator Control Center loaded."
+  );
+
+  console.log(
+    "Modular frontend mode active."
+  );
+
+  console.log(
+    "Backend/API connection test NOT executed."
+  );
+
+
+})();
+
+</script>
 
 </body>
 </html>

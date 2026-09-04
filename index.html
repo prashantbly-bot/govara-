@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>GoVara — Administrator Control Center</title>
+
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --sidebar: #111827;
+      --sidebar-active: #1f2937;
+      --success: #15803d;
+      --warning: #b45309;
+      --danger: #b91c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* =========================
+       APPLICATION LAYOUT
+    ========================= */
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* =========================
+       SIDEBAR
+    ========================= */
+
+    .sidebar {
+      width: 270px;
+      background: var(--sidebar);
+      color: #d1d5db;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      padding: 18px 12px;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 8px 10px 24px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .brand-subtitle {
+      color: #9ca3af;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .nav-section {
+      margin-top: 8px;
+    }
+
+    .nav-title {
+      color: #6b7280;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 14px 10px 7px;
+    }
+
+    .nav-button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #d1d5db;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 12px;
+      margin: 2px 0;
+      border-radius: 9px;
+      text-align: left;
+    }
+
+    .nav-button:hover,
+    .nav-button.active {
+      background: var(--sidebar-active);
+      color: white;
+    }
+
+    .nav-icon {
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    .main {
+      margin-left: 270px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .topbar {
+      height: 72px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .topbar-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .status-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9ca3af;
+    }
+
+    .status.ready {
+      color: var(--success);
+    }
+
+    .status.ready .status-dot {
+      background: #22c55e;
+    }
+
+    .status.testing {
+      color: var(--warning);
+    }
+
+    .status.testing .status-dot {
+      background: #f59e0b;
+    }
+
+    /* =========================
+       CONTENT
+    ========================= */
+
+    .content {
+      max-width: 1500px;
+      margin: auto;
+      padding: 28px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      background: #172033;
+      color: white;
+      border-radius: 17px;
+      padding: 27px;
+      margin-bottom: 20px;
+    }
+
+    .hero h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 850px;
+      color: #dbe4f5;
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    /* =========================
+       GRID
+    ========================= */
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* =========================
+       CARDS
+    ========================= */
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 19px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, .05);
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: 25px;
+      font-weight: 800;
+      margin: 7px 0 3px;
+    }
+
+    .metric-note {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .section-header {
+      margin: 26px 0 14px;
+    }
+
+    .section-header h3 {
+      margin: 0 0 4px;
+      font-size: 17px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* =========================
+       CONTROL CARDS
+    ========================= */
+
+    .control-card {
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+    }
+
+    .control-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: #eff6ff;
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .control-card h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .control-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* =========================
+       BUTTONS
+    ========================= */
+
+    .button {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 11px;
+    }
+
+    .button:hover {
+      background: #f8fafc;
+    }
+
+    .button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .button.primary:hover {
+      background: var(--primary-dark);
+    }
+
+    /* =========================
+       NOTICES
+    ========================= */
+
+    .notice {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #78350f;
+      border-radius: 11px;
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .blocked {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #7f1d1d;
+      border-radius: 11px;
+      padding: 15px;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    /* =========================
+       TABLE
+    ========================= */
+
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 30px;
+      padding-bottom: 10px;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 1050px) {
+      .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .sidebar {
+        width: 72px;
+        padding: 15px 7px;
+      }
+
+      .brand {
+        justify-content: center;
+      }
+
+      .brand-text,
+      .nav-title,
+      .nav-button span:not(.nav-icon) {
+        display: none;
+      }
+
+      .nav-button {
+        justify-content: center;
+      }
+
+      .main {
+        margin-left: 72px;
+      }
+
+      .topbar {
+        padding: 0 15px;
+      }
+
+      .status-group {
+        display: none;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .grid-4,
+      .grid-3,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- =========================================
+       SIDEBAR
+  ========================================== -->
+
+  <aside class="sidebar">
+
+    <div class="brand">
+
+      <div class="brand-logo">
+        G
+      </div>
+
+      <div class="brand-text">
+        <div class="brand-name">
+          GoVara
+        </div>
+
+        <div class="brand-subtitle">
+          Administrator Control
+        </div>
+      </div>
+
+    </div>
+
+
+    <nav>
+
+      <div class="nav-section">
+
+        <div class="nav-title">
+          Central Control
+        </div>
+
+        <button
+          class="nav-button active"
+          data-page="dashboard"
+        >
+          <span class="nav-icon">⌂</span>
+          <span>Dashboard</span>
+        </button>
+
+        <button
+          class="nav-button"
+          data-page="system"
+        >
+          <span class="nav-icon">⚙</span>
+          <span>System Configuration</span>
+        </button>
+
+      </div>
+
+
+      <div class="nav-section">
+
+        <div class="nav-title">
+          Management
+        </div>
+
+        <button
+          class="nav-button"
+          data-page="users"
+        >
+          <span class="nav-icon">♙</span>
+          <span>User & Role Control</span>
+        </button>
+
+        <button
+          class="nav-button"
+          data-page="policies"
+        >
+          <span class="nav-icon">▣</span>
+          <span>Business Policies</span>
+        </button>
+
+        <button
+          class="nav-button"
+          data-page="operations"
+        >
+          <span class="nav-icon">▤</span>
+          <span>Operations Control</span>
+        </button>
+
+      </div>
+
+
+      <div class="nav-section">
+
+        <div class="nav-title">
+          Finance & Compliance
+        </div>
+
+        <button
+          class="nav-button"
+          data-page="finance"
+        >
+          <span class="nav-icon">₹</span>
+          <span>Financial Control</span>
+        </button>
+
+        <button
+          class="nav-button"
+          data-page="documents"
+        >
+          <span class="nav-icon">□</span>
+          <span>Documents & KYC</span>
+        </button>
+
+        <button
+          class="nav-button"
+          data-page="audit"
+        >
+          <span class="nav-icon">◷</span>
+          <span>Audit & Monitoring</span>
+        </button>
+
+      </div>
+
+    </nav>
+
+  </aside>
+
+
+  <!-- =========================================
+       MAIN
+  ========================================== -->
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div>
+
+        <h1
+          class="topbar-title"
+          id="pageTitle"
+        >
+          Administrator Control Center
+        </h1>
+
+        <div
+          class="topbar-subtitle"
+          id="pageSubtitle"
+        >
+          Central system administration and control layer
+        </div>
+
+      </div>
+
+
+      <div class="status-group">
+
+        <div class="status ready">
+          <span class="status-dot"></span>
+          Frontend READY
+        </div>
+
+        <div class="status testing">
+          <span class="status-dot"></span>
+          API PENDING
+        </div>
+
+        <div class="status testing">
+          <span class="status-dot"></span>
+          TESTING MODE
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content">
+
+
+      <!-- =====================================
+           DASHBOARD
+      ====================================== -->
+
+      <div
+        class="page active"
+        id="page-dashboard"
+      >
+
+        <div class="hero">
+
+          <h2>
+            Administrator Control Center
+          </h2>
+
+          <p>
+            GoVara का Central Administrative Control Layer.
+            Frontend केवल control interface रहेगा।
+            वास्तविक business, operational और financial authority
+            Central Backend तथा Central Database के पास रहेगी।
+          </p>
+
+        </div>
+
+
+        <div class="grid grid-4">
+
+          <div class="card">
+
+            <div class="metric-label">
+              Foundation
+            </div>
+
+            <div class="metric-value">
+              00–24
+            </div>
+
+            <div class="metric-note">
+              Frozen baseline
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="metric-label">
+              Final Test
+            </div>
+
+            <div class="metric-value">
+              22/22
+            </div>
+
+            <div class="metric-note">
+              PASS baseline
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="metric-label">
+              Backend
+            </div>
+
+            <div class="metric-value">
+              Central
+            </div>
+
+            <div class="metric-note">
+              Separate authority
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="metric-label">
+              Database
+            </div>
+
+            <div class="metric-value">
+              Central
+            </div>
+
+            <div class="metric-note">
+              Separate authority
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section-header">
+
+          <h3>
+            Central Control Modules
+          </h3>
+
+          <p>
+            Administrator के मुख्य control areas
+          </p>
+
+        </div>
+
+
+        <div class="grid grid-3">
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ⚙
+            </div>
+
+            <div>
+
+              <h4>
+                System Configuration
+              </h4>
+
+              <p>
+                General settings, service configuration
+                और system status.
+              </p>
+
+              <button
+                class="button primary"
+                data-open="system"
+              >
+                Open
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ♙
+            </div>
+
+            <div>
+
+              <h4>
+                User & Role Control
+              </h4>
+
+              <p>
+                Administrator, Customer, Vendor
+                और Driver access.
+              </p>
+
+              <button
+                class="button primary"
+                data-open="users"
+              >
+                Open
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ▣
+            </div>
+
+            <div>
+
+              <h4>
+                Business Policies
+              </h4>
+
+              <p>
+                Fare, charges, discount, advance
+                और KYC policies.
+              </p>
+
+              <button
+                class="button primary"
+                data-open="policies"
+              >
+                Open
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ▤
+            </div>
+
+            <div>
+
+              <h4>
+                Operations Control
+              </h4>
+
+              <p>
+                Vehicles, duty, booking
+                और service types.
+              </p>
+
+              <button
+                class="button primary"
+                data-open="operations"
+              >
+                Open
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ₹
+            </div>
+
+            <div>
+
+              <h4>
+                Financial Control
+              </h4>
+
+              <p>
+                Transactions, wallet, ledger,
+                billing और settlement.
+              </p>
+
+              <button
+                class="button primary"
+                data-open="finance"
+              >
+                Open
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ◷
+            </div>
+
+            <div>
+
+              <h4>
+                Audit & Monitoring
+              </h4>
+
+              <p>
+                System activity, API health
+                और audit trail.
+              </p>
+
+              <button
+                class="button primary"
+                data-open="audit"
+              >
+                Open
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="section-header">
+
+          <h3>
+            Safety Boundary
+          </h3>
+
+        </div>
+
+
+        <div class="blocked">
+
+          <strong>
+            Real Money / Real Payment / Bank Transfer — BLOCKED
+          </strong>
+
+          <br>
+
+          Frontend independent financial authority
+          create नहीं करेगा।
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           SYSTEM CONFIGURATION
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-system"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            System Configuration
+          </h3>
+
+          <p>
+            Central system configuration shell
+          </p>
+
+        </div>
+
+
+        <div class="notice">
+
+          <strong>
+            Backend Boundary
+          </strong>
+
+          <br>
+
+          इस initial frontend shell में कोई setting
+          Backend या Database में save नहीं की जा रही है।
+
+        </div>
+
+
+        <div
+          class="card"
+          style="margin-top:16px"
+        >
+
+          <div class="grid grid-2">
+
+            <div>
+              <strong>System Name</strong>
+              <p class="metric-note">GoVara</p>
+            </div>
+
+            <div>
+              <strong>Environment</strong>
+              <p class="metric-note">TESTING</p>
+            </div>
+
+            <div>
+              <strong>API Version</strong>
+              <p class="metric-note">
+                GOVARA-CONSOLIDATED-API-V1
+              </p>
+            </div>
+
+            <div>
+              <strong>Backend Status</strong>
+              <p
+                class="metric-note"
+                id="apiStatus"
+              >
+                PENDING CONNECTION
+              </p>
+            </div>
+
+          </div>
+
+
+          <button
+            class="button primary"
+            id="apiTestButton"
+          >
+            Test API Connection
+          </button>
+
+
+          <p
+            class="metric-note"
+            id="apiMessage"
+          ></p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           USERS
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-users"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            User & Role Control
+          </h3>
+
+          <p>
+            Central role structure
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-wrapper">
+
+            <table>
+
+              <thead>
+
+                <tr>
+                  <th>Role</th>
+                  <th>Purpose</th>
+                  <th>Control</th>
+                  <th>Status</th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <tr>
+                  <td>Administrator</td>
+                  <td>Central system control</td>
+                  <td>Full administrative layer</td>
+                  <td>Ready</td>
+                </tr>
+
+                <tr>
+                  <td>Customer</td>
+                  <td>Booking initiator</td>
+                  <td>Customer journey</td>
+                  <td>Planned</td>
+                </tr>
+
+                <tr>
+                  <td>Vendor</td>
+                  <td>Service/provider operations</td>
+                  <td>Vendor management</td>
+                  <td>Planned</td>
+                </tr>
+
+                <tr>
+                  <td>Driver</td>
+                  <td>Trip/duty execution</td>
+                  <td>Driver operations</td>
+                  <td>Planned</td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           BUSINESS POLICIES
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-policies"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            Business Policies
+          </h3>
+
+          <p>
+            Administrator-configurable policy categories
+          </p>
+
+        </div>
+
+
+        <div class="grid grid-2">
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ₹
+            </div>
+
+            <div>
+              <h4>Fare / Rate</h4>
+
+              <p>
+                Fare plans और calculation policies.
+              </p>
+
+              <button class="button">
+                API Required
+              </button>
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              +
+            </div>
+
+            <div>
+              <h4>Charges & Discount</h4>
+
+              <p>
+                Additional charges और discount policies.
+              </p>
+
+              <button class="button">
+                API Required
+              </button>
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              %
+            </div>
+
+            <div>
+              <h4>Advance Policy</h4>
+
+              <p>
+                Advance percentage और booking rules.
+              </p>
+
+              <button class="button">
+                API Required
+              </button>
+            </div>
+
+          </div>
+
+
+          <div class="card control-card">
+
+            <div class="control-icon">
+              ✓
+            </div>
+
+            <div>
+              <h4>KYC Policy</h4>
+
+              <p>
+                Document और verification requirements.
+              </p>
+
+              <button class="button">
+                API Required
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           OPERATIONS
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-operations"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            Operations Control
+          </h3>
+
+          <p>
+            Central operational management
+          </p>
+
+        </div>
+
+
+        <div class="grid grid-3">
+
+          <div class="card">
+            <h4>Vehicles</h4>
+            <p class="metric-note">
+              Vehicle records and availability.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>Duty</h4>
+            <p class="metric-note">
+              Driver duty and operational status.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>Booking</h4>
+            <p class="metric-note">
+              Booking lifecycle and monitoring.
+            </p>
+          </div>
+
+          <div class="card">
+            <h4>Service Types</h4>
+            <p class="metric-note">
+              Supported mobility services.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           FINANCIAL CONTROL
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-finance"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            Financial Control
+          </h3>
+
+          <p>
+            Backend-authoritative financial visibility
+          </p>
+
+        </div>
+
+
+        <div class="blocked">
+
+          <strong>
+            Financial Authority Boundary
+          </strong>
+
+          <br>
+
+          Frontend financial records को independently
+          create, alter या authorise नहीं करेगा।
+
+        </div>
+
+
+        <div
+          class="grid grid-3"
+          style="margin-top:16px"
+        >
+
+          <div class="card">Transactions</div>
+          <div class="card">Wallet</div>
+          <div class="card">Ledger</div>
+          <div class="card">Billing</div>
+          <div class="card">Settlement</div>
+          <div class="card">Payment — BLOCKED</div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           DOCUMENTS
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-documents"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            Documents & KYC
+          </h3>
+
+          <p>
+            Central compliance control layer
+          </p>
+
+        </div>
+
+
+        <div class="card">
+
+          <div class="table-wrapper">
+
+            <table>
+
+              <thead>
+
+                <tr>
+                  <th>Area</th>
+                  <th>Purpose</th>
+                  <th>State</th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <tr>
+                  <td>Customer Documents</td>
+                  <td>Customer verification</td>
+                  <td>API Required</td>
+                </tr>
+
+                <tr>
+                  <td>Vendor Documents</td>
+                  <td>Vendor verification</td>
+                  <td>API Required</td>
+                </tr>
+
+                <tr>
+                  <td>Driver Documents</td>
+                  <td>Driver verification</td>
+                  <td>API Required</td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           AUDIT
+      ====================================== -->
+
+      <div
+        class="page"
+        id="page-audit"
+      >
+
+        <div class="section-header">
+
+          <h3>
+            Audit & Monitoring
+          </h3>
+
+          <p>
+            Central system monitoring shell
+          </p>
+
+        </div>
+
+
+        <div class="grid grid-3">
+
+          <div class="card">
+
+            <div class="metric-label">
+              Frontend
+            </div>
+
+            <div class="metric-value">
+              READY
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="metric-label">
+              API
+            </div>
+
+            <div class="metric-value">
+              PENDING
+            </div>
+
+          </div>
+
+
+          <div class="card">
+
+            <div class="metric-label">
+              Audit
+            </div>
+
+            <div class="metric-value">
+              API
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="card"
+          style="margin-top:16px"
+        >
+
+          <strong>
+            Activity
+          </strong>
+
+          <p class="metric-note">
+            Initial frontend shell कोई local audit
+            record generate नहीं करता।
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="footer">
+        GoVara • Administrator Control Center • STEP 25 Initial Frontend Shell
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  /* =========================================
+     PAGE METADATA
+  ========================================== */
+
+  const PAGE_META = {
+
+    dashboard: [
+      "Administrator Control Center",
+      "Central system administration and control layer"
+    ],
+
+    system: [
+      "System Configuration",
+      "Central system configuration"
+    ],
+
+    users: [
+      "User & Role Control",
+      "Central identity and role management"
+    ],
+
+    policies: [
+      "Business Policies",
+      "Central business policy controls"
+    ],
+
+    operations: [
+      "Operations Control",
+      "Central operational management"
+    ],
+
+    finance: [
+      "Financial Control",
+      "Backend-authoritative financial visibility"
+    ],
+
+    documents: [
+      "Documents & KYC",
+      "Central compliance and document controls"
+    ],
+
+    audit: [
+      "Audit & Monitoring",
+      "Central system monitoring"
+    ]
+
+  };
+
+
+  /* =========================================
+     PAGE NAVIGATION
+  ========================================== */
+
+  function openPage(pageName) {
+
+    document
+      .querySelectorAll(".page")
+      .forEach(function(page) {
+
+        page.classList.remove("active");
+
+      });
+
+
+    document
+      .querySelectorAll(".nav-button")
+      .forEach(function(button) {
+
+        button.classList.remove("active");
+
+      });
+
+
+    const page =
+      document.getElementById("page-" + pageName);
+
+    const nav =
+      document.querySelector(
+        '.nav-button[data-page="' + pageName + '"]'
+      );
+
+
+    if (page) {
+      page.classList.add("active");
+    }
+
+
+    if (nav) {
+      nav.classList.add("active");
+    }
+
+
+    if (PAGE_META[pageName]) {
+
+      document.getElementById("pageTitle").textContent =
+        PAGE_META[pageName][0];
+
+      document.getElementById("pageSubtitle").textContent =
+        PAGE_META[pageName][1];
+
+    }
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  /* =========================================
+     SIDEBAR EVENTS
+  ========================================== */
+
+  document
+    .querySelectorAll(".nav-button")
+    .forEach(function(button) {
+
+      button.addEventListener("click", function() {
+
+        openPage(button.dataset.page);
+
+      });
+
+    });
+
+
+  /* =========================================
+     DASHBOARD OPEN BUTTONS
+  ========================================== */
+
+  document
+    .querySelectorAll("[data-open]")
+    .forEach(function(button) {
+
+      button.addEventListener("click", function() {
+
+        openPage(button.dataset.open);
+
+      });
+
+    });
+
+
+  /* =========================================
+     API PLACEHOLDER
+     IMPORTANT:
+     No backend request is made here.
+  ========================================== */
+
+  document
+    .getElementById("apiTestButton")
+    .addEventListener("click", function() {
+
+      document.getElementById("apiStatus").textContent =
+        "PENDING CONNECTION";
+
+      document.getElementById("apiMessage").textContent =
+        "API integration अभी जोड़ी नहीं गई है। इस initial shell ने कोई Backend request नहीं भेजी।";
+
+    });
+
+</script>
+
+</body>
+</html>

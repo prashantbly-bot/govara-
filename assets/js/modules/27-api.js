@@ -33,7 +33,7 @@
   ========================================================== */
 
   var CONFIG = {
-    API_URL: "",
+    API_URL: "https://script.google.com/macros/s/AKfycbyczzk6Takt3vEArKzPzFfSInkZq-AJ8_gjBp4oC3R4gSREMqHFtGaZXl4RBYT_PRGX9g/exec",
     REQUEST_TIMEOUT: 20000,
 
     VERSION: "GOVARA-CONSOLIDATED-API-V6.2",

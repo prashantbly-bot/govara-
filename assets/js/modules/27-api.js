@@ -1,22 +1,42 @@
 /* ============================================================
    GoVara STEP 27
    Consolidated API Boundary
-   V6.1 — MASTER FRONTEND COMPATIBLE
-   ============================================================ */
+   MASTER FRONTEND API
+   Version: V6.2
+   Environment: TESTING
+
+   Architecture:
+   Frontend
+      ↓
+   ONE Consolidated API Boundary
+      ↓
+   Google Apps Script Backend
+      ↓
+   Existing GoVara Database
+
+   IMPORTANT:
+   - Frontend is NOT database authority
+   - Frontend is NOT financial authority
+   - Frontend is NOT KYC authority
+   - Backend remains authoritative
+   - No direct database access
+   - Real Money BLOCKED
+   - Real Payment BLOCKED
+   - Bank Transfer BLOCKED
+============================================================ */
 
 (function (window) {
   "use strict";
 
-  /* ------------------------------------------------------------
-     CONFIG
-     ------------------------------------------------------------ */
-
-  var STORAGE_KEY = "GOVARA_CONSOLIDATED_API_V6";
+  /* ==========================================================
+     CONFIGURATION
+  ========================================================== */
 
   var CONFIG = {
     API_URL: "",
     REQUEST_TIMEOUT: 20000,
-    VERSION: "GOVARA-CONSOLIDATED-API-V6",
+
+    VERSION: "GOVARA-CONSOLIDATED-API-V6.2",
     ENVIRONMENT: "TESTING",
     PROJECT: "GoVara",
 
@@ -33,171 +53,287 @@
     DATABASE_AUTHORITY: true
   };
 
-  /* ------------------------------------------------------------
-     MODULE REGISTRY
-     ------------------------------------------------------------ */
 
-  var MODULES = [
-    "Customer",
-    "Vendor",
-    "Driver",
-    "Vehicle",
-    "Booking",
-    "Duty",
-    "Fare",
-    "Transaction",
-    "Wallet",
-    "Ledger",
-    "Settlement",
-    "Billing",
-    "Documents",
-    "KYC",
-    "Admin",
-    "Audit",
-    "Auth",
-    "Notification",
-    "Location",
-    "Travel",
-    "Welfare"
-  ];
-
-  /* ------------------------------------------------------------
-     STATE
-     ------------------------------------------------------------ */
+  /* ==========================================================
+     API STATE
+  ========================================================== */
 
   var APIState = {
     configured: false,
     connected: false,
     verified: false,
-    loading: false,
 
-    environment: "TESTING",
-
-    lastAction: "—",
     lastResponse: null,
     lastError: null,
-
+    lastAction: null,
     lastRequestId: null,
-    lastRequestAt: null,
-    lastSuccessAt: null,
-    lastErrorAt: null,
-
-    requestCount: 0,
-    successCount: 0,
-    errorCount: 0
+    lastTimestamp: null
   };
 
-  /* ------------------------------------------------------------
-     CONFIG LOAD
-     ------------------------------------------------------------ */
 
-  function loadConfig() {
-    try {
-      var raw = window.localStorage.getItem(STORAGE_KEY);
+  /* ==========================================================
+     MODULE REGISTRY
+  ========================================================== */
 
-      if (!raw) {
-        return;
-      }
+  var MODULES = {
 
-      var saved = JSON.parse(raw);
+    SYSTEM: "System",
 
-      if (
-        saved &&
-        typeof saved.API_URL === "string" &&
-        saved.API_URL.trim()
-      ) {
-        CONFIG.API_URL = saved.API_URL.trim();
-      }
-    } catch (error) {
-      console.warn(
-        "GoVara STEP 27 config load failed:",
-        error
-      );
+    ORGANIZATION: "Organization",
+    DEPARTMENT: "Department",
+    GROUP: "Group",
+
+    USER: "User",
+    ROLE: "Role",
+    PERMISSION: "Permission",
+
+    CUSTOMER: "Customer",
+    VENDOR: "Vendor",
+    DRIVER: "Driver",
+    VEHICLE: "Vehicle",
+
+    SERVICE: "Service",
+    SERVICE_TYPE: "Service_Type",
+    DUTY_TYPE: "Duty_Type",
+
+    BOOKING: "Booking",
+    DUTY: "Duty",
+
+    RATE: "Rate",
+    RATE_VERSION: "Rate_Version",
+    RATE_COMPONENT: "Rate_Component",
+
+    CALCULATION: "Calculation",
+    CALCULATION_COMPONENT: "Calculation_Component",
+
+    TRANSACTION: "Transaction",
+    WALLET: "Wallet",
+    LEDGER: "Ledger",
+
+    INVOICE: "Invoice",
+    SETTLEMENT: "Settlement",
+
+    DOCUMENT_TYPE: "Document_Type",
+    DOCUMENT: "Document",
+    KYC: "KYC",
+
+    LOCATION: "Location",
+    ROUTE: "Route",
+
+    CALL_CENTER: "Call_Center",
+    CALL_CENTER_AGENT: "Call_Center_Agent",
+    CALL: "Call",
+    TICKET: "Ticket",
+    CALL_ASSIGNMENT: "Call_Assignment",
+    CALL_ESCALATION: "Call_Escalation",
+
+    API_PROVIDER: "API_Provider",
+    API_CONNECTOR: "API_Connector",
+    API_LOG: "API_Log",
+
+    NOTIFICATION: "Notification",
+
+    WELFARE: "Welfare",
+    WELFARE_FUND: "Welfare_Fund",
+    WELFARE_POLICY: "Welfare_Policy",
+    WELFARE_CONTRIBUTION: "Welfare_Contribution",
+    WELFARE_ALLOCATION: "Welfare_Allocation",
+    WELFARE_BENEFICIARY: "Welfare_Beneficiary",
+
+    ADMIN: "Admin",
+    AUDIT: "Audit",
+    AUTH: "Auth",
+
+    TRAVEL: "Travel"
+  };
+
+
+  /* ==========================================================
+     PUBLIC CONFIGURATION
+  ========================================================== */
+
+  function getConfig() {
+    return Object.assign({}, CONFIG);
+  }
+
+
+  function setApiUrl(url) {
+    CONFIG.API_URL = String(url || "").trim();
+
+    APIState.configured = !!CONFIG.API_URL;
+
+    return {
+      success: true,
+      configured: APIState.configured,
+      apiUrl: CONFIG.API_URL
+    };
+  }
+
+
+  function getApiUrl() {
+    if (CONFIG.API_URL) {
+      return CONFIG.API_URL;
     }
-  }
 
-  function saveConfig() {
-    try {
-      window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          API_URL: CONFIG.API_URL
-        })
-      );
-    } catch (error) {
-      console.warn(
-        "GoVara STEP 27 config save failed:",
-        error
-      );
+    if (window.GOVARA_API_URL) {
+      return String(window.GOVARA_API_URL).trim();
     }
+
+    return "";
   }
 
-  loadConfig();
-
-  /* ------------------------------------------------------------
-     BASIC HELPERS
-     ------------------------------------------------------------ */
-
-  function getAPIUrl() {
-    return String(
-      CONFIG.API_URL ||
-      window.GOVARA_API_URL ||
-      ""
-    ).trim();
-  }
 
   function isConfigured() {
-    return !!getAPIUrl();
+    return !!getApiUrl();
   }
+
+
+  /* ==========================================================
+     REQUEST ID / TIMESTAMP
+  ========================================================== */
 
   function requestId() {
     return (
-      "GV-" +
+      "GV_REQ_" +
       Date.now() +
-      "-" +
+      "_" +
       Math.random()
         .toString(36)
-        .substring(2, 8)
+        .substring(2, 10)
         .toUpperCase()
     );
   }
+
 
   function timestamp() {
     return new Date().toISOString();
   }
 
-  function escapeHTML(value) {
-    return String(value == null ? "" : value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+
+  /* ==========================================================
+     RESPONSE PARSER
+  ========================================================== */
+
+  async function parseResponse(response) {
+
+    var text = "";
+
+    try {
+      text = await response.text();
+    } catch (error) {
+      throw new Error("Unable to read API response.");
+    }
+
+    if (!text) {
+      throw new Error(
+        "Empty response received from GoVara API."
+      );
+    }
+
+    var data;
+
+    try {
+      data = JSON.parse(text);
+    } catch (error) {
+      throw new Error(
+        "Invalid JSON response from GoVara API."
+      );
+    }
+
+    if (!response.ok) {
+
+      var serverMessage =
+        data &&
+        (
+          data.message ||
+          data.error ||
+          data.status
+        );
+
+      throw new Error(
+        serverMessage ||
+        ("API HTTP error " + response.status)
+      );
+    }
+
+    return data;
   }
 
-  function getElement(id) {
-    return document.getElementById(id);
-  }
 
-  /* ------------------------------------------------------------
-     ENVELOPE
-     ------------------------------------------------------------ */
+  /* ==========================================================
+     ERROR NORMALIZATION
+  ========================================================== */
 
-  function buildEnvelope(action, payload) {
+  function normalizeError(error) {
+
+    if (!error) {
+      return {
+        message: "Unknown API error."
+      };
+    }
+
+    if (typeof error === "string") {
+      return {
+        message: error
+      };
+    }
+
     return {
-      project: CONFIG.PROJECT,
-      version: CONFIG.VERSION,
-      environment: CONFIG.ENVIRONMENT,
-      action: String(action || "").toUpperCase(),
-      requestId: requestId(),
-      timestamp: timestamp(),
-      payload: payload || {}
+      message:
+        error.message ||
+        error.error ||
+        "Unknown API error.",
+
+      code:
+        error.code ||
+        error.status ||
+        null
     };
   }
 
-  /* ------------------------------------------------------------
-     CENTRAL REQUEST
-     ------------------------------------------------------------ */
+
+  /* ==========================================================
+     FINANCIAL SAFETY
+  ========================================================== */
+
+  var BLOCKED_FINANCIAL_ACTIONS = [
+
+    "REAL_MONEY",
+    "REAL_PAYMENT",
+    "BANK_TRANSFER",
+
+    "LIVE_PAYMENT",
+    "LIVE_PAYOUT",
+    "LIVE_WITHDRAW",
+
+    "BANK_PAYOUT",
+    "BANK_WITHDRAW",
+
+    "PAYMENT_CAPTURE",
+    "PAYMENT_REFUND",
+
+    "REAL_TRANSACTION"
+  ];
+
+
+  function isFinancialActionBlocked(action) {
+
+    var normalized =
+      String(action || "")
+        .trim()
+        .toUpperCase();
+
+    return (
+      BLOCKED_FINANCIAL_ACTIONS.indexOf(
+        normalized
+      ) !== -1
+    );
+  }
+
+
+  /* ==========================================================
+     CENTRAL REQUEST FUNCTION
+  ========================================================== */
 
   async function request(action, payload) {
 
@@ -209,347 +345,414 @@
     APIState.lastAction = normalizedAction;
     APIState.lastError = null;
 
-    if (!isConfigured()) {
+    if (!normalizedAction) {
 
-      var notConfigured = {
-        success: false,
-        action: normalizedAction,
-        code: "API_NOT_CONFIGURED",
-        message: "API endpoint is not configured."
-      };
+      throw new Error(
+        "API action is required."
+      );
+    }
+
+
+    /* --------------------------------------------------------
+       FINANCIAL SAFETY
+    -------------------------------------------------------- */
+
+    if (isFinancialActionBlocked(normalizedAction)) {
+
+      var financialError =
+        new Error(
+          "Financial action is BLOCKED in frontend."
+        );
+
+      APIState.lastError =
+        normalizeError(financialError);
+
+      throw financialError;
+    }
+
+
+    /* --------------------------------------------------------
+       API URL
+    -------------------------------------------------------- */
+
+    var apiUrl = getApiUrl();
+
+    if (!apiUrl) {
 
       APIState.configured = false;
-      APIState.errorCount++;
-      APIState.lastError = notConfigured;
-      APIState.lastErrorAt = timestamp();
 
-      updateDiagnostics();
+      var configError =
+        new Error(
+          "GoVara API is not configured."
+        );
 
-      return notConfigured;
+      APIState.lastError =
+        normalizeError(configError);
+
+      throw configError;
     }
-
-    /*
-     * Financial safety boundary.
-     */
-    var blockedActions = [
-      "REAL_MONEY",
-      "REAL_PAYMENT",
-      "BANK_TRANSFER",
-      "PAYMENT_CREATE",
-      "PAYMENT_UPDATE",
-      "WALLET_REAL_UPDATE",
-      "TRANSACTION_REAL_CREATE"
-    ];
-
-    if (
-      blockedActions.indexOf(normalizedAction) !== -1
-    ) {
-
-      var blocked = {
-        success: false,
-        action: normalizedAction,
-        code: "FINANCIAL_ACTION_BLOCKED",
-        message:
-          "Financial action is blocked in TESTING mode."
-      };
-
-      APIState.errorCount++;
-      APIState.lastError = blocked;
-      APIState.lastErrorAt = timestamp();
-
-      updateDiagnostics();
-
-      return blocked;
-    }
-
-    var envelope = buildEnvelope(
-      normalizedAction,
-      payload
-    );
 
     APIState.configured = true;
-    APIState.loading = true;
 
-    APIState.lastRequestId =
-      envelope.requestId;
 
-    APIState.lastRequestAt =
-      envelope.timestamp;
+    /* --------------------------------------------------------
+       REQUEST ENVELOPE
+    -------------------------------------------------------- */
 
-    APIState.requestCount++;
+    var rid = requestId();
+    var ts = timestamp();
 
-    updateDiagnostics();
+    APIState.lastRequestId = rid;
+    APIState.lastTimestamp = ts;
+
+
+    var envelope = {
+
+      project: CONFIG.PROJECT,
+
+      version: CONFIG.VERSION,
+
+      environment:
+        CONFIG.ENVIRONMENT,
+
+      action:
+        normalizedAction,
+
+      requestId:
+        rid,
+
+      timestamp:
+        ts,
+
+      payload:
+        payload || {}
+    };
+
+
+    /* --------------------------------------------------------
+       ABORT / TIMEOUT
+    -------------------------------------------------------- */
 
     var controller = null;
-    var timeout = null;
+    var timeoutId = null;
 
-    try {
+    if (
+      typeof AbortController !== "undefined"
+    ) {
+      controller =
+        new AbortController();
 
-      if (
-        typeof AbortController !==
-        "undefined"
-      ) {
-        controller =
-          new AbortController();
-
-        timeout = setTimeout(
+      timeoutId =
+        setTimeout(
           function () {
             controller.abort();
           },
           CONFIG.REQUEST_TIMEOUT
         );
-      }
+    }
 
-      var response = await fetch(
-        getAPIUrl(),
-        {
-          method: "POST",
 
-          headers: {
-            "Content-Type":
-              "text/plain;charset=utf-8"
-          },
+    /* --------------------------------------------------------
+       API CALL
+    -------------------------------------------------------- */
 
-          body: JSON.stringify(
-            envelope
-          ),
+    try {
 
-          signal: controller
-            ? controller.signal
-            : undefined
-        }
-      );
+      var response =
+        await fetch(
+          apiUrl,
+          {
+            method: "POST",
 
-      if (timeout) {
-        clearTimeout(timeout);
-      }
+            headers: {
+              "Content-Type":
+                "text/plain;charset=utf-8"
+            },
 
-      var text =
-        await response.text();
+            body:
+              JSON.stringify(envelope),
 
-      var data;
+            signal:
+              controller
+                ? controller.signal
+                : undefined
+          }
+        );
 
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
 
-        data = {
-          success: false,
-          action: normalizedAction,
-          code: "INVALID_JSON_RESPONSE",
-          message:
-            "Backend returned a non-JSON response.",
-          httpStatus: response.status,
-          rawResponse: text
-        };
-      }
+      var result =
+        await parseResponse(response);
 
-      APIState.lastResponse = data;
 
-      if (
-        response.ok &&
-        data &&
-        data.success === true
-      ) {
+      APIState.connected = true;
+      APIState.lastResponse = result;
+      APIState.lastError = null;
 
-        APIState.successCount++;
-        APIState.lastSuccessAt =
-          timestamp();
 
-      } else {
-
-        APIState.errorCount++;
-        APIState.lastError = data;
-        APIState.lastErrorAt =
-          timestamp();
-      }
-
-      return data;
+      return result;
 
     } catch (error) {
 
-      if (timeout) {
-        clearTimeout(timeout);
-      }
+      var normalizedError =
+        normalizeError(error);
 
-      var networkError = {
-        success: false,
-        action: normalizedAction,
-        code:
-          error &&
-          error.name === "AbortError"
-            ? "REQUEST_TIMEOUT"
-            : "NETWORK_ERROR",
-
-        message:
-          error &&
-          error.name === "AbortError"
-            ? "API request timed out."
-            : (
-                error &&
-                error.message
-              ) ||
-              "Network request failed."
-      };
-
-      APIState.errorCount++;
       APIState.lastError =
-        networkError;
+        normalizedError;
 
-      APIState.lastErrorAt =
-        timestamp();
+      APIState.connected = false;
 
-      return networkError;
+      throw error;
 
     } finally {
 
-      APIState.loading = false;
-
-      updateDiagnostics();
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
   }
 
-  /* ------------------------------------------------------------
-     HEALTH
-     ------------------------------------------------------------ */
+
+  /* ==========================================================
+     HEALTH / CONNECTION
+  ========================================================== */
 
   async function testConnection() {
 
-    var response =
-      await request(
-        "GET_HEALTH",
-        {}
-      );
+    try {
 
-    if (
-      response &&
-      response.success === true &&
-      String(response.project) ===
-        "GoVara"
-    ) {
+      var result =
+        await request(
+          "GET_HEALTH",
+          {}
+        );
+
+
+      var project =
+        result &&
+        (
+          result.project ||
+          (
+            result.data &&
+            result.data.project
+          ) ||
+          (
+            result.payload &&
+            result.payload.project
+          )
+        );
+
 
       APIState.connected = true;
-      APIState.verified = true;
-      APIState.lastError = null;
 
-    } else {
+      APIState.verified =
+        project === CONFIG.PROJECT;
+
+
+      APIState.lastResponse =
+        result;
+
+
+      return {
+
+        success:
+          APIState.verified,
+
+        connected:
+          APIState.connected,
+
+        verified:
+          APIState.verified,
+
+        project:
+          project || null,
+
+        response:
+          result
+      };
+
+
+    } catch (error) {
 
       APIState.connected = false;
       APIState.verified = false;
 
-      APIState.lastError =
-        response || {
-          success: false,
-          code:
-            "HEALTH_VERIFICATION_FAILED"
-        };
+      throw error;
     }
-
-    updateDiagnostics();
-
-    return response;
   }
 
-  /* ------------------------------------------------------------
-     GENERIC API
-     ------------------------------------------------------------ */
+
+  function getAPIState() {
+
+    return {
+
+      configured:
+        APIState.configured ||
+        isConfigured(),
+
+      connected:
+        APIState.connected,
+
+      verified:
+        APIState.verified,
+
+      lastAction:
+        APIState.lastAction,
+
+      lastRequestId:
+        APIState.lastRequestId,
+
+      lastTimestamp:
+        APIState.lastTimestamp,
+
+      lastResponse:
+        APIState.lastResponse,
+
+      lastError:
+        APIState.lastError
+    };
+  }
+
+
+  /* ==========================================================
+     GENERIC MODULE API
+  ========================================================== */
 
   async function list(module, options) {
 
     return request(
       "LIST",
       {
-        module: module,
-        options: options || {}
+        module:
+          module,
+
+        options:
+          options || {}
       }
     );
   }
+
 
   async function get(module, id) {
 
     return request(
       "GET",
       {
-        module: module,
-        id: id
+        module:
+          module,
+
+        id:
+          id
       }
     );
   }
+
 
   async function validate(module, data) {
 
     return request(
       "VALIDATE",
       {
-        module: module,
-        data: data || {}
+        module:
+          module,
+
+        data:
+          data || {}
       }
     );
   }
+
 
   async function create(module, data) {
 
     return request(
       "CREATE",
       {
-        module: module,
-        data: data || {}
+        module:
+          module,
+
+        data:
+          data || {}
       }
     );
   }
 
-  async function update(
-    module,
-    id,
-    data
-  ) {
+
+  async function update(module, id, data) {
 
     return request(
       "UPDATE",
       {
-        module: module,
-        id: id,
-        data: data || {}
+        module:
+          module,
+
+        id:
+          id,
+
+        data:
+          data || {}
       }
     );
   }
 
-  /* ------------------------------------------------------------
+
+  /* ==========================================================
      CUSTOMER API
-     ------------------------------------------------------------ */
+  ========================================================== */
 
   function customerList(options) {
+
     return list(
       "Customer",
       options || {}
     );
   }
 
+
   function customerGet(id) {
+
     return get(
       "Customer",
       id
     );
   }
 
+
   function customerValidate(data) {
+
     return validate(
       "Customer",
       data
     );
   }
 
+
+  /* ----------------------------------------------------------
+     CUSTOMER REGISTRATION
+     IMPORTANT:
+     This is PUBLIC registration.
+     It does NOT require an existing session.
+  ---------------------------------------------------------- */
+
+  function customerRegister(data) {
+
+    return request(
+      "CUSTOMER_REGISTER",
+      data || {}
+    );
+  }
+
+
   function customerCreate(data) {
+
     return create(
       "Customer",
       data
     );
   }
 
-  function customerUpdate(
-    id,
-    data
-  ) {
+
+  function customerUpdate(id, data) {
+
     return update(
       "Customer",
       id,
@@ -557,1210 +760,880 @@
     );
   }
 
-  /* ------------------------------------------------------------
-     OTHER MODULES
-     ------------------------------------------------------------ */
+
+  /* ==========================================================
+     VENDOR API
+  ========================================================== */
 
   function vendorList(options) {
+
     return list(
       "Vendor",
       options || {}
     );
   }
 
+
+  function vendorGet(id) {
+
+    return get(
+      "Vendor",
+      id
+    );
+  }
+
+
+  function vendorValidate(data) {
+
+    return validate(
+      "Vendor",
+      data
+    );
+  }
+
+
+  function vendorCreate(data) {
+
+    return create(
+      "Vendor",
+      data
+    );
+  }
+
+
+  function vendorUpdate(id, data) {
+
+    return update(
+      "Vendor",
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     DRIVER API
+  ========================================================== */
+
   function driverList(options) {
+
     return list(
       "Driver",
       options || {}
     );
   }
 
+
+  function driverGet(id) {
+
+    return get(
+      "Driver",
+      id
+    );
+  }
+
+
+  function driverValidate(data) {
+
+    return validate(
+      "Driver",
+      data
+    );
+  }
+
+
+  function driverCreate(data) {
+
+    return create(
+      "Driver",
+      data
+    );
+  }
+
+
+  function driverUpdate(id, data) {
+
+    return update(
+      "Driver",
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     VEHICLE API
+  ========================================================== */
+
   function vehicleList(options) {
+
     return list(
       "Vehicle",
       options || {}
     );
   }
 
+
+  function vehicleGet(id) {
+
+    return get(
+      "Vehicle",
+      id
+    );
+  }
+
+
+  function vehicleValidate(data) {
+
+    return validate(
+      "Vehicle",
+      data
+    );
+  }
+
+
+  function vehicleCreate(data) {
+
+    return create(
+      "Vehicle",
+      data
+    );
+  }
+
+
+  function vehicleUpdate(id, data) {
+
+    return update(
+      "Vehicle",
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     BOOKING API
+  ========================================================== */
+
   function bookingList(options) {
+
     return list(
       "Booking",
       options || {}
     );
   }
 
+
+  function bookingGet(id) {
+
+    return get(
+      "Booking",
+      id
+    );
+  }
+
+
+  function bookingValidate(data) {
+
+    return validate(
+      "Booking",
+      data
+    );
+  }
+
+
+  function bookingCreate(data) {
+
+    return create(
+      "Booking",
+      data
+    );
+  }
+
+
+  function bookingUpdate(id, data) {
+
+    return update(
+      "Booking",
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     DUTY API
+  ========================================================== */
+
   function dutyList(options) {
+
     return list(
       "Duty",
       options || {}
     );
   }
 
+
+  function dutyGet(id) {
+
+    return get(
+      "Duty",
+      id
+    );
+  }
+
+
+  function dutyValidate(data) {
+
+    return validate(
+      "Duty",
+      data
+    );
+  }
+
+
+  function dutyCreate(data) {
+
+    return create(
+      "Duty",
+      data
+    );
+  }
+
+
+  function dutyUpdate(id, data) {
+
+    return update(
+      "Duty",
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     FARE / RATE API
+  ========================================================== */
+
   function fareCalculate(data) {
+
     return request(
       "FARE_CALCULATE",
       data || {}
     );
   }
 
-  function walletGet(customerId) {
+
+  function rateList(options) {
+
+    return list(
+      "Rate",
+      options || {}
+    );
+  }
+
+
+  function rateGet(id) {
+
+    return get(
+      "Rate",
+      id
+    );
+  }
+
+
+  function rateValidate(data) {
+
+    return validate(
+      "Rate",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     TRANSACTION API
+     Backend remains financial authority.
+  ========================================================== */
+
+  function transactionList(options) {
+
+    return list(
+      "Transaction",
+      options || {}
+    );
+  }
+
+
+  function transactionGet(id) {
+
+    return get(
+      "Transaction",
+      id
+    );
+  }
+
+
+  function transactionValidate(data) {
+
+    return validate(
+      "Transaction",
+      data
+    );
+  }
+
+
+  function transactionCreate(data) {
+
+    return create(
+      "Transaction",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     WALLET API
+  ========================================================== */
+
+  function walletGet(id) {
+
     return request(
       "WALLET_GET",
       {
-        customerId: customerId
+        id:
+          id
       }
     );
   }
 
-  /* ------------------------------------------------------------
-     DIAGNOSTICS
-     ------------------------------------------------------------ */
 
-  function updateDiagnostics() {
+  function walletUpdate(data) {
 
-    var root =
-      document.getElementById(
-        "module-27"
-      );
-
-    if (!root) {
-      return;
-    }
-
-    var requestNode =
-      root.querySelector(
-        "[data-govara-api-requests]"
-      );
-
-    var successNode =
-      root.querySelector(
-        "[data-govara-api-success]"
-      );
-
-    var errorNode =
-      root.querySelector(
-        "[data-govara-api-errors]"
-      );
-
-    var actionNode =
-      root.querySelector(
-        "[data-govara-api-action]"
-      );
-
-    var responseNode =
-      root.querySelector(
-        "[data-govara-api-response]"
-      );
-
-    if (requestNode) {
-      requestNode.textContent =
-        APIState.requestCount;
-    }
-
-    if (successNode) {
-      successNode.textContent =
-        APIState.successCount;
-    }
-
-    if (errorNode) {
-      errorNode.textContent =
-        APIState.errorCount;
-    }
-
-    if (actionNode) {
-      actionNode.textContent =
-        APIState.lastAction || "—";
-    }
-
-    if (responseNode) {
-
-      var diagnostic =
-        APIState.lastResponse ||
-        APIState.lastError;
-
-      responseNode.textContent =
-        diagnostic
-          ? JSON.stringify(
-              diagnostic,
-              null,
-              2
-            )
-          : "";
-    }
+    return request(
+      "WALLET_UPDATE",
+      data || {}
+    );
   }
 
-  /* ------------------------------------------------------------
-     CUSTOMER TEST CONSOLE
-     ------------------------------------------------------------ */
 
-  function customerFormData() {
+  /* ==========================================================
+     LEDGER API
+  ========================================================== */
 
-    var name =
-      getElement(
-        "govara-api-customer-name"
-      );
+  function ledgerList(options) {
 
-    var mobile =
-      getElement(
-        "govara-api-customer-mobile"
-      );
+    return list(
+      "Ledger",
+      options || {}
+    );
+  }
 
-    var email =
-      getElement(
-        "govara-api-customer-email"
-      );
 
-    var address =
-      getElement(
-        "govara-api-customer-address"
-      );
+  function ledgerGet(id) {
+
+    return get(
+      "Ledger",
+      id
+    );
+  }
+
+
+  /* ==========================================================
+     BILLING / INVOICE API
+  ========================================================== */
+
+  function billingList(options) {
+
+    return list(
+      "Invoice",
+      options || {}
+    );
+  }
+
+
+  function billingGet(id) {
+
+    return get(
+      "Invoice",
+      id
+    );
+  }
+
+
+  function billingValidate(data) {
+
+    return validate(
+      "Invoice",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     SETTLEMENT API
+  ========================================================== */
+
+  function settlementList(options) {
+
+    return list(
+      "Settlement",
+      options || {}
+    );
+  }
+
+
+  function settlementGet(id) {
+
+    return get(
+      "Settlement",
+      id
+    );
+  }
+
+
+  /* ==========================================================
+     DOCUMENT API
+  ========================================================== */
+
+  function documentList(options) {
+
+    return list(
+      "Document",
+      options || {}
+    );
+  }
+
+
+  function documentGet(id) {
+
+    return get(
+      "Document",
+      id
+    );
+  }
+
+
+  function documentValidate(data) {
+
+    return validate(
+      "Document",
+      data
+    );
+  }
+
+
+  function documentCreate(data) {
+
+    return create(
+      "Document",
+      data
+    );
+  }
+
+
+  function documentUpdate(id, data) {
+
+    return update(
+      "Document",
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     KYC API
+  ========================================================== */
+
+  function kycList(options) {
+
+    return list(
+      "KYC",
+      options || {}
+    );
+  }
+
+
+  function kycGet(id) {
+
+    return get(
+      "KYC",
+      id
+    );
+  }
+
+
+  function kycValidate(data) {
+
+    return validate(
+      "KYC",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     ADMIN API
+  ========================================================== */
+
+  function adminGet(data) {
+
+    return request(
+      "ADMIN_GET",
+      data || {}
+    );
+  }
+
+
+  function adminUpdate(data) {
+
+    return request(
+      "ADMIN_UPDATE",
+      data || {}
+    );
+  }
+
+
+  /* ==========================================================
+     AUDIT API
+  ========================================================== */
+
+  function auditList(options) {
+
+    return list(
+      "Audit",
+      options || {}
+    );
+  }
+
+
+  /* ==========================================================
+     AUTH API
+  ========================================================== */
+
+  function authentication(action, data) {
+
+    return request(
+      action,
+      data || {}
+    );
+  }
+
+
+  function authLogin(data) {
+
+    return request(
+      "AUTH_LOGIN",
+      data || {}
+    );
+  }
+
+
+  function authLogout(data) {
+
+    return request(
+      "AUTH_LOGOUT",
+      data || {}
+    );
+  }
+
+
+  function authSession(data) {
+
+    return request(
+      "AUTH_SESSION",
+      data || {}
+    );
+  }
+
+
+  /* ==========================================================
+     NOTIFICATION API
+  ========================================================== */
+
+  function notificationList(options) {
+
+    return list(
+      "Notification",
+      options || {}
+    );
+  }
+
+
+  function notificationGet(id) {
+
+    return get(
+      "Notification",
+      id
+    );
+  }
+
+
+  /* ==========================================================
+     LOCATION API
+  ========================================================== */
+
+  function locationList(options) {
+
+    return list(
+      "Location",
+      options || {}
+    );
+  }
+
+
+  function locationGet(id) {
+
+    return get(
+      "Location",
+      id
+    );
+  }
+
+
+  function locationValidate(data) {
+
+    return validate(
+      "Location",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     TRAVEL API
+  ========================================================== */
+
+  function travel(action, data) {
+
+    return request(
+      action,
+      data || {}
+    );
+  }
+
+
+  function flightSearch(data) {
+
+    return request(
+      "FLIGHT_SEARCH",
+      data || {}
+    );
+  }
+
+
+  function trainSearch(data) {
+
+    return request(
+      "TRAIN_SEARCH",
+      data || {}
+    );
+  }
+
+
+  function hotelSearch(data) {
+
+    return request(
+      "HOTEL_SEARCH",
+      data || {}
+    );
+  }
+
+
+  /* ==========================================================
+     WELFARE API
+  ========================================================== */
+
+  function welfareList(options) {
+
+    return list(
+      "Welfare",
+      options || {}
+    );
+  }
+
+
+  function welfareGet(id) {
+
+    return get(
+      "Welfare",
+      id
+    );
+  }
+
+
+  function welfareValidate(data) {
+
+    return validate(
+      "Welfare",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     SERVICE CATALOG API
+  ========================================================== */
+
+  function serviceList(options) {
+
+    return list(
+      "Service",
+      options || {}
+    );
+  }
+
+
+  function serviceGet(id) {
+
+    return get(
+      "Service",
+      id
+    );
+  }
+
+
+  function serviceValidate(data) {
+
+    return validate(
+      "Service",
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     GENERIC MODULE HELPERS
+  ========================================================== */
+
+  function moduleList(module, options) {
+
+    return list(
+      module,
+      options || {}
+    );
+  }
+
+
+  function moduleGet(module, id) {
+
+    return get(
+      module,
+      id
+    );
+  }
+
+
+  function moduleValidate(module, data) {
+
+    return validate(
+      module,
+      data
+    );
+  }
+
+
+  function moduleCreate(module, data) {
+
+    return create(
+      module,
+      data
+    );
+  }
+
+
+  function moduleUpdate(module, id, data) {
+
+    return update(
+      module,
+      id,
+      data
+    );
+  }
+
+
+  /* ==========================================================
+     API SAFETY STATUS
+  ========================================================== */
+
+  function getSafetyPolicy() {
 
     return {
-      name: name
-        ? String(name.value || "").trim()
-        : "",
 
-      mobile: mobile
-        ? String(mobile.value || "").trim()
-        : "",
+      frontendFinancialAuthority:
+        CONFIG.FRONTEND_FINANCIAL_AUTHORITY,
 
-      email: email
-        ? String(email.value || "").trim()
-        : "",
+      backendFinancialAuthority:
+        CONFIG.BACKEND_FINANCIAL_AUTHORITY,
 
-      address: address
-        ? String(address.value || "").trim()
-        : "",
+      frontendKycAuthority:
+        CONFIG.FRONTEND_KYC_AUTHORITY,
 
-      mode: "TESTING"
+      backendKycAuthority:
+        CONFIG.BACKEND_KYC_AUTHORITY,
+
+      databaseAuthority:
+        CONFIG.DATABASE_AUTHORITY,
+
+      realMoney:
+        "BLOCKED",
+
+      realPayment:
+        "BLOCKED",
+
+      bankTransfer:
+        "BLOCKED",
+
+      directDatabaseWrite:
+        "BLOCKED",
+
+      directDatabaseRead:
+        "BLOCKED",
+
+      businessIds:
+        "BACKEND_GENERATED",
+
+      financialAuthority:
+        "BACKEND"
     };
   }
 
-  function customerIdValue() {
 
-    var input =
-      getElement(
-        "govara-api-customer-id"
-      );
+  /* ==========================================================
+     PUBLIC API
+  ========================================================== */
 
-    return input
-      ? String(input.value || "").trim()
-      : "";
-  }
+  window.GoVaraAPI = {
 
-  function showResponse(response) {
+    /* Configuration */
+    config:
+      getConfig,
 
-    var element =
-      getElement(
-        "govara-api-response"
-      );
+    setApiUrl:
+      setApiUrl,
 
-    if (!element) {
-      return;
-    }
-
-    element.textContent =
-      JSON.stringify(
-        response,
-        null,
-        2
-      );
-  }
-
-  function showStatus(message) {
-
-    var element =
-      getElement(
-        "govara-api-console-status"
-      );
-
-    if (element) {
-      element.textContent =
-        message || "";
-    }
-  }
-
-  async function runCustomerList() {
-
-    showStatus(
-      "Running Customer LIST..."
-    );
-
-    var response =
-      await customerList();
-
-    showResponse(response);
-
-    showStatus(
-      response &&
-      response.success === true
-        ? "Customer LIST successful."
-        : "Customer LIST returned an error."
-    );
-
-    return response;
-  }
-
-  async function runCustomerGet() {
-
-    var id =
-      customerIdValue();
-
-    if (!id) {
-
-      var error = {
-        success: false,
-        code: "CUSTOMER_ID_REQUIRED",
-        message:
-          "Enter Customer ID first."
-      };
-
-      showResponse(error);
-
-      return error;
-    }
-
-    showStatus(
-      "Running Customer GET..."
-    );
-
-    var response =
-      await customerGet(id);
-
-    showResponse(response);
-
-    return response;
-  }
-
-  async function runCustomerValidate() {
-
-    var data =
-      customerFormData();
-
-    showStatus(
-      "Running Customer VALIDATE..."
-    );
-
-    var response =
-      await customerValidate(
-        data
-      );
-
-    showResponse(response);
-
-    return response;
-  }
-
-  async function runCustomerCreate() {
-
-    var data =
-      customerFormData();
-
-    showStatus(
-      "Creating Customer..."
-    );
-
-    var response =
-      await customerCreate(
-        data
-      );
-
-    showResponse(response);
-
-    return response;
-  }
-
-  async function runCustomerUpdate() {
-
-    var id =
-      customerIdValue();
-
-    if (!id) {
-
-      var error = {
-        success: false,
-        code: "CUSTOMER_ID_REQUIRED",
-        message:
-          "Enter Customer ID first."
-      };
-
-      showResponse(error);
-
-      return error;
-    }
-
-    var data =
-      customerFormData();
-
-    showStatus(
-      "Updating Customer..."
-    );
-
-    var response =
-      await customerUpdate(
-        id,
-        data
-      );
-
-    showResponse(response);
-
-    return response;
-  }
-
-  /* ------------------------------------------------------------
-     MODULE RENDER
-     ------------------------------------------------------------ */
-
-  function renderModule(container) {
-
-    /*
-     * IMPORTANT:
-     * Master index.html may provide its own
-     * module container.
-     */
-
-    var root =
-      container ||
-      document.getElementById(
-        "module-27"
-      );
-
-    if (!root) {
-      return;
-    }
-
-    root.innerHTML = `
-      <div class="govara-step27">
-
-        <div class="govara-step27-header">
-          <div>
-            <h2>STEP 27</h2>
-            <p>
-              Consolidated API Boundary
-            </p>
-          </div>
-        </div>
-
-        <div class="govara-step27-status-grid">
-
-          <div class="govara-step27-card">
-            <small>API</small>
-            <strong data-govara-api-config>
-              ${
-                isConfigured()
-                  ? "CONFIGURED"
-                  : "NOT CONFIGURED"
-              }
-            </strong>
-          </div>
-
-          <div class="govara-step27-card">
-            <small>Connection</small>
-            <strong data-govara-api-connection>
-              ${
-                APIState.connected
-                  ? "CONNECTED"
-                  : "NOT CONNECTED"
-              }
-            </strong>
-          </div>
-
-          <div class="govara-step27-card">
-            <small>Verification</small>
-            <strong data-govara-api-verification>
-              ${
-                APIState.verified
-                  ? "VERIFIED"
-                  : "NOT VERIFIED"
-              }
-            </strong>
-          </div>
-
-          <div class="govara-step27-card">
-            <small>Environment</small>
-            <strong>
-              TESTING
-            </strong>
-          </div>
-
-        </div>
-
-        <section class="govara-step27-panel">
-
-          <h3>API Configuration</h3>
-
-          <label>
-            API Endpoint
-          </label>
-
-          <div class="govara-step27-endpoint">
-
-            <input
-              id="govara-api-endpoint"
-              type="url"
-              value="${escapeHTML(
-                getAPIUrl()
-              )}"
-              placeholder="Apps Script Web App /exec URL"
-            />
-
-            <button
-              type="button"
-              id="govara-api-save"
-            >
-              Save Endpoint
-            </button>
-
-            <button
-              type="button"
-              id="govara-api-test"
-            >
-              Test Connection
-            </button>
-
-            <button
-              type="button"
-              id="govara-api-reset"
-            >
-              Reset Endpoint
-            </button>
-
-          </div>
-
-          <small>
-            Connection testing is manual.
-            No automatic backend request is made.
-          </small>
-
-        </section>
-
-        <section class="govara-step27-panel">
-
-          <h3>Financial Safety</h3>
-
-          <div class="govara-step27-safety">
-
-            <span>
-              Real Money:
-              <b>BLOCKED</b>
-            </span>
-
-            <span>
-              Real Payment:
-              <b>BLOCKED</b>
-            </span>
-
-            <span>
-              Bank Transfer:
-              <b>BLOCKED</b>
-            </span>
-
-            <span>
-              Frontend Financial Authority:
-              <b>DISABLED</b>
-            </span>
-
-            <span>
-              Backend Financial Authority:
-              <b>AUTHORITATIVE</b>
-            </span>
-
-          </div>
-
-        </section>
-
-        <section class="govara-step27-panel">
-
-          <h3>KYC & Database Authority</h3>
-
-          <div class="govara-step27-safety">
-
-            <span>
-              Frontend KYC Authority:
-              <b>DISABLED</b>
-            </span>
-
-            <span>
-              Backend KYC Authority:
-              <b>AUTHORITATIVE</b>
-            </span>
-
-            <span>
-              Database Authority:
-              <b>AUTHORITATIVE</b>
-            </span>
-
-          </div>
-
-        </section>
-
-        <section class="govara-step27-panel">
-
-          <h3>Consolidated Modules</h3>
-
-          <div class="govara-step27-modules">
-
-            ${MODULES.map(
-              function (module) {
-                return (
-                  "<span>" +
-                  escapeHTML(module) +
-                  "</span>"
-                );
-              }
-            ).join("")}
-
-          </div>
-
-        </section>
-
-        <section class="govara-step27-panel">
-
-          <h3>
-            Customer Integration Test
-          </h3>
-
-          <div class="govara-step27-form">
-
-            <div>
-              <label>
-                Customer ID
-              </label>
-
-              <input
-                id="govara-api-customer-id"
-                type="text"
-                placeholder="GV_CUSTOMER_..."
-              />
-            </div>
-
-            <div>
-              <label>
-                Name
-              </label>
-
-              <input
-                id="govara-api-customer-name"
-                type="text"
-                placeholder="Test Customer"
-              />
-            </div>
-
-            <div>
-              <label>
-                Mobile
-              </label>
-
-              <input
-                id="govara-api-customer-mobile"
-                type="text"
-                placeholder="9999999999"
-              />
-            </div>
-
-            <div>
-              <label>
-                Email
-              </label>
-
-              <input
-                id="govara-api-customer-email"
-                type="email"
-                placeholder="customer@example.com"
-              />
-            </div>
-
-            <div class="full">
-              <label>
-                Address
-              </label>
-
-              <input
-                id="govara-api-customer-address"
-                type="text"
-                placeholder="Testing Address"
-              />
-            </div>
-
-          </div>
-
-          <div class="govara-step27-actions">
-
-            <button
-              type="button"
-              id="govara-customer-list"
-            >
-              LIST Customer
-            </button>
-
-            <button
-              type="button"
-              id="govara-customer-get"
-            >
-              GET Customer
-            </button>
-
-            <button
-              type="button"
-              id="govara-customer-validate"
-            >
-              VALIDATE Customer
-            </button>
-
-            <button
-              type="button"
-              id="govara-customer-create"
-            >
-              CREATE Customer
-            </button>
-
-            <button
-              type="button"
-              id="govara-customer-update"
-            >
-              UPDATE Customer
-            </button>
-
-          </div>
-
-          <div
-            id="govara-api-console-status"
-            class="govara-step27-status"
-          >
-            Ready.
-          </div>
-
-        </section>
-
-        <section class="govara-step27-panel">
-
-          <h3>Diagnostics</h3>
-
-          <div class="govara-step27-diagnostics">
-
-            <div>
-              <small>REQUESTS</small>
-              <strong
-                data-govara-api-requests
-              >
-                ${APIState.requestCount}
-              </strong>
-            </div>
-
-            <div>
-              <small>SUCCESS</small>
-              <strong
-                data-govara-api-success
-              >
-                ${APIState.successCount}
-              </strong>
-            </div>
-
-            <div>
-              <small>ERRORS</small>
-              <strong
-                data-govara-api-errors
-              >
-                ${APIState.errorCount}
-              </strong>
-            </div>
-
-            <div>
-              <small>LAST ACTION</small>
-              <strong
-                data-govara-api-action
-              >
-                ${APIState.lastAction}
-              </strong>
-            </div>
-
-          </div>
-
-          <pre
-            id="govara-api-response"
-            data-govara-api-response
-          ></pre>
-
-        </section>
-
-      </div>
-    `;
-
-    bindEvents(root);
-  }
-
-  /* ------------------------------------------------------------
-     EVENTS
-     ------------------------------------------------------------ */
-
-  function bindEvents(root) {
-
-    var endpoint =
-      root.querySelector(
-        "#govara-api-endpoint"
-      );
-
-    var save =
-      root.querySelector(
-        "#govara-api-save"
-      );
-
-    var test =
-      root.querySelector(
-        "#govara-api-test"
-      );
-
-    var reset =
-      root.querySelector(
-        "#govara-api-reset"
-      );
-
-    var listButton =
-      root.querySelector(
-        "#govara-customer-list"
-      );
-
-    var getButton =
-      root.querySelector(
-        "#govara-customer-get"
-      );
-
-    var validateButton =
-      root.querySelector(
-        "#govara-customer-validate"
-      );
-
-    var createButton =
-      root.querySelector(
-        "#govara-customer-create"
-      );
-
-    var updateButton =
-      root.querySelector(
-        "#govara-customer-update"
-      );
-
-    if (save) {
-
-      save.onclick =
-        function () {
-
-          CONFIG.API_URL =
-            String(
-              endpoint.value || ""
-            ).trim();
-
-          saveConfig();
-
-          APIState.configured =
-            isConfigured();
-
-          APIState.connected =
-            false;
-
-          APIState.verified =
-            false;
-
-          APIState.lastAction =
-            "SAVE_ENDPOINT";
-
-          renderModule(root);
-        };
-    }
-
-    if (test) {
-
-      test.onclick =
-        async function () {
-
-          test.disabled = true;
-
-          try {
-            await testConnection();
-          } finally {
-            test.disabled = false;
-          }
-
-          /*
-           * Do not rerender the entire module here.
-           * Preserve the existing master page lifecycle.
-           */
-          updateStatusFields(root);
-        };
-    }
-
-    if (reset) {
-
-      reset.onclick =
-        function () {
-
-          CONFIG.API_URL = "";
-
-          try {
-            window.localStorage.removeItem(
-              STORAGE_KEY
-            );
-          } catch (error) {
-            console.warn(error);
-          }
-
-          APIState.configured = false;
-          APIState.connected = false;
-          APIState.verified = false;
-          APIState.loading = false;
-
-          APIState.lastAction =
-            "RESET_ENDPOINT";
-
-          APIState.lastResponse =
-            null;
-
-          APIState.lastError =
-            null;
-
-          APIState.requestCount = 0;
-          APIState.successCount = 0;
-          APIState.errorCount = 0;
-
-          renderModule(root);
-        };
-    }
-
-    if (listButton) {
-      listButton.onclick =
-        runCustomerList;
-    }
-
-    if (getButton) {
-      getButton.onclick =
-        runCustomerGet;
-    }
-
-    if (validateButton) {
-      validateButton.onclick =
-        runCustomerValidate;
-    }
-
-    if (createButton) {
-      createButton.onclick =
-        runCustomerCreate;
-    }
-
-    if (updateButton) {
-      updateButton.onclick =
-        runCustomerUpdate;
-    }
-  }
-
-  /* ------------------------------------------------------------
-     STATUS UPDATE
-     ------------------------------------------------------------ */
-
-  function updateStatusFields(root) {
-
-    if (!root) {
-      return;
-    }
-
-    var configNode =
-      root.querySelector(
-        "[data-govara-api-config]"
-      );
-
-    var connectionNode =
-      root.querySelector(
-        "[data-govara-api-connection]"
-      );
-
-    var verificationNode =
-      root.querySelector(
-        "[data-govara-api-verification]"
-      );
-
-    if (configNode) {
-      configNode.textContent =
-        isConfigured()
-          ? "CONFIGURED"
-          : "NOT CONFIGURED";
-    }
-
-    if (connectionNode) {
-      connectionNode.textContent =
-        APIState.connected
-          ? "CONNECTED"
-          : "NOT CONNECTED";
-    }
-
-    if (verificationNode) {
-      verificationNode.textContent =
-        APIState.verified
-          ? "VERIFIED"
-          : "NOT VERIFIED";
-    }
-
-    updateDiagnostics();
-  }
-
-  /* ------------------------------------------------------------
-     CSS
-     ------------------------------------------------------------ */
-
-  function ensureStyles() {
-
-    if (
-      document.getElementById(
-        "govara-step27-v61-style"
-      )
-    ) {
-      return;
-    }
-
-    var style =
-      document.createElement(
-        "style"
-      );
-
-    style.id =
-      "govara-step27-v61-style";
-
-    style.textContent = `
-      .govara-step27 {
-        display: grid;
-        gap: 18px;
-      }
-
-      .govara-step27-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .govara-step27-header h2 {
-        margin: 0 0 5px;
-      }
-
-      .govara-step27-header p {
-        margin: 0;
-        opacity: .7;
-      }
-
-      .govara-step27-status-grid {
-        display: grid;
-        grid-template-columns:
-          repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-      }
-
-      .govara-step27-card {
-        padding: 15px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.035);
-      }
-
-      .govara-step27-card small {
-        display: block;
-        opacity: .65;
-        margin-bottom: 7px;
-      }
-
-      .govara-step27-card strong {
-        font-size: 13px;
-      }
-
-      .govara-step27-panel {
-        padding: 18px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,.10);
-        background: rgba(255,255,255,.025);
-      }
-
-      .govara-step27-panel h3 {
-        margin-top: 0;
-      }
-
-      .govara-step27-endpoint {
-        display: grid;
-        grid-template-columns:
-          1fr auto auto auto;
-        gap: 8px;
-        margin: 10px 0;
-      }
-
-      .govara-step27-panel input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px 12px;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,.14);
-        background: rgba(0,0,0,.20);
-        color: inherit;
-      }
-
-      .govara-step27-panel button {
-        padding: 10px 13px;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,.14);
-        background: rgba(255,255,255,.07);
-        color: inherit;
-        cursor: pointer;
-      }
-
-      .govara-step27-panel button:disabled {
-        opacity: .5;
-        cursor: wait;
-      }
-
-      .govara-step27-safety {
-        display: grid;
-        grid-template-columns:
-          repeat(auto-fit, minmax(220px, 1fr));
-        gap: 10px;
-      }
-
-      .govara-step27-safety span {
-        padding: 9px;
-        border-radius: 8px;
-        background: rgba(255,255,255,.04);
-      }
-
-      .govara-step27-safety b {
-        display: block;
-        margin-top: 4px;
-        font-size: 11px;
-      }
-
-      .govara-step27-modules {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 7px;
-      }
-
-      .govara-step27-modules span {
-        padding: 7px 10px;
-        border-radius: 8px;
-        background: rgba(255,255,255,.06);
-        font-size: 12px;
-      }
-
-      .govara-step27-form {
-        display: grid;
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-        gap: 12px;
-        margin: 15px 0;
-      }
-
-      .govara-step27-form > div {
-        display: grid;
-        gap: 6px;
-      }
-
-      .govara-step27-form .full {
-        grid-column: 1 / -1;
-      }
-
-      .govara-step27-form label {
-        font-size: 12px;
-        opacity: .7;
-      }
-
-      .govara-step27-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .govara-step27-status {
-        margin-top: 12px;
-        padding: 10px;
-        border-radius: 8px;
-        background: rgba(255,255,255,.04);
-      }
-
-      .govara-step27-diagnostics {
-        display: grid;
-        grid-template-columns:
-          repeat(auto-fit, minmax(140px, 1fr));
-        gap: 10px;
-      }
-
-      .govara-step27-diagnostics > div {
-        padding: 12px;
-        border-radius: 9px;
-        background: rgba(255,255,255,.04);
-      }
-
-      .govara-step27-diagnostics small {
-        display: block;
-        opacity: .65;
-        margin-bottom: 5px;
-      }
-
-      .govara-step27-diagnostics strong {
-        display: block;
-      }
-
-      #govara-api-response {
-        min-height: 160px;
-        max-height: 500px;
-        overflow: auto;
-        margin-top: 14px;
-        padding: 14px;
-        border-radius: 10px;
-        background: rgba(0,0,0,.25);
-        border: 1px solid rgba(255,255,255,.08);
-        white-space: pre-wrap;
-        word-break: break-word;
-        font-size: 12px;
-      }
-
-      @media (max-width: 760px) {
-
-        .govara-step27-endpoint {
-          grid-template-columns: 1fr;
-        }
-
-        .govara-step27-form {
-          grid-template-columns: 1fr;
-        }
-
-        .govara-step27-form .full {
-          grid-column: auto;
-        }
-      }
-    `;
-
-    document.head.appendChild(style);
-  }
-
-  /* ------------------------------------------------------------
-     PUBLIC MODULE
-     ------------------------------------------------------------ */
-
-  var GoVaraAPI = {
-
-    version:
-      CONFIG.VERSION,
-
-    CONFIG:
-      CONFIG,
-
-    state:
-      APIState,
-
-    modules:
-      MODULES,
-
-    getAPIUrl:
-      getAPIUrl,
+    getApiUrl:
+      getApiUrl,
 
     isConfigured:
       isConfigured,
 
+
+    /* State */
+    state:
+      getAPIState,
+
+    APIState:
+      APIState,
+
+
+    /* Connection */
     testConnection:
       testConnection,
 
+
+    /* Core */
     request:
       request,
 
@@ -1779,6 +1652,13 @@
     update:
       update,
 
+
+    /* Modules */
+    modules:
+      MODULES,
+
+
+    /* Customer */
     customerList:
       customerList,
 
@@ -1788,87 +1668,344 @@
     customerValidate:
       customerValidate,
 
+    customerRegister:
+      customerRegister,
+
     customerCreate:
       customerCreate,
 
     customerUpdate:
       customerUpdate,
 
+
+    /* Vendor */
     vendorList:
       vendorList,
 
+    vendorGet:
+      vendorGet,
+
+    vendorValidate:
+      vendorValidate,
+
+    vendorCreate:
+      vendorCreate,
+
+    vendorUpdate:
+      vendorUpdate,
+
+
+    /* Driver */
     driverList:
       driverList,
 
+    driverGet:
+      driverGet,
+
+    driverValidate:
+      driverValidate,
+
+    driverCreate:
+      driverCreate,
+
+    driverUpdate:
+      driverUpdate,
+
+
+    /* Vehicle */
     vehicleList:
       vehicleList,
 
+    vehicleGet:
+      vehicleGet,
+
+    vehicleValidate:
+      vehicleValidate,
+
+    vehicleCreate:
+      vehicleCreate,
+
+    vehicleUpdate:
+      vehicleUpdate,
+
+
+    /* Booking */
     bookingList:
       bookingList,
 
+    bookingGet:
+      bookingGet,
+
+    bookingValidate:
+      bookingValidate,
+
+    bookingCreate:
+      bookingCreate,
+
+    bookingUpdate:
+      bookingUpdate,
+
+
+    /* Duty */
     dutyList:
       dutyList,
 
+    dutyGet:
+      dutyGet,
+
+    dutyValidate:
+      dutyValidate,
+
+    dutyCreate:
+      dutyCreate,
+
+    dutyUpdate:
+      dutyUpdate,
+
+
+    /* Fare */
     fareCalculate:
       fareCalculate,
 
+    rateList:
+      rateList,
+
+    rateGet:
+      rateGet,
+
+    rateValidate:
+      rateValidate,
+
+
+    /* Transaction */
+    transactionList:
+      transactionList,
+
+    transactionGet:
+      transactionGet,
+
+    transactionValidate:
+      transactionValidate,
+
+    transactionCreate:
+      transactionCreate,
+
+
+    /* Wallet */
     walletGet:
       walletGet,
 
-    render:
-      renderModule,
+    walletUpdate:
+      walletUpdate,
 
-    renderAndBind:
-      renderModule,
 
-    bind:
-      bindEvents
+    /* Ledger */
+    ledgerList:
+      ledgerList,
+
+    ledgerGet:
+      ledgerGet,
+
+
+    /* Billing */
+    billingList:
+      billingList,
+
+    billingGet:
+      billingGet,
+
+    billingValidate:
+      billingValidate,
+
+
+    /* Settlement */
+    settlementList:
+      settlementList,
+
+    settlementGet:
+      settlementGet,
+
+
+    /* Documents */
+    documentList:
+      documentList,
+
+    documentGet:
+      documentGet,
+
+    documentValidate:
+      documentValidate,
+
+    documentCreate:
+      documentCreate,
+
+    documentUpdate:
+      documentUpdate,
+
+
+    /* KYC */
+    kycList:
+      kycList,
+
+    kycGet:
+      kycGet,
+
+    kycValidate:
+      kycValidate,
+
+
+    /* Admin */
+    adminGet:
+      adminGet,
+
+    adminUpdate:
+      adminUpdate,
+
+
+    /* Audit */
+    auditList:
+      auditList,
+
+
+    /* Auth */
+    authentication:
+      authentication,
+
+    authLogin:
+      authLogin,
+
+    authLogout:
+      authLogout,
+
+    authSession:
+      authSession,
+
+
+    /* Notification */
+    notificationList:
+      notificationList,
+
+    notificationGet:
+      notificationGet,
+
+
+    /* Location */
+    locationList:
+      locationList,
+
+    locationGet:
+      locationGet,
+
+    locationValidate:
+      locationValidate,
+
+
+    /* Travel */
+    travel:
+      travel,
+
+    flightSearch:
+      flightSearch,
+
+    trainSearch:
+      trainSearch,
+
+    hotelSearch:
+      hotelSearch,
+
+
+    /* Welfare */
+    welfareList:
+      welfareList,
+
+    welfareGet:
+      welfareGet,
+
+    welfareValidate:
+      welfareValidate,
+
+
+    /* Service */
+    serviceList:
+      serviceList,
+
+    serviceGet:
+      serviceGet,
+
+    serviceValidate:
+      serviceValidate,
+
+
+    /* Generic module helpers */
+    moduleList:
+      moduleList,
+
+    moduleGet:
+      moduleGet,
+
+    moduleValidate:
+      moduleValidate,
+
+    moduleCreate:
+      moduleCreate,
+
+    moduleUpdate:
+      moduleUpdate,
+
+
+    /* Safety */
+    getSafetyPolicy:
+      getSafetyPolicy
   };
 
-  /* ------------------------------------------------------------
-     GLOBAL REGISTRATION
-     ------------------------------------------------------------ */
 
-  window.GoVaraAPI =
-    GoVaraAPI;
+  /* ==========================================================
+     INITIAL STATE
+  ========================================================== */
 
-  window.GoVara27 =
-    GoVaraAPI;
+  APIState.configured =
+    isConfigured();
 
-  window.GoVaraModules =
-    window.GoVaraModules || {};
 
-  window.GoVaraModules["27"] =
-    GoVaraAPI;
+  /* ==========================================================
+     CONSOLE STATUS
+  ========================================================== */
 
-  window.GoVaraModules["27-api"] =
-    GoVaraAPI;
+  try {
 
-  window.GoVaraModules["STEP 27"] =
-    GoVaraAPI;
+    console.log(
+      "GoVara STEP 27 API loaded.",
+      {
+        version:
+          CONFIG.VERSION,
 
-  window.GoVaraModules["Consolidated API"] =
-    GoVaraAPI;
+        environment:
+          CONFIG.ENVIRONMENT,
 
-  window.GoVaraModuleRegistry =
-    window.GoVaraModuleRegistry || {};
+        configured:
+          APIState.configured,
 
-  window.GoVaraModuleRegistry["27"] =
-    GoVaraAPI;
+        customerRegister:
+          typeof window.GoVaraAPI.customerRegister ===
+          "function",
 
-  window.GoVaraModuleRegistry["27-api"] =
-    GoVaraAPI;
+        financialAuthority:
+          "BACKEND",
 
-  window.GoVaraModuleRegistry["STEP 27"] =
-    GoVaraAPI;
+        realMoney:
+          "BLOCKED",
 
-  /*
-   * IMPORTANT:
-   * Do NOT automatically render or call the backend here.
-   *
-   * The master index.html controls module rendering.
-   */
+        realPayment:
+          "BLOCKED",
 
-  ensureStyles();
+        bankTransfer:
+          "BLOCKED"
+      }
+    );
+
+  } catch (error) {
+    /* Console logging must never break the API. */
+  }
+
 
 })(window);

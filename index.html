@@ -2,598 +2,410 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>GoVara Administrator Control Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoVara — Administrator Control Center</title>
 
 <style>
+*{box-sizing:border-box}
 :root{
-  --bg:#f5f7fb;
+  --bg:#f4f7fb;
   --card:#fff;
   --text:#172033;
-  --muted:#667085;
-  --border:#e4e7ec;
+  --muted:#697386;
+  --border:#dfe5ee;
   --primary:#2563eb;
-  --primary-soft:#eff6ff;
+  --primary2:#1d4ed8;
   --success:#15803d;
-  --success-soft:#ecfdf3;
   --warning:#b45309;
-  --warning-soft:#fffbeb;
-  --danger:#b42318;
-  --danger-soft:#fef3f2;
+  --danger:#b91c1c;
   --sidebar:#111827;
-  --sidebar-text:#d1d5db;
-  --shadow:0 8px 25px rgba(16,24,40,.06);
-  --radius:14px;
+  --sidebar2:#1f2937;
+  --shadow:0 8px 28px rgba(15,23,42,.08);
 }
-
-*{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:var(--bg);
   color:var(--text);
 }
-
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
 .app{
-  display:flex;
   min-height:100vh;
+  display:flex;
 }
-
 .sidebar{
   width:270px;
   background:var(--sidebar);
   color:#fff;
   position:fixed;
-  inset:0 auto 0 0;
+  left:0;
+  top:0;
+  bottom:0;
   overflow-y:auto;
   z-index:20;
 }
-
 .brand{
   padding:22px 20px;
   border-bottom:1px solid rgba(255,255,255,.1);
 }
-
 .brand-title{
-  font-size:22px;
+  font-size:23px;
   font-weight:800;
 }
-
 .brand-sub{
-  color:#9ca3af;
   font-size:12px;
+  color:#9ca3af;
   margin-top:4px;
 }
-
 .nav{
   padding:14px 10px 30px;
 }
-
 .nav button{
   width:100%;
   border:0;
   background:transparent;
-  color:var(--sidebar-text);
-  padding:12px 14px;
-  margin:3px 0;
-  border-radius:9px;
+  color:#d1d5db;
   text-align:left;
-  cursor:pointer;
-  font-weight:600;
+  padding:11px 13px;
+  border-radius:9px;
+  margin-bottom:4px;
+  transition:.2s;
 }
-
-.nav button:hover,
-.nav button.active{
-  background:#1f2937;
+.nav button:hover{
+  background:var(--sidebar2);
   color:#fff;
 }
-
-.nav-section{
-  color:#6b7280;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  padding:18px 14px 7px;
+.nav button.active{
+  background:#2563eb;
+  color:#fff;
+  font-weight:700;
 }
-
 .main{
   margin-left:270px;
   width:calc(100% - 270px);
+  min-width:0;
 }
-
 .topbar{
-  min-height:70px;
+  height:72px;
   background:#fff;
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:15px;
-  padding:10px 28px;
+  padding:0 24px;
   position:sticky;
   top:0;
   z-index:10;
 }
-
-.topbar-left{
+.top-left{
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:12px;
 }
-
-.topbar-title{
-  font-size:18px;
-  font-weight:800;
-}
-
-.topbar-right{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.language-box{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background:#f9fafb;
-  border:1px solid var(--border);
-  border-radius:9px;
-  padding:4px 7px;
-}
-
-.language-box span{
-  font-size:14px;
-}
-
-.language-box select{
+.mobile-menu{
+  display:none;
   border:0;
-  background:transparent;
-  padding:5px;
-  font-weight:700;
-  outline:none;
-  cursor:pointer;
+  background:#eef2ff;
+  padding:9px 12px;
+  border-radius:8px;
 }
-
-.statuses{
+.top-title{
+  font-weight:800;
+  font-size:17px;
+}
+.top-right{
   display:flex;
-  gap:7px;
+  align-items:center;
+  gap:8px;
   flex-wrap:wrap;
   justify-content:flex-end;
 }
-
 .badge{
   display:inline-flex;
   align-items:center;
-  padding:5px 9px;
+  gap:5px;
+  padding:6px 9px;
   border-radius:999px;
   font-size:11px;
   font-weight:800;
-  border:1px solid transparent;
+  white-space:nowrap;
 }
-
-.badge.success{
-  color:var(--success);
-  background:var(--success-soft);
-  border-color:#bbf7d0;
+.badge.ready{background:#dcfce7;color:#166534}
+.badge.info{background:#dbeafe;color:#1e40af}
+.badge.warn{background:#fef3c7;color:#92400e}
+.badge.danger{background:#fee2e2;color:#991b1b}
+.lang-select{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:8px;
+  padding:7px 9px;
+  font-size:12px;
+  font-weight:700;
 }
-
-.badge.warning{
-  color:var(--warning);
-  background:var(--warning-soft);
-  border-color:#fde68a;
-}
-
-.badge.danger{
-  color:var(--danger);
-  background:var(--danger-soft);
-  border-color:#fecaca;
-}
-
-.badge.neutral{
-  color:#475467;
-  background:#f2f4f7;
-  border-color:#d0d5dd;
-}
-
 .content{
-  padding:28px;
-  max-width:1500px;
+  padding:24px;
+  max-width:1600px;
   margin:auto;
 }
-
-.page{
-  display:none;
-}
-
-.page.active{
-  display:block;
-}
-
+.page{display:none}
+.page.active{display:block}
 .page-head{
-  margin-bottom:22px;
+  margin-bottom:20px;
 }
-
 .page-head h1{
-  margin:0;
-  font-size:26px;
+  margin:0 0 6px;
+  font-size:25px;
 }
-
 .page-head p{
-  margin:7px 0 0;
+  margin:0;
   color:var(--muted);
+  font-size:14px;
 }
-
 .grid{
   display:grid;
-  gap:18px;
+  grid-template-columns:repeat(12,1fr);
+  gap:16px;
 }
-
-.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-
 .card{
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:var(--radius);
+  border-radius:14px;
   box-shadow:var(--shadow);
-  padding:20px;
+  padding:18px;
 }
-
-.card h2,
-.card h3{
-  margin:0 0 7px;
-}
-
-.card p{
-  color:var(--muted);
-}
-
-.section-title{
-  font-size:17px;
-  font-weight:800;
+.col-12{grid-column:span 12}
+.col-8{grid-column:span 8}
+.col-6{grid-column:span 6}
+.col-4{grid-column:span 4}
+.col-3{grid-column:span 3}
+.card h2{
   margin:0 0 15px;
+  font-size:17px;
 }
-
-.stat{
-  font-size:25px;
-  font-weight:800;
-  margin-top:10px;
+.card h3{
+  margin:0 0 12px;
+  font-size:14px;
 }
-
-.muted{
+.card-sub{
   color:var(--muted);
+  font-size:12px;
+  margin:-8px 0 14px;
 }
-
 .form-grid{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:15px;
+  grid-template-columns:repeat(2,1fr);
+  gap:13px;
 }
-
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.field.full{
-  grid-column:1/-1;
-}
-
 .field label{
-  font-size:13px;
+  display:block;
+  font-size:12px;
   font-weight:700;
+  margin-bottom:6px;
 }
-
 .field input,
-.field select{
+.field select,
+.field textarea{
   width:100%;
-  padding:11px 12px;
-  border:1px solid #d0d5dd;
-  border-radius:9px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 11px;
   background:#fff;
   color:var(--text);
-  outline:none;
 }
-
-.field input:focus,
-.field select:focus{
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(37,99,235,.1);
-}
-
+.field textarea{min-height:90px;resize:vertical}
 .actions{
   display:flex;
-  gap:9px;
   flex-wrap:wrap;
-  margin-top:18px;
+  gap:9px;
+  margin-top:15px;
 }
-
 .btn{
+  border:0;
+  border-radius:8px;
+  padding:10px 14px;
+  font-weight:750;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary2)}
+.btn-secondary{background:#eef2f7;color:#243044}
+.btn-danger{background:#fee2e2;color:#991b1b}
+.btn-success{background:#dcfce7;color:#166534}
+.btn-warning{background:#fef3c7;color:#92400e}
+.status-box{
   border:1px solid var(--border);
-  background:#fff;
-  color:var(--text);
-  padding:10px 15px;
-  border-radius:9px;
-  cursor:pointer;
-  font-weight:700;
+  border-radius:10px;
+  padding:12px;
+  background:#fafbfc;
 }
-
-.btn:hover{
-  background:#f9fafb;
-}
-
-.btn.primary{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:#fff;
-}
-
-.btn.danger{
-  background:#fff;
-  color:var(--danger);
-  border-color:#fca5a5;
-}
-
-.btn.success{
-  background:var(--success);
-  border-color:var(--success);
-  color:#fff;
-}
-
-.btn:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-.control-list{
-  display:flex;
-  flex-direction:column;
-  gap:11px;
-}
-
-.control-row{
+.status-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:15px;
-  padding:13px 0;
-  border-bottom:1px solid #eef0f3;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid #edf0f5;
 }
-
-.control-row:last-child{
-  border-bottom:0;
+.status-row:last-child{border-bottom:0}
+.status-row span:first-child{
+  font-size:13px;
+  font-weight:650;
 }
-
-.control-info strong{
-  display:block;
-  font-size:14px;
+.stat-card{
+  padding:17px;
 }
-
-.control-info span{
-  display:block;
-  font-size:12px;
+.stat-label{
   color:var(--muted);
-  margin-top:3px;
+  font-size:12px;
+  font-weight:700;
 }
-
+.stat-value{
+  margin-top:6px;
+  font-size:22px;
+  font-weight:850;
+}
+.toggle-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  padding:11px 0;
+  border-bottom:1px solid #edf0f5;
+}
+.toggle-row:last-child{border-bottom:0}
+.toggle-row strong{
+  display:block;
+  font-size:13px;
+}
+.toggle-row small{
+  color:var(--muted);
+  font-size:11px;
+}
 .switch{
   position:relative;
-  width:46px;
-  height:25px;
-  flex:0 0 auto;
+  width:44px;
+  height:24px;
+  flex:none;
 }
-
-.switch input{
-  opacity:0;
-  width:0;
-  height:0;
-}
-
+.switch input{display:none}
 .slider{
   position:absolute;
-  cursor:pointer;
   inset:0;
-  background:#d0d5dd;
-  border-radius:999px;
+  background:#cbd5e1;
+  border-radius:30px;
   transition:.2s;
 }
-
 .slider:before{
   content:"";
+  width:18px;
+  height:18px;
+  background:#fff;
   position:absolute;
-  width:19px;
-  height:19px;
   left:3px;
   top:3px;
-  background:#fff;
   border-radius:50%;
   transition:.2s;
   box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
-
 .switch input:checked + .slider{
   background:var(--primary);
 }
-
 .switch input:checked + .slider:before{
-  transform:translateX(21px);
+  transform:translateX(20px);
 }
-
-.notice{
-  padding:13px 15px;
-  border-radius:10px;
-  margin-top:15px;
-  font-size:13px;
-}
-
-.notice.info{
-  background:var(--primary-soft);
-  color:#1d4ed8;
-}
-
-.notice.warning{
-  background:var(--warning-soft);
-  color:var(--warning);
-}
-
-.notice.danger{
-  background:var(--danger-soft);
-  color:var(--danger);
-}
-
-.notice.success{
-  background:var(--success-soft);
-  color:var(--success);
-}
-
-.table-wrap{
-  overflow:auto;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th,td{
-  padding:11px 10px;
-  border-bottom:1px solid var(--border);
-  text-align:left;
-  font-size:13px;
-}
-
-th{
-  background:#f9fafb;
-  font-weight:800;
-}
-
-pre.output{
-  white-space:pre-wrap;
-  word-break:break-word;
-  background:#111827;
-  color:#d1d5db;
-  padding:15px;
-  border-radius:10px;
-  min-height:90px;
-  font-size:12px;
-}
-
-.module-grid{
+.language-list{
   display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
 }
-
-.module{
-  padding:12px;
+.lang-item{
   border:1px solid var(--border);
   border-radius:9px;
-  background:#fafafa;
+  padding:10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.lang-name{
   font-size:13px;
   font-weight:700;
 }
-
-.language-list{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-  margin-top:10px;
+.lang-code{
+  color:var(--muted);
+  font-size:10px;
 }
-
-.language-option{
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:12px;
-  background:#fafafa;
-  display:flex;
-  align-items:center;
-  gap:9px;
+.notice{
+  padding:12px 14px;
+  border-radius:9px;
+  font-size:12px;
+  line-height:1.5;
+  margin-bottom:14px;
 }
-
-.language-option input{
-  width:18px;
-  height:18px;
+.notice.info{background:#eff6ff;color:#1e40af}
+.notice.warn{background:#fffbeb;color:#92400e}
+.notice.danger{background:#fef2f2;color:#991b1b}
+.notice.success{background:#f0fdf4;color:#166534}
+.table-wrap{
+  overflow-x:auto;
 }
-
-.language-code{
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:650px;
+}
+th,td{
+  border-bottom:1px solid var(--border);
+  padding:10px 9px;
+  text-align:left;
+  font-size:12px;
+}
+th{
+  background:#f8fafc;
+  font-weight:800;
+}
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:30px 10px;
+}
+.footer-note{
+  margin-top:22px;
   color:var(--muted);
   font-size:11px;
-  margin-left:auto;
-}
-
-.footer-note{
-  margin-top:25px;
-  color:var(--muted);
-  font-size:12px;
   text-align:center;
 }
-
-.mobile-menu{
-  display:none;
-}
+.hidden{display:none!important}
 
 @media(max-width:1050px){
-  .grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .module-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .language-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sidebar{width:235px}
+  .main{margin-left:235px;width:calc(100% - 235px)}
+  .col-4,.col-3{grid-column:span 6}
 }
-
-@media(max-width:800px){
-
+@media(max-width:760px){
   .sidebar{
     transform:translateX(-100%);
-    transition:.2s;
+    transition:.25s;
+    width:270px;
   }
-
-  .sidebar.open{
-    transform:translateX(0);
-  }
-
+  .sidebar.open{transform:translateX(0)}
   .main{
     margin-left:0;
     width:100%;
   }
-
-  .mobile-menu{
-    display:block;
-    border:0;
-    background:transparent;
-    font-size:23px;
-    cursor:pointer;
-  }
-
+  .mobile-menu{display:block}
   .topbar{
-    padding:10px 15px;
+    padding:0 12px;
+    height:auto;
+    min-height:66px;
   }
-
-  .statuses{
+  .top-right .badge{
     display:none;
   }
-
-  .content{
-    padding:18px;
-  }
-
-  .grid-2,
-  .grid-3,
-  .grid-4,
-  .form-grid{
-    grid-template-columns:1fr;
-  }
-
-  .module-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-
-  .language-list{
-    grid-template-columns:1fr;
-  }
+  .content{padding:14px}
+  .col-8,.col-6,.col-4,.col-3{grid-column:span 12}
+  .form-grid{grid-template-columns:1fr}
+  .language-list{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -602,2632 +414,706 @@ pre.output{
 
 <div class="app">
 
-<aside class="sidebar" id="sidebar">
-
-  <div class="brand">
-    <div class="brand-title">GoVara</div>
-    <div class="brand-sub" data-i18n="brandSub">Administrator Control Center</div>
-  </div>
-
-  <nav class="nav">
-
-    <div class="nav-section" data-i18n="navCore">Core</div>
-
-    <button class="nav-btn active" data-page="dashboard">
-      <span data-i18n="navDashboard">Dashboard</span>
-    </button>
-
-    <div class="nav-section" data-i18n="navAdministrator">
-      Administrator
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-title">GoVara</div>
+      <div class="brand-sub" data-i18n="adminControlCenter">Administrator Control Center</div>
     </div>
 
-    <button class="nav-btn" data-page="system">
-      <span data-i18n="nav26A">26A — System Configuration</span>
-    </button>
+    <nav class="nav">
+      <button data-page="dashboard" class="active" data-i18n="dashboard">Dashboard</button>
+      <button data-page="system" data-i18n="systemConfiguration">26A — System Configuration</button>
+      <button data-page="users" data-i18n="userRoleControl">26B — User & Role Control</button>
+      <button data-page="business" data-i18n="businessPolicies">26C — Business Policies</button>
+      <button data-page="operations" data-i18n="operationsControl">26D — Operations Control</button>
+      <button data-page="financial" data-i18n="financialControl">26E — Financial Control</button>
+      <button data-page="documents" data-i18n="documentsKyc">26F — Documents & KYC</button>
+      <button data-page="audit" data-i18n="auditMonitoring">26G — Audit & Monitoring</button>
+      <button data-page="api" data-i18n="step27Api">STEP 27 — Consolidated API</button>
+    </nav>
+  </aside>
 
-    <button class="nav-btn" data-page="roles">
-      <span data-i18n="nav26B">26B — User & Role Control</span>
-    </button>
+  <!-- MAIN -->
+  <main class="main">
 
-    <button class="nav-btn" data-page="policies">
-      <span data-i18n="nav26C">26C — Business Policies</span>
-    </button>
-
-    <button class="nav-btn" data-page="operations">
-      <span data-i18n="nav26D">26D — Operations Control</span>
-    </button>
-
-    <button class="nav-btn" data-page="financial">
-      <span data-i18n="nav26E">26E — Financial Control</span>
-    </button>
-
-    <button class="nav-btn" data-page="documents">
-      <span data-i18n="nav26F">26F — Documents & KYC</span>
-    </button>
-
-    <button class="nav-btn" data-page="audit">
-      <span data-i18n="nav26G">26G — Audit & Monitoring</span>
-    </button>
-
-    <div class="nav-section" data-i18n="navIntegration">
-      Integration
-    </div>
-
-    <button class="nav-btn" data-page="api">
-      <span data-i18n="nav27">STEP 27 — Consolidated API</span>
-    </button>
-
-  </nav>
-</aside>
-
-
-<main class="main">
-
-<header class="topbar">
-
-  <div class="topbar-left">
-
-    <button class="mobile-menu" id="mobileMenu">☰</button>
-
-    <div class="topbar-title" id="topbarTitle">
-      GoVara Dashboard
-    </div>
-
-  </div>
-
-  <div class="topbar-right">
-
-    <div class="language-box">
-      <span>🌐</span>
-
-      <select id="languageSelector"
-              aria-label="Language">
-      </select>
-    </div>
-
-    <div class="statuses">
-
-      <span class="badge success"
-            data-i18n="badgeFrontend">
-        FRONTEND READY
-      </span>
-
-      <span class="badge warning"
-            id="apiBadge">
-        API NOT CONFIGURED
-      </span>
-
-      <span class="badge warning"
-            id="modeBadge">
-        TESTING MODE
-      </span>
-
-      <span class="badge danger"
-            data-i18n="badgeMoney">
-        REAL MONEY BLOCKED
-      </span>
-
-    </div>
-
-  </div>
-
-</header>
-
-
-<div class="content">
-
-
-<!-- =====================================================
-     DASHBOARD
-===================================================== -->
-
-<section class="page active" id="page-dashboard">
-
-  <div class="page-head">
-    <h1 data-i18n="dashboardTitle">
-      Administrator Dashboard
-    </h1>
-
-    <p data-i18n="dashboardDesc">
-      Central control view for GoVara system configuration and administration.
-    </p>
-  </div>
-
-
-  <div class="grid grid-4">
-
-    <div class="card">
-
-      <div class="muted"
-           data-i18n="frontend">
-        Frontend
+    <header class="topbar">
+      <div class="top-left">
+        <button class="mobile-menu" id="mobileMenu">☰</button>
+        <div class="top-title" id="topTitle">Dashboard</div>
       </div>
 
-      <div class="stat">READY</div>
+      <div class="top-right">
+        <span class="badge ready">● FRONTEND READY</span>
+        <span class="badge info" id="apiBadge">API NOT CONFIGURED</span>
+        <span class="badge warn">TESTING MODE</span>
+        <span class="badge danger">REAL MONEY BLOCKED</span>
 
-      <span class="badge success"
-            data-i18n="operational">
-        Operational
-      </span>
-
-    </div>
-
-
-    <div class="card">
-
-      <div class="muted"
-           data-i18n="api">
-        API
+        <!-- GLOBAL LANGUAGE SELECTOR -->
+        <select id="globalLanguage" class="lang-select" aria-label="Language"></select>
       </div>
-
-      <div class="stat"
-           id="dashboardApi">
-        NOT CONFIGURED
-      </div>
-
-      <span class="badge warning"
-            data-i18n="futureConnection">
-        Future Connection
-      </span>
-
-    </div>
-
-
-    <div class="card">
-
-      <div class="muted"
-           data-i18n="environment">
-        Environment
-      </div>
-
-      <div class="stat"
-           id="dashboardEnvironment">
-        TESTING
-      </div>
-
-      <span class="badge warning"
-            data-i18n="safetyMode">
-        Safety Mode
-      </span>
-
-    </div>
-
-
-    <div class="card">
-
-      <div class="muted"
-           data-i18n="systemStatus">
-        System Status
-      </div>
-
-      <div class="stat"
-           id="dashboardSystemStatus">
-        ACTIVE
-      </div>
-
-      <span class="badge success"
-            data-i18n="systemControl">
-        System Control
-      </span>
-
-    </div>
-
-  </div>
-
-
-  <div class="grid grid-3"
-       style="margin-top:18px;">
-
-    <div class="card">
-
-      <h3 data-i18n="socialWelfare">
-        Social Welfare
-      </h3>
-
-      <div class="stat"
-           id="dashboardWelfare">
-        ENABLED
-      </div>
-
-      <p data-i18n="welfareDashboardDesc">
-        System-level master control. Welfare rules remain under policy control.
-      </p>
-
-    </div>
-
-
-    <div class="card">
-
-      <h3 data-i18n="financialSafety">
-        Financial Safety
-      </h3>
-
-      <div class="stat">BLOCKED</div>
-
-      <p data-i18n="financialSafetyDesc">
-        Real money, real payment and bank transfer remain blocked at frontend.
-      </p>
-
-    </div>
-
-
-    <div class="card">
-
-      <h3 data-i18n="configuration">
-        Configuration
-      </h3>
-
-      <div class="stat"
-           id="dashboardConfigVersion">
-        1.0
-      </div>
-
-      <p data-i18n="configVersionDesc">
-        Central system configuration version.
-      </p>
-
-    </div>
-
-  </div>
-
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <h2 data-i18n="architectureBoundary">
-      Architecture Boundary
-    </h2>
-
-    <div class="notice info"
-         data-i18n="architectureText">
-      Frontend is a control interface only. Backend remains authoritative for
-      business, financial and persistent data operations.
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26A
-===================================================== -->
-
-<section class="page" id="page-system">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26A">
-      26A — System Configuration
-    </h1>
-
-    <p data-i18n="desc26A">
-      Central system-level configuration. This is the master configuration layer for GoVara.
-    </p>
-
-  </div>
-
-
-  <div class="notice warning">
-
-    <strong data-i18n="important">
-      Important:
-    </strong>
-
-    <span data-i18n="important26AText">
-      26A controls system configuration only. Business rules belong to 26C,
-      operational controls to 26D, financial authority remains backend-side,
-      and audit records are handled by 26G.
-    </span>
-
-  </div>
-
-
-  <!-- SYSTEM IDENTITY -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="systemIdentity">
-      1. System Identity
-    </div>
-
-
-    <div class="form-grid">
-
-      <div class="field">
-
-        <label data-i18n="systemName">
-          System Name *
-        </label>
-
-        <input id="systemName"
-               type="text"
-               placeholder="GoVara">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="platformType">
-          Platform / System Type *
-        </label>
-
-        <input id="platformType"
-               type="text"
-               placeholder="Transport & Mobility Platform">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="platformId">
-          System / Platform ID *
-        </label>
-
-        <input id="platformId"
-               type="text"
-               placeholder="GOVARA">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="frontendVersion">
-          Frontend Version *
-        </label>
-
-        <input id="frontendVersion"
-               type="text"
-               placeholder="ADMIN-CONTROL-26">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="configVersion">
-          Configuration Version
-        </label>
-
-        <input id="configVersion"
-               type="text"
-               placeholder="1.0">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="environment">
-          Environment *
-        </label>
-
-        <select id="environment">
-
-          <option value="TESTING">TESTING</option>
-          <option value="STAGING">STAGING</option>
-          <option value="PRODUCTION">PRODUCTION</option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="systemStatus">
-          System Status *
-        </label>
-
-        <select id="systemStatus">
-
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="MAINTENANCE">MAINTENANCE</option>
-          <option value="SUSPENDED">SUSPENDED</option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="futureApiEndpoint">
-          Future Consolidated API Endpoint
-        </label>
-
-        <input id="apiEndpoint"
-               type="url"
-               placeholder="https://script.google.com/.../exec">
-
-      </div>
-
-    </div>
-
-
-    <div id="productionWarning"
-         class="notice danger"
-         style="display:none;">
-
-      <strong data-i18n="productionWarningTitle">
-        Production environment selected.
-      </strong>
-
-      <span data-i18n="productionWarningText">
-        This is a configuration declaration only.
-        Real-money and real-payment capabilities remain blocked until
-        authoritative backend controls are implemented and verified.
-      </span>
-
-    </div>
-
-  </div>
-
-
-  <!-- GLOBAL DEFAULTS -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="globalDefaults">
-      2. Global System Defaults
-    </div>
-
-
-    <div class="form-grid">
-
-      <div class="field">
-
-        <label data-i18n="defaultCountry">
-          Default Country
-        </label>
-
-        <select id="defaultCountry">
-
-          <option value="IN">
-            India
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="defaultCurrency">
-          Default Currency
-        </label>
-
-        <select id="defaultCurrency">
-
-          <option value="INR">
-            INR — Indian Rupee
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="defaultTimezone">
-          Default Timezone
-        </label>
-
-        <select id="defaultTimezone">
-
-          <option value="Asia/Kolkata">
-            Asia/Kolkata
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="defaultLanguage">
-          Default Language
-        </label>
-
-        <select id="defaultLanguage">
-
-          <option value="en-IN">
-            English
-          </option>
-
-          <option value="hi-IN">
-            हिन्दी
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="dateFormat">
-          Date Format
-        </label>
-
-        <select id="dateFormat">
-
-          <option value="DD-MM-YYYY">
-            DD-MM-YYYY
-          </option>
-
-          <option value="YYYY-MM-DD">
-            YYYY-MM-DD
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="timeFormat">
-          Time Format
-        </label>
-
-        <select id="timeFormat">
-
-          <option value="24H">
-            24 Hour
-          </option>
-
-          <option value="12H">
-            12 Hour
-          </option>
-
-        </select>
-
-      </div>
-
-    </div>
-
-
-    <!-- MULTILINGUAL CONTROL -->
-
-    <div class="section-title"
-         style="margin-top:25px;"
-         data-i18n="languageConfiguration">
-      Multilingual Configuration
-    </div>
-
-
-    <div class="notice info">
-
-      <strong data-i18n="languageArchitecture">
-        Language Architecture:
-      </strong>
-
-      <span data-i18n="languageArchitectureText">
-        The Administrator controls which language packs are available.
-        The selected default language becomes the system interface default.
-      </span>
-
-    </div>
-
-
-    <div class="language-list">
-
-      <label class="language-option">
-
-        <input type="checkbox"
-               class="language-check"
-               value="en-IN"
-               checked>
-
-        <strong>English</strong>
-
-        <span class="language-code">
-          en-IN
-        </span>
-
-      </label>
-
-
-      <label class="language-option">
-
-        <input type="checkbox"
-               class="language-check"
-               value="hi-IN"
-               checked>
-
-        <strong>हिन्दी</strong>
-
-        <span class="language-code">
-          hi-IN
-        </span>
-
-      </label>
-
-    </div>
-
-
-    <div class="notice warning"
-         data-i18n="translationNote">
-      Additional languages can be added as translation packs without changing
-      the core Administrator architecture. Full automatic translation of arbitrary
-      languages requires a translation engine/API and is intentionally not connected yet.
-    </div>
-
-  </div>
-
-
-  <!-- LIFECYCLE -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="lifecycle">
-      3. System Lifecycle & Operating Behaviour
-    </div>
-
-
-    <div class="control-list">
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="platformEnabled">
-            Platform Enabled
-          </strong>
-
-          <span data-i18n="platformEnabledDesc">
-            Master switch for the GoVara frontend control layer.
+    </header>
+
+    <section class="content">
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-head">
+          <h1 data-i18n="dashboard">Dashboard</h1>
+          <p data-i18n="dashboardDescription">
+            Central administrator overview for the GoVara platform.
+          </p>
+        </div>
+
+        <div class="grid">
+          <div class="card stat-card col-3">
+            <div class="stat-label" data-i18n="systemStatus">System Status</div>
+            <div class="stat-value" id="dashSystemStatus">ACTIVE</div>
+          </div>
+
+          <div class="card stat-card col-3">
+            <div class="stat-label" data-i18n="environment">Environment</div>
+            <div class="stat-value" id="dashEnvironment">TESTING</div>
+          </div>
+
+          <div class="card stat-card col-3">
+            <div class="stat-label" data-i18n="defaultLanguage">Default Language</div>
+            <div class="stat-value" id="dashLanguage">English</div>
+          </div>
+
+          <div class="card stat-card col-3">
+            <div class="stat-label" data-i18n="apiStatus">API Status</div>
+            <div class="stat-value" id="dashApiStatus">NOT CONFIGURED</div>
+          </div>
+
+          <div class="card col-6">
+            <h2 data-i18n="architectureStatus">Architecture Status</h2>
+            <div class="status-box">
+              <div class="status-row">
+                <span>Frontend</span>
+                <span class="badge ready">READY</span>
+              </div>
+              <div class="status-row">
+                <span>Backend</span>
+                <span class="badge warn">NOT CONNECTED</span>
+              </div>
+              <div class="status-row">
+                <span>Database</span>
+                <span class="badge warn">SEPARATE</span>
+              </div>
+              <div class="status-row">
+                <span>Consolidated API</span>
+                <span class="badge info">STEP 27</span>
+              </div>
+              <div class="status-row">
+                <span>Real Money</span>
+                <span class="badge danger">BLOCKED</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card col-6">
+            <h2 data-i18n="globalControls">Global Controls</h2>
+            <div class="status-box">
+              <div class="status-row">
+                <span data-i18n="language">Language</span>
+                <strong id="dashLanguage2">English</strong>
+              </div>
+              <div class="status-row">
+                <span data-i18n="timezone">Timezone</span>
+                <strong id="dashTimezone">Asia/Kolkata</strong>
+              </div>
+              <div class="status-row">
+                <span data-i18n="currency">Currency</span>
+                <strong id="dashCurrency">INR</strong>
+              </div>
+              <div class="status-row">
+                <span data-i18n="socialWelfare">Social Welfare</span>
+                <span id="dashWelfare" class="badge ready">ENABLED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- 26A SYSTEM CONFIGURATION -->
+      <section class="page" id="page-system">
+
+        <div class="page-head">
+          <h1 data-i18n="systemConfiguration">26A — System Configuration</h1>
+          <p data-i18n="systemConfigurationDescription">
+            Global system-level configuration and control layer.
+          </p>
+        </div>
+
+        <div class="notice info">
+          <strong>26A:</strong>
+          <span data-i18n="systemConfigNotice">
+            This section controls global configuration only. Business, user, operational
+            and financial authority remain in their respective control layers/backend.
           </span>
+        </div>
+
+        <div class="grid">
+
+          <!-- IDENTITY -->
+          <div class="card col-6">
+            <h2 data-i18n="systemIdentity">1. System Identity</h2>
+
+            <div class="form-grid">
+              <div class="field">
+                <label data-i18n="systemName">System Name</label>
+                <input id="systemName" type="text">
+              </div>
+
+              <div class="field">
+                <label data-i18n="platformType">Platform / System Type</label>
+                <select id="platformType">
+                  <option value="TRANSPORT_MOBILITY">Transport & Mobility Platform</option>
+                  <option value="MARKETPLACE">Mobility Marketplace</option>
+                  <option value="LOGISTICS">Transport & Logistics</option>
+                  <option value="MULTISERVICE">Multi-Service Mobility Platform</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label data-i18n="systemVersion">System Version</label>
+                <input id="systemVersion" type="text">
+              </div>
+
+              <div class="field">
+                <label data-i18n="frontendVersion">Frontend Version</label>
+                <input id="frontendVersion" type="text">
+              </div>
+            </div>
+          </div>
+
+          <!-- ENVIRONMENT -->
+          <div class="card col-6">
+            <h2 data-i18n="environmentStatus">2. Environment & System Status</h2>
+
+            <div class="form-grid">
+              <div class="field">
+                <label data-i18n="environment">Environment</label>
+                <select id="environment">
+                  <option value="TESTING">TESTING</option>
+                  <option value="STAGING">STAGING</option>
+                  <option value="PRODUCTION">PRODUCTION</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label data-i18n="systemStatus">System Status</label>
+                <select id="systemStatus">
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="MAINTENANCE">MAINTENANCE</option>
+                  <option value="SUSPENDED">SUSPENDED</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label data-i18n="maintenanceMessage">Maintenance / System Message</label>
+                <textarea id="maintenanceMessage"></textarea>
+              </div>
+
+              <div class="field">
+                <label data-i18n="maintenanceBehavior">Maintenance Behaviour</label>
+                <select id="maintenanceBehavior">
+                  <option value="NOTICE_ONLY">Show Notice Only</option>
+                  <option value="READ_ONLY">Read Only</option>
+                  <option value="BLOCK_OPERATIONS">Block Operational Actions</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRODUCTION SAFETY -->
+          <div class="card col-6">
+            <h2 data-i18n="productionSafety">3. Production Safety</h2>
+
+            <div class="notice warn">
+              <strong data-i18n="safetyWarningTitle">Safety Protection:</strong>
+              <span data-i18n="safetyWarning">
+                Production must never be enabled accidentally from the frontend.
+              </span>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <strong data-i18n="productionLock">Production Lock</strong>
+                <small data-i18n="productionLockDescription">
+                  Require explicit administrator confirmation before production mode.
+                </small>
+              </div>
+              <label class="switch">
+                <input id="productionLock" type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <strong data-i18n="testingIndicator">Testing Mode Indicator</strong>
+                <small data-i18n="testingIndicatorDescription">
+                  Keep testing state visible in the administrator UI.
+                </small>
+              </div>
+              <label class="switch">
+                <input id="testingIndicator" type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- API -->
+          <div class="card col-6">
+            <h2 data-i18n="consolidatedApi">4. Consolidated API Configuration</h2>
+
+            <div class="notice info">
+              <span data-i18n="apiConfigNotice">
+                One central API boundary only. Backend/database are not connected at this stage.
+              </span>
+            </div>
+
+            <div class="field">
+              <label data-i18n="apiEndpoint">Consolidated API Endpoint</label>
+              <input id="apiEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-secondary" id="validateApiBtn" data-i18n="validateEndpoint">Validate Endpoint</button>
+              <button class="btn btn-primary" id="saveApiBtn" data-i18n="saveApi">Save API Configuration</button>
+              <button class="btn btn-danger" id="clearApiBtn" data-i18n="clearApi">Clear API</button>
+            </div>
+
+            <div id="apiValidationResult" class="card-sub" style="margin-top:12px"></div>
+          </div>
+
+          <!-- LANGUAGE -->
+          <div class="card col-8">
+            <h2 data-i18n="languageLocalization">5. Language & Localization</h2>
+
+            <div class="notice success">
+              <strong data-i18n="multilingual">Multilingual System:</strong>
+              <span data-i18n="multilingualDescription">
+                Admin controls which languages are available to users. The global language
+                selector automatically switches the supported UI language.
+              </span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label data-i18n="defaultLanguage">Default Language</label>
+                <select id="defaultLanguage"></select>
+              </div>
+
+              <div class="field">
+                <label data-i18n="languageSelectorMode">Language Selector</label>
+                <select id="languageSelectorMode">
+                  <option value="SHOW">Show to users</option>
+                  <option value="HIDE">Hide from users</option>
+                  <option value="ADMIN_ONLY">Admin controlled</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 style="margin-top:18px" data-i18n="availableLanguages">Available Languages</h3>
+
+            <div class="language-list" id="languageList"></div>
+          </div>
+
+          <!-- REGIONAL -->
+          <div class="card col-4">
+            <h2 data-i18n="regionalSettings">6. Regional Settings</h2>
+
+            <div class="field">
+              <label data-i18n="timezone">Timezone</label>
+              <select id="timezone">
+                <option value="Asia/Kolkata">Asia/Kolkata</option>
+                <option value="Asia/Dubai">Asia/Dubai</option>
+                <option value="Asia/Singapore">Asia/Singapore</option>
+                <option value="Asia/Kolkata">India Standard Time</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-top:12px">
+              <label data-i18n="currency">Currency</label>
+              <select id="currency">
+                <option value="INR">INR — Indian Rupee</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="AED">AED — UAE Dirham</option>
+                <option value="GBP">GBP — British Pound</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-top:12px">
+              <label data-i18n="dateFormat">Date Format</label>
+              <select id="dateFormat">
+                <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+                <option value="MM-DD-YYYY">MM-DD-YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-top:12px">
+              <label data-i18n="timeFormat">Time Format</label>
+              <select id="timeFormat">
+                <option value="12H">12 Hour</option>
+                <option value="24H">24 Hour</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- SOCIAL WELFARE -->
+          <div class="card col-6">
+            <h2 data-i18n="socialWelfare">7. Social Welfare</h2>
+
+            <div class="toggle-row">
+              <div>
+                <strong data-i18n="welfareEnabled">Social Welfare Module</strong>
+                <small data-i18n="welfareEnabledDescription">
+                  Enable system-level welfare capability for future supported services.
+                </small>
+              </div>
+              <label class="switch">
+                <input id="welfareEnabled" type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <strong data-i18n="welfareVisibility">Show Welfare Options</strong>
+                <small data-i18n="welfareVisibilityDescription">
+                  Allow welfare-related options to appear where supported.
+                </small>
+              </div>
+              <label class="switch">
+                <input id="welfareVisibility" type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- SYSTEM BEHAVIOUR -->
+          <div class="card col-6">
+            <h2 data-i18n="systemBehavior">8. System Behaviour</h2>
+
+            <div class="toggle-row">
+              <div>
+                <strong data-i18n="showMaintenanceMessage">Show Maintenance Message</strong>
+                <small data-i18n="showMaintenanceMessageDescription">
+                  Display the configured system message when maintenance is active.
+                </small>
+              </div>
+              <label class="switch">
+                <input id="showMaintenanceMessage" type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <strong data-i18n="blockWhenSuspended">Block Operations When Suspended</strong>
+                <small data-i18n="blockWhenSuspendedDescription">
+                  System suspension should prevent normal operational actions.
+                </small>
+              </div>
+              <label class="switch">
+                <input id="blockWhenSuspended" type="checkbox">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- CONFIG MANAGEMENT -->
+          <div class="card col-8">
+            <h2 data-i18n="configurationManagement">9. Configuration Management</h2>
+
+            <div class="status-box">
+              <div class="status-row">
+                <span data-i18n="configurationVersion">Configuration Version</span>
+                <strong id="configVersionDisplay">26A-1.0</strong>
+              </div>
+              <div class="status-row">
+                <span data-i18n="lastUpdated">Last Updated</span>
+                <strong id="lastUpdatedDisplay">—</strong>
+              </div>
+              <div class="status-row">
+                <span data-i18n="storageMode">Storage Mode</span>
+                <strong>LOCAL FRONTEND</strong>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" id="saveConfigBtn" data-i18n="saveConfiguration">Save Configuration</button>
+              <button class="btn btn-secondary" id="reloadConfigBtn" data-i18n="reloadConfiguration">Reload Configuration</button>
+              <button class="btn btn-warning" id="resetConfigBtn" data-i18n="resetDefaults">Reset to Defaults</button>
+            </div>
+          </div>
+
+          <!-- SAFETY -->
+          <div class="card col-4">
+            <h2 data-i18n="safetyBoundary">10. Safety Boundary</h2>
+
+            <div class="status-row">
+              <span>Real Money</span>
+              <span class="badge danger">BLOCKED</span>
+            </div>
+
+            <div class="status-row">
+              <span>Real Payment</span>
+              <span class="badge danger">BLOCKED</span>
+            </div>
+
+            <div class="status-row">
+              <span>Bank Transfer</span>
+              <span class="badge danger">BLOCKED</span>
+            </div>
+
+            <div class="status-row">
+              <span>Frontend Financial Authority</span>
+              <span class="badge danger">NO</span>
+            </div>
+
+            <div class="notice info" style="margin-top:14px">
+              Backend remains authoritative when the consolidated API is connected.
+            </div>
+          </div>
 
         </div>
 
-        <label class="switch">
+        <div class="actions">
+          <button class="btn btn-primary" id="save26ABottom" data-i18n="save26A">Save 26A Configuration</button>
+        </div>
 
-          <input id="platformEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
+      </section>
 
 
-      <div class="control-row">
+      <!-- 26B -->
+      <section class="page" id="page-users">
+        <div class="page-head">
+          <h1 data-i18n="userRoleControl">26B — User & Role Control</h1>
+          <p data-i18n="userRoleDescription">Central role registry for Admin, Customer, Vendor and Driver.</p>
+        </div>
 
-        <div class="control-info">
+        <div class="card">
+          <h2 data-i18n="roleRegistry">Role Registry</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Primary Function</th>
+                </tr>
+              </thead>
+              <tbody id="rolesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-          <strong data-i18n="registration">
-            New Registration
-          </strong>
 
-          <span data-i18n="registrationDesc">
-            Allows new user registration when enabled.
-          </span>
+      <!-- 26C -->
+      <section class="page" id="page-business">
+        <div class="page-head">
+          <h1 data-i18n="businessPolicies">26C — Business Policies</h1>
+          <p data-i18n="businessPolicyDescription">Admin-configurable business and fare policies.</p>
+        </div>
+
+        <div class="grid">
+          <div class="card col-6">
+            <h2 data-i18n="farePolicies">Fare & Charges</h2>
+            <div class="form-grid">
+              <div class="field">
+                <label>Base Fare</label>
+                <input id="baseFare" type="number">
+              </div>
+              <div class="field">
+                <label>Per KM Rate</label>
+                <input id="perKmRate" type="number">
+              </div>
+              <div class="field">
+                <label>Service Charge %</label>
+                <input id="serviceCharge" type="number">
+              </div>
+              <div class="field">
+                <label>Tax %</label>
+                <input id="taxPercent" type="number">
+              </div>
+              <div class="field">
+                <label>Maximum Discount %</label>
+                <input id="maxDiscount" type="number">
+              </div>
+              <div class="field">
+                <label>Default Advance %</label>
+                <input id="advancePercent" type="number">
+              </div>
+            </div>
+          </div>
+
+          <div class="card col-6">
+            <h2>KYC Policy</h2>
+            <div id="kycPolicies"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- 26D -->
+      <section class="page" id="page-operations">
+        <div class="page-head">
+          <h1 data-i18n="operationsControl">26D — Operations Control</h1>
+          <p>Booking, vehicle, duty and service operational controls.</p>
+        </div>
+
+        <div class="grid">
+          <div class="card col-6">
+            <h2>Operational Controls</h2>
+            <div id="operationControls"></div>
+          </div>
+
+          <div class="card col-6">
+            <h2>Services</h2>
+            <div id="serviceControls"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- 26E -->
+      <section class="page" id="page-financial">
+        <div class="page-head">
+          <h1 data-i18n="financialControl">26E — Financial Control</h1>
+          <p>Financial modules remain backend-authoritative.</p>
+        </div>
+
+        <div class="notice danger">
+          <strong>Financial Safety Boundary:</strong>
+          Frontend is NOT the financial authority. Real Money, Real Payment and Bank Transfer remain BLOCKED.
+        </div>
+
+        <div class="card">
+          <h2>Financial Modules</h2>
+          <div id="financialModules"></div>
+        </div>
+      </section>
+
+
+      <!-- 26F -->
+      <section class="page" id="page-documents">
+        <div class="page-head">
+          <h1 data-i18n="documentsKyc">26F — Documents & KYC</h1>
+          <p>Document verification and KYC control layer.</p>
+        </div>
+
+        <div class="card">
+          <h2>Document Controls</h2>
+          <div id="documentControls"></div>
+        </div>
+      </section>
+
+
+      <!-- 26G -->
+      <section class="page" id="page-audit">
+        <div class="page-head">
+          <h1 data-i18n="auditMonitoring">26G — Audit & Monitoring</h1>
+          <p>Local frontend activity log until consolidated backend audit is connected.</p>
+        </div>
+
+        <div class="card">
+          <div class="actions">
+            <button class="btn btn-danger" id="clearAuditBtn">Clear Local Log</button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:15px">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Action</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="auditTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- STEP 27 -->
+      <section class="page" id="page-api">
+        <div class="page-head">
+          <h1>STEP 27 — Consolidated API</h1>
+          <p>Single API boundary for future backend integration.</p>
+        </div>
+
+        <div class="grid">
+
+          <div class="card col-6">
+            <h2>API Status</h2>
+            <div class="status-box">
+              <div class="status-row">
+                <span>API Object</span>
+                <span class="badge ready">AVAILABLE</span>
+              </div>
+              <div class="status-row">
+                <span>Endpoint</span>
+                <strong id="step27Endpoint">NONE</strong>
+              </div>
+              <div class="status-row">
+                <span>Connection</span>
+                <strong id="step27Connection">NOT TESTED</strong>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" id="step27Save">Save Endpoint</button>
+              <button class="btn btn-secondary" id="step27Clear">Clear Endpoint</button>
+              <button class="btn btn-warning" id="step27Test">Test Connection</button>
+            </div>
+          </div>
+
+          <div class="card col-6">
+            <h2>Consolidated Module Boundary</h2>
+            <div class="status-box">
+              <div class="card-sub">Existing logical modules only. No database table creation.</div>
+              <div id="apiModules"></div>
+            </div>
+          </div>
 
         </div>
 
-        <label class="switch">
-
-          <input id="registrationEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="bookingSystem">
-            Booking System
-          </strong>
-
-          <span data-i18n="bookingSystemDesc">
-            Global booking capability switch.
-          </span>
-
+        <div class="notice danger" style="margin-top:16px">
+          Financial API operations must remain backend-authoritative.
+          This frontend does not create independent financial truth.
         </div>
+      </section>
 
-        <label class="switch">
-
-          <input id="bookingEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
+      <div class="footer-note">
+        GoVara Administrator Control Center • 26A–26G • STEP 27 • Testing Mode • Real Money BLOCKED
       </div>
 
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="notificationSystem">
-            Notification System
-          </strong>
-
-          <span data-i18n="notificationSystemDesc">
-            Global notification capability switch.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="notificationsEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-    </div>
-
-
-    <div class="notice info">
-
-      <strong data-i18n="maintenance">
-        Maintenance:
-      </strong>
-
-      <span data-i18n="maintenanceText">
-        when System Status is MAINTENANCE, operational actions are treated
-        as restricted by the frontend. Backend remains authoritative.
-      </span>
-
-    </div>
-
-
-    <div class="notice danger">
-
-      <strong data-i18n="suspended">
-        Suspended:
-      </strong>
-
-      <span data-i18n="suspendedText">
-        when System Status is SUSPENDED, operational actions are considered
-        blocked by the frontend. This does not create backend authority.
-      </span>
-
-    </div>
-
-  </div>
-
-
-  <!-- SOCIAL WELFARE -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="welfareSystemTitle">
-      4. Social Welfare — System-Level Control
-    </div>
-
-
-    <div class="notice info"
-         data-i18n="welfareSystemDesc">
-      Social Welfare is a cross-module capability. 26A controls the master
-      system availability; detailed eligibility, benefit and business rules belong to 26C.
-    </div>
-
-
-    <div class="control-list"
-         style="margin-top:12px;">
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="welfareEnabled">
-            Social Welfare System
-          </strong>
-
-          <span data-i18n="welfareEnabledDesc">
-            Master enable/disable switch for welfare capability.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="socialWelfareEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="welfareAdminControl">
-            Welfare Administrative Control
-          </strong>
-
-          <span data-i18n="welfareAdminControlDesc">
-            Allows Administrator Control Center to configure welfare system state.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="welfareAdminControl"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="welfareAuditRequired">
-            Welfare Audit Required
-          </strong>
-
-          <span data-i18n="welfareAuditRequiredDesc">
-            Welfare configuration changes must generate audit events.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="welfareAuditRequired"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-    </div>
-
-
-    <div class="form-grid"
-         style="margin-top:15px;">
-
-      <div class="field">
-
-        <label data-i18n="welfareMode">
-          Welfare System Mode
-        </label>
-
-        <select id="welfareMode">
-
-          <option value="TESTING">
-            TESTING
-          </option>
-
-          <option value="ACTIVE">
-            ACTIVE
-          </option>
-
-          <option value="SUSPENDED">
-            SUSPENDED
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="welfareFinancialState">
-          Frontend Welfare Financial State
-        </label>
-
-        <input value="BLOCKED — BACKEND AUTHORITY REQUIRED"
-               disabled>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- GLOBAL FEATURE CONTROLS -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="globalFeatureControls">
-      5. Global Feature Controls
-    </div>
-
-
-    <div class="control-list">
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="globalNotifications">
-            System Notifications
-          </strong>
-
-          <span data-i18n="globalNotificationsDesc">
-            Global notification capability.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="globalNotifications"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="monitoring">
-            System Monitoring
-          </strong>
-
-          <span data-i18n="monitoringDesc">
-            Enable frontend monitoring indicators.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="monitoringEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="auditGeneration">
-            Audit Event Generation
-          </strong>
-
-          <span data-i18n="auditGenerationDesc">
-            Generate local administrative audit events.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="auditEventsEnabled"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- SAFETY -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="financialSafetyBoundary">
-      6. Financial & Safety Boundary
-    </div>
-
-
-    <div class="grid grid-3">
-
-      <div class="notice danger">
-
-        <strong data-i18n="realMoney">
-          Real Money
-        </strong>
-
-        <br>
-
-        BLOCKED
-
-      </div>
-
-
-      <div class="notice danger">
-
-        <strong data-i18n="realPayment">
-          Real Payment
-        </strong>
-
-        <br>
-
-        BLOCKED
-
-      </div>
-
-
-      <div class="notice danger">
-
-        <strong data-i18n="bankTransfer">
-          Bank Transfer
-        </strong>
-
-        <br>
-
-        BLOCKED
-
-      </div>
-
-    </div>
-
-
-    <div class="notice warning"
-         data-i18n="financialBoundaryText">
-      Frontend does not become a financial authority by changing any 26A setting.
-      Financial truth remains backend-authoritative.
-    </div>
-
-  </div>
-
-
-  <!-- MODULE REGISTRY -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="moduleRegistry">
-      7. System Module Registry
-    </div>
-
-
-    <div class="module-grid">
-
-      <div class="module">Customer</div>
-      <div class="module">Vendor</div>
-      <div class="module">Driver</div>
-      <div class="module">Vehicle</div>
-      <div class="module">Booking</div>
-      <div class="module">Duty</div>
-      <div class="module">Fare</div>
-      <div class="module">Transaction</div>
-      <div class="module">Wallet</div>
-      <div class="module">Ledger</div>
-      <div class="module">Settlement</div>
-      <div class="module">Billing</div>
-      <div class="module">Documents</div>
-      <div class="module">Admin</div>
-      <div class="module">Audit</div>
-      <div class="module">Social Welfare</div>
-
-    </div>
-
-  </div>
-
-
-  <!-- CONFIG MANAGEMENT -->
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="configurationManagement">
-      8. Configuration Management
-    </div>
-
-
-    <div class="notice info"
-         data-i18n="localStorageNotice">
-      Save stores the current 26A configuration locally for frontend testing.
-      Backend/database persistence is intentionally not used at this stage.
-    </div>
-
-
-    <div class="actions">
-
-      <button class="btn primary"
-              id="saveSystem"
-              data-i18n="save26A">
-        Save 26A Configuration
-      </button>
-
-      <button class="btn"
-              id="reloadSystem"
-              data-i18n="reloadConfig">
-        Reload Saved Configuration
-      </button>
-
-      <button class="btn danger"
-              id="resetSystem"
-              data-i18n="restoreDefaults">
-        Restore Safe Defaults
-      </button>
-
-    </div>
-
-
-    <div id="systemMessage"
-         class="notice"
-         style="display:none;">
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26B
-===================================================== -->
-
-<section class="page" id="page-roles">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26B">
-      26B — User & Role Control
-    </h1>
-
-    <p data-i18n="desc26B">
-      Role registry and frontend administrative role controls.
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="section-title"
-         data-i18n="roleRegistry">
-      Role Registry
-    </div>
-
-
-    <div class="control-list">
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong>Admin</strong>
-
-          <span data-i18n="adminRoleDesc">
-            Central administrative control role.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="roleAdmin"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong>Customer</strong>
-
-          <span data-i18n="customerRoleDesc">
-            Primary booking initiator.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="roleCustomer"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong>Vendor</strong>
-
-          <span data-i18n="vendorRoleDesc">
-            Vendor/company operations role.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="roleVendor"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong>Driver</strong>
-
-          <span data-i18n="driverRoleDesc">
-            Driver/duty operations role.
-          </span>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="roleDriver"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-    </div>
-
-
-    <div class="actions">
-
-      <button class="btn primary"
-              id="saveRoles"
-              data-i18n="save26B">
-        Save 26B
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26C
-===================================================== -->
-
-<section class="page" id="page-policies">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26C">
-      26C — Business Policies
-    </h1>
-
-    <p data-i18n="desc26C">
-      Business rules and policy configuration. Social Welfare rules belong here,
-      not in 26A.
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="section-title"
-         data-i18n="fareChargePolicies">
-      Fare & Charge Policies
-    </div>
-
-
-    <div class="form-grid">
-
-      <div class="field">
-
-        <label data-i18n="baseFare">
-          Base Fare
-        </label>
-
-        <input id="baseFare"
-               type="number"
-               min="0">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="perKmRate">
-          Per KM Rate
-        </label>
-
-        <input id="perKmRate"
-               type="number"
-               min="0">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="serviceCharge">
-          Service Charge %
-        </label>
-
-        <input id="serviceCharge"
-               type="number"
-               min="0">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="taxRate">
-          Tax %
-        </label>
-
-        <input id="taxRate"
-               type="number"
-               min="0">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="maxDiscount">
-          Maximum Discount %
-        </label>
-
-        <input id="maxDiscount"
-               type="number"
-               min="0">
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="advancePercent">
-          Default Advance %
-        </label>
-
-        <input id="advancePercent"
-               type="number"
-               min="0">
-
-      </div>
-
-    </div>
-
-
-    <div class="actions">
-
-      <button class="btn primary"
-              id="savePolicies"
-              data-i18n="savePolicies">
-        Save Policies
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="kycPolicy">
-      KYC Policy
-    </div>
-
-
-    <div class="control-list">
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="customerKycRequired">
-            Customer KYC Required
-          </strong>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="customerKyc"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="vendorKycRequired">
-            Vendor KYC Required
-          </strong>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="vendorKyc"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-
-      <div class="control-row">
-
-        <div class="control-info">
-
-          <strong data-i18n="driverKycRequired">
-            Driver KYC Required
-          </strong>
-
-        </div>
-
-        <label class="switch">
-
-          <input id="driverKyc"
-                 type="checkbox">
-
-          <span class="slider"></span>
-
-        </label>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="welfareBusinessPolicy">
-      Social Welfare — Business Policy
-    </div>
-
-
-    <div class="notice info"
-         data-i18n="welfareBusinessPolicyDesc">
-      26A controls whether Social Welfare exists at system level.
-      Detailed welfare policy logic is controlled here in 26C.
-    </div>
-
-
-    <div class="form-grid">
-
-      <div class="field">
-
-        <label data-i18n="policyStatus">
-          Policy Status
-        </label>
-
-        <select id="welfarePolicyStatus">
-
-          <option value="ACTIVE">
-            ACTIVE
-          </option>
-
-          <option value="INACTIVE">
-            INACTIVE
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="field">
-
-        <label data-i18n="benefitAuthority">
-          Benefit Calculation Authority
-        </label>
-
-        <input value="BACKEND AUTHORITATIVE"
-               disabled>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26D
-===================================================== -->
-
-<section class="page" id="page-operations">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26D">
-      26D — Operations Control
-    </h1>
-
-    <p data-i18n="desc26D">
-      Operational capabilities and service availability.
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="section-title"
-         data-i18n="operationalControls">
-      Operational Controls
-    </div>
-
-
-    <div class="control-list">
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="bookingCreation">Booking Creation</strong>
-        </div>
-        <label class="switch">
-          <input id="opBooking" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="bookingCancellation">Booking Cancellation</strong>
-        </div>
-        <label class="switch">
-          <input id="opCancellation" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="fareEstimation">Fare Estimation</strong>
-        </div>
-        <label class="switch">
-          <input id="opFare" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="vehicleAssignment">Vehicle Assignment</strong>
-        </div>
-        <label class="switch">
-          <input id="opVehicle" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="driverDuty">Driver Duty</strong>
-        </div>
-        <label class="switch">
-          <input id="opDuty" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="vendorOperations">Vendor Operations</strong>
-        </div>
-        <label class="switch">
-          <input id="opVendor" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="services">
-      Services
-    </div>
-
-
-    <div class="control-list">
-
-      <div class="control-row">
-        <div class="control-info"><strong>City Ride</strong></div>
-        <label class="switch">
-          <input id="svcCity" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="control-row">
-        <div class="control-info"><strong>Outstation</strong></div>
-        <label class="switch">
-          <input id="svcOutstation" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="control-row">
-        <div class="control-info"><strong>Airport</strong></div>
-        <label class="switch">
-          <input id="svcAirport" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="control-row">
-        <div class="control-info"><strong>Rental</strong></div>
-        <label class="switch">
-          <input id="svcRental" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="control-row">
-        <div class="control-info"><strong>Corporate</strong></div>
-        <label class="switch">
-          <input id="svcCorporate" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="control-row">
-        <div class="control-info"><strong>Delivery</strong></div>
-        <label class="switch">
-          <input id="svcDelivery" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-    </div>
-
-
-    <div class="actions">
-
-      <button class="btn primary"
-              id="saveOperations"
-              data-i18n="save26D">
-        Save 26D
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26E
-===================================================== -->
-
-<section class="page" id="page-financial">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26E">
-      26E — Financial Control
-    </h1>
-
-    <p data-i18n="desc26E">
-      Financial module boundary. Frontend is not the financial authority.
-    </p>
-
-  </div>
-
-
-  <div class="grid grid-3">
-
-    <div class="card">
-      <h3>Wallet</h3>
-      <span class="badge warning"
-            data-i18n="backendRequired">
-        BACKEND REQUIRED
-      </span>
-    </div>
-
-    <div class="card">
-      <h3>Transaction</h3>
-      <span class="badge warning"
-            data-i18n="backendRequired">
-        BACKEND REQUIRED
-      </span>
-    </div>
-
-    <div class="card">
-      <h3>Ledger</h3>
-      <span class="badge warning"
-            data-i18n="backendRequired">
-        BACKEND REQUIRED
-      </span>
-    </div>
-
-    <div class="card">
-      <h3>Settlement</h3>
-      <span class="badge warning"
-            data-i18n="backendRequired">
-        BACKEND REQUIRED
-      </span>
-    </div>
-
-    <div class="card">
-      <h3>Billing</h3>
-      <span class="badge warning"
-            data-i18n="backendRequired">
-        BACKEND REQUIRED
-      </span>
-    </div>
-
-    <div class="card">
-      <h3>Bank Transfer</h3>
-      <span class="badge danger"
-            data-i18n="blocked">
-        BLOCKED
-      </span>
-    </div>
-
-  </div>
-
-
-  <div class="notice danger"
-       style="margin-top:18px;"
-       data-i18n="financialBlocks">
-    Real Money = BLOCKED
-    <br>
-    Real Payment = BLOCKED
-    <br>
-    Bank Transfer = BLOCKED
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26F
-===================================================== -->
-
-<section class="page" id="page-documents">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26F">
-      26F — Documents & KYC
-    </h1>
-
-    <p data-i18n="desc26F">
-      Document and verification controls.
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="control-list">
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="governmentId">Government ID</strong>
-        </div>
-        <label class="switch">
-          <input id="docGovtId" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="drivingLicence">Driving Licence</strong>
-        </div>
-        <label class="switch">
-          <input id="docLicence" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="vehicleRC">Vehicle RC</strong>
-        </div>
-        <label class="switch">
-          <input id="docRC" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="insurance">Insurance</strong>
-        </div>
-        <label class="switch">
-          <input id="docInsurance" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="verificationRequired">Verification Required</strong>
-        </div>
-        <label class="switch">
-          <input id="docVerification" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="expiryMonitoring">Expiry Monitoring</strong>
-        </div>
-        <label class="switch">
-          <input id="docExpiry" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-
-      <div class="control-row">
-        <div class="control-info">
-          <strong data-i18n="manualReview">Manual Review</strong>
-        </div>
-        <label class="switch">
-          <input id="docManual" type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-    </div>
-
-
-    <div class="actions">
-
-      <button class="btn primary"
-              id="saveDocuments"
-              data-i18n="save26F">
-        Save 26F
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     26G
-===================================================== -->
-
-<section class="page" id="page-audit">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title26G">
-      26G — Audit & Monitoring
-    </h1>
-
-    <p data-i18n="desc26G">
-      Frontend administrative activity log. Future backend audit remains authoritative.
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="actions"
-         style="margin-top:0;">
-
-      <button class="btn danger"
-              id="clearAudit"
-              data-i18n="clearLocalLog">
-        Clear Local Log
-      </button>
-
-    </div>
-
-
-    <div class="table-wrap"
-         style="margin-top:18px;">
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th data-i18n="auditTime">
-              Time
-            </th>
-
-            <th data-i18n="auditAction">
-              Action
-            </th>
-
-            <th data-i18n="auditDetails">
-              Details
-            </th>
-
-          </tr>
-
-        </thead>
-
-        <tbody id="auditBody"></tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     STEP 27
-===================================================== -->
-
-<section class="page" id="page-api">
-
-  <div class="page-head">
-
-    <h1 data-i18n="title27">
-      STEP 27 — Consolidated API
-    </h1>
-
-    <p data-i18n="desc27">
-      One API boundary between frontend and authoritative backend.
-    </p>
-
-  </div>
-
-
-  <div class="card">
-
-    <div class="grid grid-3">
-
-      <div>
-
-        <div class="muted"
-             data-i18n="apiObject">
-          API Object
-        </div>
-
-        <div class="stat"
-             id="apiObjectStatus">
-          AVAILABLE
-        </div>
-
-      </div>
-
-
-      <div>
-
-        <div class="muted"
-             data-i18n="endpoint">
-          Endpoint
-        </div>
-
-        <div class="stat"
-             id="apiEndpointStatus">
-          NONE
-        </div>
-
-      </div>
-
-
-      <div>
-
-        <div class="muted"
-             data-i18n="connection">
-          Connection
-        </div>
-
-        <div class="stat"
-             id="apiConnectionStatus">
-          NOT TESTED
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="field"
-         style="margin-top:20px;">
-
-      <label data-i18n="futureApiEndpoint">
-        Future Consolidated API Endpoint
-      </label>
-
-      <input id="step27Endpoint"
-             type="url"
-             placeholder="https://script.google.com/.../exec">
-
-    </div>
-
-
-    <div class="actions">
-
-      <button class="btn primary"
-              id="saveApi"
-              data-i18n="saveApiEndpoint">
-        Save API Endpoint
-      </button>
-
-      <button class="btn"
-              id="clearApi"
-              data-i18n="clearApiEndpoint">
-        Clear API Endpoint
-      </button>
-
-      <button class="btn"
-              id="testApi"
-              data-i18n="testConnection">
-        Test Connection
-      </button>
-
-    </div>
-
-
-    <pre class="output"
-         id="apiOutput">GoVaraAPI: AVAILABLE
-Version: GOVARA-CONSOLIDATED-API-V1
-Connection: NOT TESTED
-Backend: NOT CONFIGURED</pre>
-
-  </div>
-
-
-  <div class="card"
-       style="margin-top:18px;">
-
-    <div class="section-title"
-         data-i18n="consolidatedBoundary">
-      Consolidated Module Boundary
-    </div>
-
-
-    <div class="module-grid">
-
-      <div class="module">Customer</div>
-      <div class="module">Vendor</div>
-      <div class="module">Driver</div>
-      <div class="module">Vehicle</div>
-      <div class="module">Booking</div>
-      <div class="module">Duty</div>
-      <div class="module">Fare</div>
-      <div class="module">Transaction</div>
-      <div class="module">Wallet</div>
-      <div class="module">Ledger</div>
-      <div class="module">Settlement</div>
-      <div class="module">Billing</div>
-      <div class="module">Documents</div>
-      <div class="module">Admin</div>
-      <div class="module">Audit</div>
-      <div class="module">Social Welfare</div>
-
-    </div>
-
-
-    <div class="notice warning"
-         data-i18n="apiBoundaryWarning">
-      No separate API is created for individual frontend features.
-      Social Welfare will later use the same consolidated API boundary.
-    </div>
-
-  </div>
-
-</section>
-
-
-<div class="footer-note"
-     data-i18n="footer">
-  GoVara Administrator Control Center • Frontend Control Layer • Real Money BLOCKED
-</div>
-
-</div>
-</main>
+    </section>
+  </main>
 </div>
 
 
 <script>
-/* =========================================================
-   GOVARA MULTILINGUAL / i18n ENGINE
-   ========================================================= */
+/* ============================================================
+   GoVara — Consolidated API Boundary
+   STEP 27 shell only
+   Backend is intentionally NOT connected in this stage.
+============================================================ */
 
-const GOVARA_TRANSLATIONS = {
-
-  "en-IN": {
-
-    brandSub:"Administrator Control Center",
-    navCore:"Core",
-    navDashboard:"Dashboard",
-    navAdministrator:"Administrator",
-    nav26A:"26A — System Configuration",
-    nav26B:"26B — User & Role Control",
-    nav26C:"26C — Business Policies",
-    nav26D:"26D — Operations Control",
-    nav26E:"26E — Financial Control",
-    nav26F:"26F — Documents & KYC",
-    nav26G:"26G — Audit & Monitoring",
-    navIntegration:"Integration",
-    nav27:"STEP 27 — Consolidated API",
-
-    badgeFrontend:"FRONTEND READY",
-    badgeMoney:"REAL MONEY BLOCKED",
-
-    dashboardTitle:"Administrator Dashboard",
-    dashboardDesc:"Central control view for GoVara system configuration and administration.",
-    frontend:"Frontend",
-    operational:"Operational",
-    api:"API",
-    futureConnection:"Future Connection",
-    environment:"Environment",
-    safetyMode:"Safety Mode",
-    systemStatus:"System Status",
-    systemControl:"System Control",
-    socialWelfare:"Social Welfare",
-    welfareDashboardDesc:"System-level master control. Welfare rules remain under policy control.",
-    financialSafety:"Financial Safety",
-    financialSafetyDesc:"Real money, real payment and bank transfer remain blocked at frontend.",
-    configuration:"Configuration",
-    configVersionDesc:"Central system configuration version.",
-    architectureBoundary:"Architecture Boundary",
-    architectureText:"Frontend is a control interface only. Backend remains authoritative for business, financial and persistent data operations.",
-
-    title26A:"26A — System Configuration",
-    desc26A:"Central system-level configuration. This is the master configuration layer for GoVara.",
-    important:"Important:",
-    important26AText:"26A controls system configuration only. Business rules belong to 26C, operational controls to 26D, financial authority remains backend-side, and audit records are handled by 26G.",
-
-    systemIdentity:"1. System Identity",
-    systemName:"System Name *",
-    platformType:"Platform / System Type *",
-    platformId:"System / Platform ID *",
-    frontendVersion:"Frontend Version *",
-    configVersion:"Configuration Version",
-    futureApiEndpoint:"Future Consolidated API Endpoint",
-
-    productionWarningTitle:"Production environment selected.",
-    productionWarningText:"This is a configuration declaration only. Real-money and real-payment capabilities remain blocked until authoritative backend controls are implemented and verified.",
-
-    globalDefaults:"2. Global System Defaults",
-    defaultCountry:"Default Country",
-    defaultCurrency:"Default Currency",
-    defaultTimezone:"Default Timezone",
-    defaultLanguage:"Default Language",
-    dateFormat:"Date Format",
-    timeFormat:"Time Format",
-
-    languageConfiguration:"Multilingual Configuration",
-    languageArchitecture:"Language Architecture:",
-    languageArchitectureText:"The Administrator controls which language packs are available. The selected default language becomes the system interface default.",
-    translationNote:"Additional languages can be added as translation packs without changing the core Administrator architecture. Full automatic translation of arbitrary languages requires a translation engine/API and is intentionally not connected yet.",
-
-    lifecycle:"3. System Lifecycle & Operating Behaviour",
-    platformEnabled:"Platform Enabled",
-    platformEnabledDesc:"Master switch for the GoVara frontend control layer.",
-    registration:"New Registration",
-    registrationDesc:"Allows new user registration when enabled.",
-    bookingSystem:"Booking System",
-    bookingSystemDesc:"Global booking capability switch.",
-    notificationSystem:"Notification System",
-    notificationSystemDesc:"Global notification capability.",
-    maintenance:"Maintenance:",
-    maintenanceText:"when System Status is MAINTENANCE, operational actions are treated as restricted by the frontend. Backend remains authoritative.",
-    suspended:"Suspended:",
-    suspendedText:"when System Status is SUSPENDED, operational actions are considered blocked by the frontend. This does not create backend authority.",
-
-    welfareSystemTitle:"4. Social Welfare — System-Level Control",
-    welfareSystemDesc:"Social Welfare is a cross-module capability. 26A controls the master system availability; detailed eligibility, benefit and business rules belong to 26C.",
-    welfareEnabled:"Social Welfare System",
-    welfareEnabledDesc:"Master enable/disable switch for welfare capability.",
-    welfareAdminControl:"Welfare Administrative Control",
-    welfareAdminControlDesc:"Allows Administrator Control Center to configure welfare system state.",
-    welfareAuditRequired:"Welfare Audit Required",
-    welfareAuditRequiredDesc:"Welfare configuration changes must generate audit events.",
-    welfareMode:"Welfare System Mode",
-    welfareFinancialState:"Frontend Welfare Financial State",
-
-    globalFeatureControls:"5. Global Feature Controls",
-    globalNotifications:"System Notifications",
-    globalNotificationsDesc:"Global notification capability.",
-    monitoring:"System Monitoring",
-    monitoringDesc:"Enable frontend monitoring indicators.",
-    auditGeneration:"Audit Event Generation",
-    auditGenerationDesc:"Generate local administrative audit events.",
-
-    financialSafetyBoundary:"6. Financial & Safety Boundary",
-    realMoney:"Real Money",
-    realPayment:"Real Payment",
-    bankTransfer:"Bank Transfer",
-    financialBoundaryText:"Frontend does not become a financial authority by changing any 26A setting. Financial truth remains backend-authoritative.",
-
-    moduleRegistry:"7. System Module Registry",
-    configurationManagement:"8. Configuration Management",
-    localStorageNotice:"Save stores the current 26A configuration locally for frontend testing. Backend/database persistence is intentionally not used at this stage.",
-    save26A:"Save 26A Configuration",
-    reloadConfig:"Reload Saved Configuration",
-    restoreDefaults:"Restore Safe Defaults",
-
-    title26B:"26B — User & Role Control",
-    desc26B:"Role registry and frontend administrative role controls.",
-    roleRegistry:"Role Registry",
-    adminRoleDesc:"Central administrative control role.",
-    customerRoleDesc:"Primary booking initiator.",
-    vendorRoleDesc:"Vendor/company operations role.",
-    driverRoleDesc:"Driver/duty operations role.",
-    save26B:"Save 26B",
-
-    title26C:"26C — Business Policies",
-    desc26C:"Business rules and policy configuration. Social Welfare rules belong here, not in 26A.",
-    fareChargePolicies:"Fare & Charge Policies",
-    baseFare:"Base Fare",
-    perKmRate:"Per KM Rate",
-    serviceCharge:"Service Charge %",
-    taxRate:"Tax %",
-    maxDiscount:"Maximum Discount %",
-    advancePercent:"Default Advance %",
-    savePolicies:"Save Policies",
-    kycPolicy:"KYC Policy",
-    customerKycRequired:"Customer KYC Required",
-    vendorKycRequired:"Vendor KYC Required",
-    driverKycRequired:"Driver KYC Required",
-    welfareBusinessPolicy:"Social Welfare — Business Policy",
-    welfareBusinessPolicyDesc:"26A controls whether Social Welfare exists at system level. Detailed welfare policy logic is controlled here in 26C.",
-    policyStatus:"Policy Status",
-    benefitAuthority:"Benefit Calculation Authority",
-
-    title26D:"26D — Operations Control",
-    desc26D:"Operational capabilities and service availability.",
-    operationalControls:"Operational Controls",
-    bookingCreation:"Booking Creation",
-    bookingCancellation:"Booking Cancellation",
-    fareEstimation:"Fare Estimation",
-    vehicleAssignment:"Vehicle Assignment",
-    driverDuty:"Driver Duty",
-    vendorOperations:"Vendor Operations",
-    services:"Services",
-    save26D:"Save 26D",
-
-    title26E:"26E — Financial Control",
-    desc26E:"Financial module boundary. Frontend is not the financial authority.",
-    backendRequired:"BACKEND REQUIRED",
-    blocked:"BLOCKED",
-    financialBlocks:"Real Money = BLOCKED\nReal Payment = BLOCKED\nBank Transfer = BLOCKED",
-
-    title26F:"26F — Documents & KYC",
-    desc26F:"Document and verification controls.",
-    governmentId:"Government ID",
-    drivingLicence:"Driving Licence",
-    vehicleRC:"Vehicle RC",
-    insurance:"Insurance",
-    verificationRequired:"Verification Required",
-    expiryMonitoring:"Expiry Monitoring",
-    manualReview:"Manual Review",
-    save26F:"Save 26F",
-
-    title26G:"26G — Audit & Monitoring",
-    desc26G:"Frontend administrative activity log. Future backend audit remains authoritative.",
-    clearLocalLog:"Clear Local Log",
-    auditTime:"Time",
-    auditAction:"Action",
-    auditDetails:"Details",
-
-    title27:"STEP 27 — Consolidated API",
-    desc27:"One API boundary between frontend and authoritative backend.",
-    apiObject:"API Object",
-    endpoint:"Endpoint",
-    connection:"Connection",
-    saveApiEndpoint:"Save API Endpoint",
-    clearApiEndpoint:"Clear API Endpoint",
-    testConnection:"Test Connection",
-    consolidatedBoundary:"Consolidated Module Boundary",
-    apiBoundaryWarning:"No separate API is created for individual frontend features. Social Welfare will later use the same consolidated API boundary.",
-
-    footer:"GoVara Administrator Control Center • Frontend Control Layer • Real Money BLOCKED"
-  },
-
-
-  "hi-IN": {
-
-    brandSub:"एडमिनिस्ट्रेटर कंट्रोल सेंटर",
-    navCore:"मुख्य",
-    navDashboard:"डैशबोर्ड",
-    navAdministrator:"प्रशासन",
-    nav26A:"26A — सिस्टम कॉन्फ़िगरेशन",
-    nav26B:"26B — यूज़र एवं रोल कंट्रोल",
-    nav26C:"26C — बिजनेस पॉलिसीज़",
-    nav26D:"26D — ऑपरेशंस कंट्रोल",
-    nav26E:"26E — फाइनेंशियल कंट्रोल",
-    nav26F:"26F — डॉक्यूमेंट एवं KYC",
-    nav26G:"26G — ऑडिट एवं मॉनिटरिंग",
-    navIntegration:"इंटीग्रेशन",
-    nav27:"STEP 27 — कंसोलिडेटेड API",
-
-    badgeFrontend:"फ्रंटएंड READY",
-    badgeMoney:"REAL MONEY BLOCKED",
-
-    dashboardTitle:"एडमिनिस्ट्रेटर डैशबोर्ड",
-    dashboardDesc:"GoVara सिस्टम कॉन्फ़िगरेशन और प्रशासन का केंद्रीय कंट्रोल व्यू।",
-    frontend:"फ्रंटएंड",
-    operational:"ऑपरेशनल",
-    api:"API",
-    futureConnection:"भविष्य का कनेक्शन",
-    environment:"एनवायरनमेंट",
-    safetyMode:"सेफ्टी मोड",
-    systemStatus:"सिस्टम स्टेटस",
-    systemControl:"सिस्टम कंट्रोल",
-    socialWelfare:"सोशल वेलफेयर",
-    welfareDashboardDesc:"सिस्टम-लेवल मास्टर कंट्रोल। वेलफेयर के नियम पॉलिसी लेयर में रहेंगे।",
-    financialSafety:"फाइनेंशियल सेफ्टी",
-    financialSafetyDesc:"Real Money, Real Payment और Bank Transfer फ्रंटएंड पर ब्लॉक हैं।",
-    configuration:"कॉन्फ़िगरेशन",
-    configVersionDesc:"केंद्रीय सिस्टम कॉन्फ़िगरेशन वर्ज़न।",
-    architectureBoundary:"आर्किटेक्चर बाउंड्री",
-    architectureText:"फ्रंटएंड केवल कंट्रोल इंटरफेस है। बिजनेस, फाइनेंशियल और persistent data operations के लिए Backend authoritative रहेगा।",
-
-    title26A:"26A — सिस्टम कॉन्फ़िगरेशन",
-    desc26A:"GoVara की केंद्रीय system-level configuration।",
-    important:"महत्वपूर्ण:",
-    important26AText:"26A केवल system configuration नियंत्रित करता है। Business rules 26C में, operational controls 26D में, financial authority backend में और audit records 26G में रहेंगे।",
-
-    systemIdentity:"1. सिस्टम पहचान",
-    systemName:"सिस्टम नाम *",
-    platformType:"प्लेटफॉर्म / सिस्टम प्रकार *",
-    platformId:"सिस्टम / प्लेटफॉर्म ID *",
-    frontendVersion:"फ्रंटएंड वर्ज़न *",
-    configVersion:"कॉन्फ़िगरेशन वर्ज़न",
-    futureApiEndpoint:"भविष्य का Consolidated API Endpoint",
-
-    productionWarningTitle:"Production environment चुना गया है।",
-    productionWarningText:"यह केवल configuration declaration है। Real Money और Real Payment तब तक blocked रहेंगे जब तक authoritative backend controls लागू और verified नहीं होते।",
-
-    globalDefaults:"2. ग्लोबल सिस्टम डिफॉल्ट्स",
-    defaultCountry:"डिफॉल्ट देश",
-    defaultCurrency:"डिफॉल्ट करेंसी",
-    defaultTimezone:"डिफॉल्ट टाइमज़ोन",
-    defaultLanguage:"डिफॉल्ट भाषा",
-    dateFormat:"डेट फॉर्मेट",
-    timeFormat:"टाइम फॉर्मेट",
-
-    languageConfiguration:"मल्टीलिंगुअल भाषा कॉन्फ़िगरेशन",
-    languageArchitecture:"भाषा आर्किटेक्चर:",
-    languageArchitectureText:"एडमिन यह नियंत्रित करता है कि कौन-कौन से language packs उपलब्ध होंगे। चुनी गई default language सिस्टम इंटरफेस की default भाषा बनेगी।",
-    translationNote:"नई भाषाओं को translation packs के रूप में जोड़ा जा सकता है, बिना core Administrator architecture बदले। किसी भी भाषा का पूर्ण automatic translation करने के लिए translation engine/API की आवश्यकता होगी, जिसे अभी connect नहीं किया गया है।",
-
-    lifecycle:"3. सिस्टम लाइफसाइकिल एवं ऑपरेटिंग व्यवहार",
-    platformEnabled:"प्लेटफॉर्म Enabled",
-    platformEnabledDesc:"GoVara frontend control layer का master switch।",
-    registration:"नई Registration",
-    registrationDesc:"Enabled होने पर नए users की registration की अनुमति।",
-    bookingSystem:"बुकिंग सिस्टम",
-    bookingSystemDesc:"Global booking capability switch।",
-    notificationSystem:"नोटिफिकेशन सिस्टम",
-    notificationSystemDesc:"Global notification capability।",
-    maintenance:"Maintenance:",
-    maintenanceText:"जब System Status MAINTENANCE होगा, frontend operational actions को restricted मानेगा। Backend authoritative रहेगा।",
-    suspended:"Suspended:",
-    suspendedText:"जब System Status SUSPENDED होगा, frontend operational actions को blocked मानेगा। इससे frontend को backend authority नहीं मिलती।",
-
-    welfareSystemTitle:"4. Social Welfare — System-Level Control",
-    welfareSystemDesc:"Social Welfare एक cross-module capability है। 26A master system availability नियंत्रित करता है; eligibility, benefit और business rules 26C में रहेंगे।",
-    welfareEnabled:"Social Welfare System",
-    welfareEnabledDesc:"Welfare capability का master enable/disable switch।",
-    welfareAdminControl:"Welfare Administrative Control",
-    welfareAdminControlDesc:"Administrator Control Center को welfare system state configure करने की अनुमति।",
-    welfareAuditRequired:"Welfare Audit Required",
-    welfareAuditRequiredDesc:"Welfare configuration changes पर audit event generate होना जरूरी है।",
-    welfareMode:"Welfare System Mode",
-    welfareFinancialState:"Frontend Welfare Financial State",
-
-    globalFeatureControls:"5. ग्लोबल फीचर कंट्रोल्स",
-    globalNotifications:"सिस्टम नोटिफिकेशन",
-    globalNotificationsDesc:"Global notification capability।",
-    monitoring:"सिस्टम मॉनिटरिंग",
-    monitoringDesc:"Frontend monitoring indicators enable करें।",
-    auditGeneration:"ऑडिट इवेंट जनरेशन",
-    auditGenerationDesc:"Local administrative audit events generate करें।",
-
-    financialSafetyBoundary:"6. फाइनेंशियल एवं सेफ्टी बाउंड्री",
-    realMoney:"Real Money",
-    realPayment:"Real Payment",
-    bankTransfer:"Bank Transfer",
-    financialBoundaryText:"26A की कोई setting बदलने से frontend financial authority नहीं बनता। Financial truth backend-authoritative रहेगा।",
-
-    moduleRegistry:"7. सिस्टम मॉड्यूल रजिस्ट्री",
-    configurationManagement:"8. कॉन्फ़िगरेशन मैनेजमेंट",
-    localStorageNotice:"Save वर्तमान 26A configuration को frontend testing के लिए local storage में रखता है। इस stage पर backend/database persistence उपयोग नहीं किया जा रहा है।",
-    save26A:"26A Configuration Save करें",
-    reloadConfig:"Saved Configuration Reload करें",
-    restoreDefaults:"Safe Defaults Restore करें",
-
-    title26B:"26B — यूज़र एवं रोल कंट्रोल",
-    desc26B:"Role registry और frontend administrative role controls।",
-    roleRegistry:"Role Registry",
-    adminRoleDesc:"Central administrative control role।",
-    customerRoleDesc:"Primary booking initiator।",
-    vendorRoleDesc:"Vendor/company operations role।",
-    driverRoleDesc:"Driver/duty operations role।",
-    save26B:"26B Save करें",
-
-    title26C:"26C — बिजनेस पॉलिसीज़",
-    desc26C:"Business rules और policy configuration। Social Welfare के detailed rules यहाँ रहेंगे, 26A में नहीं।",
-    fareChargePolicies:"Fare एवं Charge Policies",
-    baseFare:"Base Fare",
-    perKmRate:"Per KM Rate",
-    serviceCharge:"Service Charge %",
-    taxRate:"Tax %",
-    maxDiscount:"Maximum Discount %",
-    advancePercent:"Default Advance %",
-    savePolicies:"Policies Save करें",
-    kycPolicy:"KYC Policy",
-    customerKycRequired:"Customer KYC Required",
-    vendorKycRequired:"Vendor KYC Required",
-    driverKycRequired:"Driver KYC Required",
-    welfareBusinessPolicy:"Social Welfare — Business Policy",
-    welfareBusinessPolicyDesc:"26A केवल Social Welfare की system availability नियंत्रित करता है। Detailed welfare policy logic 26C में नियंत्रित होगी।",
-    policyStatus:"Policy Status",
-    benefitAuthority:"Benefit Calculation Authority",
-
-    title26D:"26D — ऑपरेशंस कंट्रोल",
-    desc26D:"Operational capabilities और service availability।",
-    operationalControls:"Operational Controls",
-    bookingCreation:"Booking Creation",
-    bookingCancellation:"Booking Cancellation",
-    fareEstimation:"Fare Estimation",
-    vehicleAssignment:"Vehicle Assignment",
-    driverDuty:"Driver Duty",
-    vendorOperations:"Vendor Operations",
-    services:"Services",
-    save26D:"26D Save करें",
-
-    title26E:"26E — फाइनेंशियल कंट्रोल",
-    desc26E:"Financial module boundary। Frontend financial authority नहीं है।",
-    backendRequired:"BACKEND REQUIRED",
-    blocked:"BLOCKED",
-    financialBlocks:"Real Money = BLOCKED\nReal Payment = BLOCKED\nBank Transfer = BLOCKED",
-
-    title26F:"26F — डॉक्यूमेंट एवं KYC",
-    desc26F:"Document और verification controls।",
-    governmentId:"Government ID",
-    drivingLicence:"Driving Licence",
-    vehicleRC:"Vehicle RC",
-    insurance:"Insurance",
-    verificationRequired:"Verification Required",
-    expiryMonitoring:"Expiry Monitoring",
-    manualReview:"Manual Review",
-    save26F:"26F Save करें",
-
-    title26G:"26G — ऑडिट एवं मॉनिटरिंग",
-    desc26G:"Frontend administrative activity log। Future backend audit authoritative रहेगा।",
-    clearLocalLog:"Local Log Clear करें",
-    auditTime:"समय",
-    auditAction:"Action",
-    auditDetails:"Details",
-
-    title27:"STEP 27 — Consolidated API",
-    desc27:"Frontend और authoritative backend के बीच एक API boundary।",
-    apiObject:"API Object",
-    endpoint:"Endpoint",
-    connection:"Connection",
-    saveApiEndpoint:"API Endpoint Save करें",
-    clearApiEndpoint:"API Endpoint Clear करें",
-    testConnection:"Connection Test करें",
-    consolidatedBoundary:"Consolidated Module Boundary",
-    apiBoundaryWarning:"Individual frontend features के लिए अलग-अलग APIs नहीं बनाई जाएँगी। Social Welfare भी बाद में इसी consolidated API boundary का उपयोग करेगा।",
-
-    footer:"GoVara Administrator Control Center • Frontend Control Layer • Real Money BLOCKED"
-  }
-
-};
-
-
-/* =========================================================
-   GOVARA CONSOLIDATED API BOUNDARY
-========================================================= */
-
-(function(){
-
-  const STORAGE_KEY = "GOVARA_API_CONFIG_V1";
-  const REQUEST_TIMEOUT = 15000;
+const GoVaraAPI = (() => {
   const VERSION = "GOVARA-CONSOLIDATED-API-V1";
+  const STORAGE_KEY = "GOVARA_API_CONFIG_V1";
 
   const APIState = {
     configured:false,
@@ -3238,2896 +1124,1425 @@ const GOVARA_TRANSLATIONS = {
     lastAction:null
   };
 
-  function getStoredUrl(){
-
-    try{
-      return localStorage.getItem(STORAGE_KEY) || "";
-    }catch(e){
-      return "";
-    }
-
+  function getAPIUrl(){
+    return localStorage.getItem(STORAGE_KEY) || "";
   }
-
 
   function configure(url){
-
-    const clean =
-      String(url || "").trim();
-
-    if(clean){
-
-      localStorage.setItem(
-        STORAGE_KEY,
-        clean
-      );
-
-      APIState.configured = true;
-
-    }else{
-
-      localStorage.removeItem(
-        STORAGE_KEY
-      );
-
-      APIState.configured = false;
-
-    }
-
-    return getAPIUrl();
-  }
-
-
-  function getAPIUrl(){
-
-    return getStoredUrl();
-
-  }
-
-
-  async function request(
-    method,
-    action,
-    payload
-  ){
-
-    const url =
-      getAPIUrl();
-
     if(!url){
-
-      throw new Error(
-        "API endpoint is not configured."
-      );
-
+      localStorage.removeItem(STORAGE_KEY);
+      APIState.configured = false;
+      return false;
     }
 
-
-    const controller =
-      new AbortController();
-
-    const timer =
-      setTimeout(
-        () => controller.abort(),
-        REQUEST_TIMEOUT
-      );
-
-
-    try{
-
-      const options = {
-        method,
-        signal:controller.signal,
-        redirect:"follow"
-      };
-
-
-      if(method === "POST"){
-
-        options.headers = {
-          "Content-Type":
-            "text/plain;charset=utf-8"
-        };
-
-        options.body =
-          JSON.stringify({
-            action,
-            version:VERSION,
-            payload:payload || {}
-          });
-
-      }
-
-
-      let finalUrl = url;
-
-
-      if(method === "GET"){
-
-        const separator =
-          url.includes("?")
-            ? "&"
-            : "?";
-
-        finalUrl =
-          url +
-          separator +
-          "action=" +
-          encodeURIComponent(action);
-
-      }
-
-
-      const response =
-        await fetch(
-          finalUrl,
-          options
-        );
-
-
-      const text =
-        await response.text();
-
-      let data;
-
-      try{
-
-        data =
-          JSON.parse(text);
-
-      }catch(e){
-
-        data = {
-          raw:text
-        };
-
-      }
-
-
-      if(!response.ok){
-
-        throw new Error(
-          "HTTP " +
-          response.status
-        );
-
-      }
-
-
-      return data;
-
-    }finally{
-
-      clearTimeout(timer);
-
-    }
-
+    localStorage.setItem(STORAGE_KEY,url.trim());
+    APIState.configured = true;
+    return true;
   }
-
 
   async function testConnection(){
+    const url = getAPIUrl();
 
-    APIState.lastAction =
-      "GET_HEALTH";
-
-    if(!getAPIUrl()){
-
-      throw new Error(
-        "API endpoint is not configured."
-      );
-
+    if(!url){
+      throw new Error("API endpoint is not configured.");
     }
 
+    APIState.lastAction = "GET_HEALTH";
 
-    const data =
-      await request(
-        "GET",
-        "GET_HEALTH",
-        {}
-      );
+    const response = await fetch(url,{
+      method:"GET",
+      redirect:"follow"
+    });
 
+    const data = await response.json();
 
-    APIState.lastResponse =
-      data;
+    APIState.lastResponse = data;
 
-    APIState.connected =
-      true;
+    if(data && data.project === "GoVara"){
+      APIState.connected = true;
+      APIState.verified = true;
+      return data;
+    }
 
-    APIState.verified =
-      !!(
-        data &&
-        data.project === "GoVara"
-      );
-
-
-    return data;
-
+    throw new Error("Backend verification failed.");
   }
 
-
-  async function list(module){
-
-    return request(
-      "POST",
-      "LIST",
-      {module}
-    );
-
-  }
-
-
-  async function save(
-    module,
-    data
-  ){
-
-    return request(
-      "POST",
-      "SAVE",
-      {
-        module,
-        data:data || {}
-      }
-    );
-
-  }
-
-
-  async function fareCalculate(data){
-
-    return request(
-      "POST",
-      "FARE_CALCULATE",
-      data || {}
-    );
-
-  }
-
-
-  async function transactionCreate(data){
-
-    return request(
-      "POST",
-      "TRANSACTION_CREATE",
-      data || {}
-    );
-
-  }
-
-
-  async function walletGet(data){
-
-    return request(
-      "POST",
-      "WALLET_GET",
-      data || {}
-    );
-
-  }
-
-
-  async function walletUpdate(data){
-
-    return request(
-      "POST",
-      "WALLET_UPDATE",
-      data || {}
-    );
-
-  }
-
-
-  async function adminGet(data){
-
-    return request(
-      "POST",
-      "ADMIN_GET",
-      data || {}
-    );
-
-  }
-
-
-  async function adminUpdate(data){
-
-    return request(
-      "POST",
-      "ADMIN_UPDATE",
-      data || {}
-    );
-
-  }
-
-
-  async function auditList(data){
-
-    return request(
-      "POST",
-      "AUDIT_LIST",
-      data || {}
-    );
-
-  }
-
-
-  async function authentication(data){
-
-    return request(
-      "POST",
-      "AUTHENTICATION",
-      data || {}
-    );
-
-  }
-
-
-  window.GoVaraAPI = {
-
+  return {
     VERSION,
-
-    APIState,
-
     configure,
-
     getAPIUrl,
-
     testConnection,
-
-    list,
-
-    save,
-
-    fareCalculate,
-
-    transactionCreate,
-
-    walletGet,
-
-    walletUpdate,
-
-    adminGet,
-
-    adminUpdate,
-
-    auditList,
-
-    authentication,
-
-    modules:[
-      "Customer",
-      "Vendor",
-      "Driver",
-      "Vehicle",
-      "Booking",
-      "Duty",
-      "Fare",
-      "Transaction",
-      "Wallet",
-      "Ledger",
-      "Settlement",
-      "Billing",
-      "Documents",
-      "Admin",
-      "Audit",
-      "Social Welfare"
-    ]
-
+    state:APIState
   };
-
 })();
 
-
-/* =========================================================
-   GOVARA ADMINISTRATOR CONTROL CENTER
-========================================================= */
-
-(function(){
-
-  const CONFIG_KEY =
-    "GOVARA_ADMIN_SYSTEM_CONFIG_V3";
-
-  const ROLES_KEY =
-    "GOVARA_ADMIN_ROLES_V1";
-
-  const POLICY_KEY =
-    "GOVARA_ADMIN_POLICIES_V1";
-
-  const OPS_KEY =
-    "GOVARA_ADMIN_OPERATIONS_V1";
-
-  const DOC_KEY =
-    "GOVARA_ADMIN_DOCUMENTS_V1";
-
-  const AUDIT_KEY =
-    "GOVARA_ADMIN_AUDIT_V1";
-
-  const LANGUAGE_KEY =
-    "GOVARA_SELECTED_LANGUAGE_V1";
+window.GoVaraAPI = GoVaraAPI;
 
 
-  const safeDefaults = {
+/* ============================================================
+   GoVara Frontend State
+============================================================ */
 
-    systemName:"GoVara",
+const STORAGE = {
+  CONFIG:"GOVARA_ADMIN_CONFIG_26A_V2",
+  AUDIT:"GOVARA_ADMIN_AUDIT_V1"
+};
 
-    platformType:
-      "Transport & Mobility Platform",
+const LANGUAGES = {
+  en:{
+    code:"en",
+    name:"English",
+    native:"English",
+    direction:"ltr"
+  },
+  hi:{
+    code:"hi",
+    name:"Hindi",
+    native:"हिन्दी",
+    direction:"ltr"
+  },
+  bn:{
+    code:"bn",
+    name:"Bengali",
+    native:"বাংলা",
+    direction:"ltr"
+  },
+  mr:{
+    code:"mr",
+    name:"Marathi",
+    native:"मराठी",
+    direction:"ltr"
+  },
+  gu:{
+    code:"gu",
+    name:"Gujarati",
+    native:"ગુજરાતી",
+    direction:"ltr"
+  },
+  pa:{
+    code:"pa",
+    name:"Punjabi",
+    native:"ਪੰਜਾਬੀ",
+    direction:"ltr"
+  },
+  ta:{
+    code:"ta",
+    name:"Tamil",
+    native:"தமிழ்",
+    direction:"ltr"
+  },
+  te:{
+    code:"te",
+    name:"Telugu",
+    native:"తెలుగు",
+    direction:"ltr"
+  },
+  kn:{
+    code:"kn",
+    name:"Kannada",
+    native:"ಕನ್ನಡ",
+    direction:"ltr"
+  },
+  ml:{
+    code:"ml",
+    name:"Malayalam",
+    native:"മലയാളം",
+    direction:"ltr"
+  },
+  ur:{
+    code:"ur",
+    name:"Urdu",
+    native:"اردو",
+    direction:"rtl"
+  },
+  ar:{
+    code:"ar",
+    name:"Arabic",
+    native:"العربية",
+    direction:"rtl"
+  },
+  es:{
+    code:"es",
+    name:"Spanish",
+    native:"Español",
+    direction:"ltr"
+  },
+  fr:{
+    code:"fr",
+    name:"French",
+    native:"Français",
+    direction:"ltr"
+  }
+};
 
-    platformId:"GOVARA",
 
-    frontendVersion:
-      "ADMIN-CONTROL-26",
+/* ============================================================
+   Translation Registry
+   English + Hindi complete core administrator UI.
+   Other languages are registry-ready and use English fallback
+   until their language packs are supplied.
+============================================================ */
 
-    configVersion:"1.0",
+const I18N = {
+  en:{
+    adminControlCenter:"Administrator Control Center",
+    dashboard:"Dashboard",
+    systemConfiguration:"26A — System Configuration",
+    userRoleControl:"26B — User & Role Control",
+    businessPolicies:"26C — Business Policies",
+    operationsControl:"26D — Operations Control",
+    financialControl:"26E — Financial Control",
+    documentsKyc:"26F — Documents & KYC",
+    auditMonitoring:"26G — Audit & Monitoring",
+    step27Api:"STEP 27 — Consolidated API",
 
-    environment:"TESTING",
+    dashboardDescription:"Central administrator overview for the GoVara platform.",
+    systemStatus:"System Status",
+    environment:"Environment",
+    defaultLanguage:"Default Language",
+    apiStatus:"API Status",
+    architectureStatus:"Architecture Status",
+    globalControls:"Global Controls",
+    language:"Language",
+    timezone:"Timezone",
+    currency:"Currency",
 
-    systemStatus:"ACTIVE",
+    systemConfigurationDescription:"Global system-level configuration and control layer.",
+    systemConfigNotice:"This section controls global configuration only. Business, user, operational and financial authority remain in their respective control layers/backend.",
 
-    apiEndpoint:"",
+    systemIdentity:"1. System Identity",
+    systemName:"System Name",
+    platformType:"Platform / System Type",
+    systemVersion:"System Version",
+    frontendVersion:"Frontend Version",
 
-    defaultCountry:"IN",
+    environmentStatus:"2. Environment & System Status",
+    maintenanceMessage:"Maintenance / System Message",
+    maintenanceBehavior:"Maintenance Behaviour",
 
-    defaultCurrency:"INR",
+    productionSafety:"3. Production Safety",
+    safetyWarningTitle:"Safety Protection:",
+    safetyWarning:"Production must never be enabled accidentally from the frontend.",
+    productionLock:"Production Lock",
+    productionLockDescription:"Require explicit administrator confirmation before production mode.",
+    testingIndicator:"Testing Mode Indicator",
+    testingIndicatorDescription:"Keep testing state visible in the administrator UI.",
 
-    defaultTimezone:"Asia/Kolkata",
+    consolidatedApi:"4. Consolidated API Configuration",
+    apiConfigNotice:"One central API boundary only. Backend/database are not connected at this stage.",
+    apiEndpoint:"Consolidated API Endpoint",
+    validateEndpoint:"Validate Endpoint",
+    saveApi:"Save API Configuration",
+    clearApi:"Clear API",
 
-    defaultLanguage:"en-IN",
+    languageLocalization:"5. Language & Localization",
+    multilingual:"Multilingual System:",
+    multilingualDescription:"Admin controls which languages are available to users. The global language selector automatically switches the supported UI language.",
+    languageSelectorMode:"Language Selector",
+    availableLanguages:"Available Languages",
 
-    enabledLanguages:[
-      "en-IN",
-      "hi-IN"
-    ],
+    regionalSettings:"6. Regional Settings",
+    dateFormat:"Date Format",
+    timeFormat:"Time Format",
 
-    dateFormat:"DD-MM-YYYY",
+    socialWelfare:"7. Social Welfare",
+    welfareEnabled:"Social Welfare Module",
+    welfareEnabledDescription:"Enable system-level welfare capability for future supported services.",
+    welfareVisibility:"Show Welfare Options",
+    welfareVisibilityDescription:"Allow welfare-related options to appear where supported.",
 
-    timeFormat:"24H",
+    systemBehavior:"8. System Behaviour",
+    showMaintenanceMessage:"Show Maintenance Message",
+    showMaintenanceMessageDescription:"Display the configured system message when maintenance is active.",
+    blockWhenSuspended:"Block Operations When Suspended",
+    blockWhenSuspendedDescription:"System suspension should prevent normal operational actions.",
 
-    platformEnabled:true,
+    configurationManagement:"9. Configuration Management",
+    configurationVersion:"Configuration Version",
+    lastUpdated:"Last Updated",
+    storageMode:"Storage Mode",
+    saveConfiguration:"Save Configuration",
+    reloadConfiguration:"Reload Configuration",
+    resetDefaults:"Reset to Defaults",
+    save26A:"Save 26A Configuration",
 
-    registrationEnabled:true,
+    safetyBoundary:"10. Safety Boundary",
 
-    bookingEnabled:true,
+    userRoleDescription:"Central role registry for Admin, Customer, Vendor and Driver.",
+    roleRegistry:"Role Registry",
 
-    notificationsEnabled:true,
+    businessPolicyDescription:"Admin-configurable business and fare policies.",
+    farePolicies:"Fare & Charges"
+  },
 
-    socialWelfareEnabled:true,
+  hi:{
+    adminControlCenter:"प्रशासक नियंत्रण केंद्र",
+    dashboard:"डैशबोर्ड",
+    systemConfiguration:"26A — सिस्टम कॉन्फ़िगरेशन",
+    userRoleControl:"26B — यूज़र एवं रोल नियंत्रण",
+    businessPolicies:"26C — बिज़नेस पॉलिसी",
+    operationsControl:"26D — ऑपरेशंस नियंत्रण",
+    financialControl:"26E — वित्तीय नियंत्रण",
+    documentsKyc:"26F — दस्तावेज़ एवं KYC",
+    auditMonitoring:"26G — ऑडिट एवं मॉनिटरिंग",
+    step27Api:"STEP 27 — Consolidated API",
 
-    welfareAdminControl:true,
+    dashboardDescription:"GoVara प्लेटफ़ॉर्म का केंद्रीय प्रशासनिक अवलोकन।",
+    systemStatus:"सिस्टम स्थिति",
+    environment:"Environment",
+    defaultLanguage:"डिफ़ॉल्ट भाषा",
+    apiStatus:"API स्थिति",
+    architectureStatus:"आर्किटेक्चर स्थिति",
+    globalControls:"ग्लोबल नियंत्रण",
+    language:"भाषा",
+    timezone:"टाइमज़ोन",
+    currency:"करेंसी",
 
-    welfareAuditRequired:true,
+    systemConfigurationDescription:"पूरे सिस्टम की global configuration और control layer।",
+    systemConfigNotice:"यह सेक्शन केवल global configuration नियंत्रित करता है। Business, User, Operations और Financial authority अपनी संबंधित control layer/backend में रहती है।",
 
-    welfareMode:"TESTING",
+    systemIdentity:"1. सिस्टम पहचान",
+    systemName:"सिस्टम नाम",
+    platformType:"प्लेटफ़ॉर्म / सिस्टम प्रकार",
+    systemVersion:"सिस्टम वर्ज़न",
+    frontendVersion:"Frontend वर्ज़न",
 
-    globalNotifications:true,
+    environmentStatus:"2. Environment एवं System Status",
+    maintenanceMessage:"Maintenance / System Message",
+    maintenanceBehavior:"Maintenance व्यवहार",
 
-    monitoringEnabled:true,
+    productionSafety:"3. Production Safety",
+    safetyWarningTitle:"सुरक्षा सुरक्षा:",
+    safetyWarning:"Frontend से Production mode गलती से enable नहीं होना चाहिए।",
+    productionLock:"Production Lock",
+    productionLockDescription:"Production mode से पहले स्पष्ट administrator confirmation आवश्यक करें।",
+    testingIndicator:"Testing Mode Indicator",
+    testingIndicatorDescription:"Administrator UI में testing state हमेशा दिखाई जाए।",
 
-    auditEventsEnabled:true,
+    consolidatedApi:"4. Consolidated API Configuration",
+    apiConfigNotice:"केवल एक central API boundary होगी। इस stage पर Backend/Database connect नहीं हैं।",
+    apiEndpoint:"Consolidated API Endpoint",
+    validateEndpoint:"Endpoint Validate करें",
+    saveApi:"API Configuration Save करें",
+    clearApi:"API Clear करें",
 
-    realMoney:"BLOCKED",
+    languageLocalization:"5. भाषा एवं Localization",
+    multilingual:"Multilingual System:",
+    multilingualDescription:"Admin यह नियंत्रित करता है कि users को कौन-कौन सी भाषाएँ उपलब्ध हों। Global language selector supported UI language को automatically बदलता है।",
+    languageSelectorMode:"Language Selector",
+    availableLanguages:"उपलब्ध भाषाएँ",
 
-    realPayment:"BLOCKED",
+    regionalSettings:"6. Regional Settings",
+    dateFormat:"Date Format",
+    timeFormat:"Time Format",
 
-    bankTransfer:"BLOCKED",
+    socialWelfare:"7. Social Welfare",
+    welfareEnabled:"Social Welfare Module",
+    welfareEnabledDescription:"भविष्य में supported welfare services के लिए system-level welfare capability enable करें।",
+    welfareVisibility:"Welfare Options दिखाएँ",
+    welfareVisibilityDescription:"जहाँ supported हो वहाँ welfare-related options दिखाएँ।",
 
-    updatedAt:null
+    systemBehavior:"8. System Behaviour",
+    showMaintenanceMessage:"Maintenance Message दिखाएँ",
+    showMaintenanceMessageDescription:"Maintenance active होने पर configured system message दिखाएँ।",
+    blockWhenSuspended:"Suspended होने पर Operations Block करें",
+    blockWhenSuspendedDescription:"System suspended होने पर normal operational actions रोकें।",
 
-  };
+    configurationManagement:"9. Configuration Management",
+    configurationVersion:"Configuration Version",
+    lastUpdated:"Last Updated",
+    storageMode:"Storage Mode",
+    saveConfiguration:"Configuration Save करें",
+    reloadConfiguration:"Configuration Reload करें",
+    resetDefaults:"Default पर Reset करें",
+    save26A:"26A Configuration Save करें",
+
+    safetyBoundary:"10. Safety Boundary",
+
+    userRoleDescription:"Admin, Customer, Vendor और Driver के लिए central role registry।",
+    roleRegistry:"Role Registry",
+
+    businessPolicyDescription:"Admin द्वारा configurable business और fare policies।",
+    farePolicies:"Fare एवं Charges"
+  }
+};
 
 
-  const defaultRoles = {
+/* ============================================================
+   DEFAULT CONFIGURATION
+============================================================ */
 
-    Admin:true,
-    Customer:true,
-    Vendor:true,
-    Driver:true
+const DEFAULT_CONFIG = {
+  systemName:"GoVara",
+  platformType:"TRANSPORT_MOBILITY",
+  systemVersion:"GOVARA-SYSTEM-26A",
+  frontendVersion:"ADMIN-CONTROL-26",
 
-  };
+  environment:"TESTING",
+  systemStatus:"ACTIVE",
+  maintenanceMessage:"GoVara system is currently under maintenance.",
+  maintenanceBehavior:"NOTICE_ONLY",
+
+  productionLock:true,
+  testingIndicator:true,
+
+  apiEndpoint:"",
+
+  defaultLanguage:"en",
+  languageSelectorMode:"SHOW",
+
+  availableLanguages:{
+    en:true,
+    hi:true,
+    bn:false,
+    mr:false,
+    gu:false,
+    pa:false,
+    ta:false,
+    te:false,
+    kn:false,
+    ml:false,
+    ur:false,
+    ar:false,
+    es:false,
+    fr:false
+  },
+
+  timezone:"Asia/Kolkata",
+  currency:"INR",
+  dateFormat:"DD-MM-YYYY",
+  timeFormat:"12H",
+
+  welfareEnabled:true,
+  welfareVisibility:true,
+
+  showMaintenanceMessage:true,
+  blockWhenSuspended:true,
+
+  configVersion:"26A-1.0",
+  lastUpdated:""
+};
 
 
-  const defaultPolicies = {
+/* ============================================================
+   BUSINESS / ROLE / OPERATIONAL STATE
+============================================================ */
 
+const STATE = {
+  config:loadConfig(),
+  roles:[
+    {role:"Admin",active:true,function:"Central administration and control"},
+    {role:"Customer",active:true,function:"Primary booking initiator"},
+    {role:"Vendor",active:true,function:"Vendor/company operations"},
+    {role:"Driver",active:true,function:"Driver and duty operations"}
+  ],
+
+  kyc:{
+    customer:true,
+    vendor:true,
+    driver:true
+  },
+
+  operations:{
+    bookingCreation:true,
+    bookingCancellation:true,
+    fareEstimation:true,
+    vehicleAssignment:true,
+    driverDuty:true,
+    vendorOperations:true
+  },
+
+  services:{
+    "City Ride":true,
+    "Outstation":true,
+    "Airport":true,
+    "Rental":true,
+    "Corporate":true,
+    "Delivery":true
+  },
+
+  financial:{
+    Wallet:"BACKEND_REQUIRED",
+    Transaction:"BACKEND_REQUIRED",
+    Ledger:"BACKEND_REQUIRED",
+    Settlement:"BACKEND_REQUIRED",
+    Billing:"BACKEND_REQUIRED",
+    "Bank Transfer":"BLOCKED"
+  },
+
+  documents:{
+    "Government ID":true,
+    "Driving Licence":true,
+    "Vehicle RC":true,
+    "Insurance":true,
+    "Verification Required":true,
+    "Expiry Monitoring":true,
+    "Manual Review":true
+  },
+
+  business:{
     baseFare:100,
     perKmRate:12,
     serviceCharge:5,
-    taxRate:5,
+    taxPercent:5,
     maxDiscount:20,
-    advancePercent:20,
-
-    customerKyc:true,
-    vendorKyc:true,
-    driverKyc:true,
-
-    welfarePolicyStatus:"ACTIVE"
-
-  };
+    advancePercent:20
+  }
+};
 
 
-  const defaultOperations = {
+/* ============================================================
+   HELPERS
+============================================================ */
 
-    booking:true,
-    cancellation:true,
-    fare:true,
-    vehicle:true,
-    duty:true,
-    vendor:true,
+function deepClone(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
 
-    city:true,
-    outstation:true,
-    airport:true,
-    rental:true,
-    corporate:true,
-    delivery:true
+function loadConfig(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE.CONFIG));
+    return Object.assign(deepClone(DEFAULT_CONFIG),saved || {});
+  }catch(e){
+    return deepClone(DEFAULT_CONFIG);
+  }
+}
 
-  };
+function saveConfig(){
+  STATE.config.lastUpdated = new Date().toISOString();
 
+  localStorage.setItem(
+    STORAGE.CONFIG,
+    JSON.stringify(STATE.config)
+  );
 
-  const defaultDocuments = {
+  addAudit(
+    "26A_CONFIG_SAVE",
+    "System configuration saved locally."
+  );
 
-    govtId:true,
-    licence:true,
-    rc:true,
-    insurance:true,
-    verification:true,
-    expiry:true,
-    manual:true
+  renderAll();
+}
 
-  };
+function addAudit(action,details){
+  let logs=[];
 
-
-  function clone(obj){
-
-    return JSON.parse(
-      JSON.stringify(obj)
-    );
-
+  try{
+    logs=JSON.parse(localStorage.getItem(STORAGE.AUDIT)) || [];
+  }catch(e){
+    logs=[];
   }
 
-
-  function load(
-    key,
-    defaults
-  ){
-
-    try{
-
-      const raw =
-        localStorage.getItem(key);
-
-      if(!raw){
-
-        return clone(defaults);
-
-      }
-
-
-      const saved =
-        JSON.parse(raw);
-
-      return Object.assign(
-        clone(defaults),
-        saved || {}
-      );
-
-    }catch(e){
-
-      return clone(defaults);
-
-    }
-
-  }
-
-
-  function save(
-    key,
-    value
-  ){
-
-    localStorage.setItem(
-      key,
-      JSON.stringify(value)
-    );
-
-  }
-
-
-  /* =====================================================
-     LANGUAGE ENGINE
-  ===================================================== */
-
-  function getCurrentLanguage(){
-
-    const saved =
-      localStorage.getItem(
-        LANGUAGE_KEY
-      );
-
-    const config =
-      load(
-        CONFIG_KEY,
-        safeDefaults
-      );
-
-    const enabled =
-      Array.isArray(
-        config.enabledLanguages
-      )
-        ? config.enabledLanguages
-        : safeDefaults.enabledLanguages;
-
-
-    if(
-      saved &&
-      enabled.includes(saved)
-    ){
-
-      return saved;
-
-    }
-
-
-    if(
-      enabled.includes(
-        config.defaultLanguage
-      )
-    ){
-
-      return config.defaultLanguage;
-
-    }
-
-
-    return "en-IN";
-
-  }
-
-
-  function getTranslation(
-    key,
-    language
-  ){
-
-    const pack =
-      GOVARA_TRANSLATIONS[
-        language
-      ] ||
-      GOVARA_TRANSLATIONS["en-IN"];
-
-
-    return (
-      pack[key] ||
-      GOVARA_TRANSLATIONS["en-IN"][key] ||
-      key
-    );
-
-  }
-
-
-  function applyLanguage(
-    language
-  ){
-
-    const pack =
-      GOVARA_TRANSLATIONS[
-        language
-      ];
-
-
-    if(!pack){
-
-      language = "en-IN";
-
-    }
-
-
-    document.documentElement.lang =
-      language;
-
-
-    document
-      .querySelectorAll(
-        "[data-i18n]"
-      )
-      .forEach(el=>{
-
-        const key =
-          el.getAttribute(
-            "data-i18n"
-          );
-
-        el.textContent =
-          getTranslation(
-            key,
-            language
-          );
-
-      });
-
-
-    const titleMap = {
-
-      dashboard:
-        getTranslation(
-          "dashboardTitle",
-          language
-        ),
-
-      system:
-        getTranslation(
-          "title26A",
-          language
-        ),
-
-      roles:
-        getTranslation(
-          "title26B",
-          language
-        ),
-
-      policies:
-        getTranslation(
-          "title26C",
-          language
-        ),
-
-      operations:
-        getTranslation(
-          "title26D",
-          language
-        ),
-
-      financial:
-        getTranslation(
-          "title26E",
-          language
-        ),
-
-      documents:
-        getTranslation(
-          "title26F",
-          language
-        ),
-
-      audit:
-        getTranslation(
-          "title26G",
-          language
-        ),
-
-      api:
-        getTranslation(
-          "title27",
-          language
-        )
-
-    };
-
-
-    const active =
-      document.querySelector(
-        ".nav-btn.active"
-      );
-
-
-    if(active){
-
-      const page =
-        active.dataset.page;
-
-      document.getElementById(
-        "topbarTitle"
-      ).textContent =
-        titleMap[page] ||
-        "GoVara";
-
-    }
-
-
-    localStorage.setItem(
-      LANGUAGE_KEY,
-      language
-    );
-
-
-    updateLanguageSelector();
-
-  }
-
-
-  function updateLanguageSelector(){
-
-    const selector =
-      document.getElementById(
-        "languageSelector"
-      );
-
-    if(!selector){
-
-      return;
-
-    }
-
-
-    const config =
-      load(
-        CONFIG_KEY,
-        safeDefaults
-      );
-
-
-    let enabled =
-      Array.isArray(
-        config.enabledLanguages
-      )
-        ? config.enabledLanguages
-        : safeDefaults.enabledLanguages;
-
-
-    enabled =
-      enabled.filter(
-        code =>
-          GOVARA_TRANSLATIONS[code]
-      );
-
-
-    if(!enabled.length){
-
-      enabled = [
-        "en-IN"
-      ];
-
-    }
-
-
-    const languageNames = {
-
-      "en-IN":
-        "English",
-
-      "hi-IN":
-        "हिन्दी"
-
-    };
-
-
-    const current =
-      getCurrentLanguage();
-
-
-    selector.innerHTML = "";
-
-
-    enabled.forEach(code=>{
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-      option.value = code;
-
-      option.textContent =
-        languageNames[code] ||
-        code;
-
-      selector.appendChild(
-        option
-      );
-
-    });
-
-
-    selector.value =
-      enabled.includes(current)
-        ? current
-        : enabled[0];
-
-  }
-
-
-  function buildLanguageOptions(){
-
-    updateLanguageSelector();
-
-  }
-
-
-  document
-    .getElementById(
-      "languageSelector"
-    )
-    .addEventListener(
-      "change",
-      function(){
-
-        applyLanguage(
-          this.value
-        );
-
-        audit(
-          "LANGUAGE_CHANGE",
-          "Interface language changed to " +
-          this.value
-        );
-
-      }
-    );
-
-
-  /* =====================================================
-     AUDIT
-  ===================================================== */
-
-  function audit(
+  logs.unshift({
+    time:new Date().toLocaleString(),
     action,
     details
-  ){
+  });
 
-    const enabled =
-      document.getElementById(
-        "auditEventsEnabled"
-      );
+  logs=logs.slice(0,500);
 
+  localStorage.setItem(
+    STORAGE.AUDIT,
+    JSON.stringify(logs)
+  );
 
-    if(
-      enabled &&
-      !enabled.checked
-    ){
+  renderAudit();
+}
 
-      return;
+function getActiveLanguages(){
+  return Object.keys(STATE.config.availableLanguages)
+    .filter(code => STATE.config.availableLanguages[code]);
+}
 
-    }
-
-
-    const logs =
-      load(
-        AUDIT_KEY,
-        []
-      );
-
-
-    logs.unshift({
-
-      time:
-        new Date()
-          .toLocaleString(
-            "en-IN"
-          ),
-
-      action,
-
-      details
-
-    });
-
-
-    save(
-      AUDIT_KEY,
-      logs.slice(
-        0,
-        500
-      )
-    );
-
-
-    renderAudit();
-
+function getTranslation(code,key){
+  if(I18N[code] && I18N[code][key]){
+    return I18N[code][key];
   }
 
+  if(I18N.en[key]){
+    return I18N.en[key];
+  }
 
-  /* =====================================================
-     NAVIGATION
-  ===================================================== */
+  return key;
+}
 
-  const navButtons =
-    document.querySelectorAll(
-      ".nav-btn"
-    );
+function applyLanguage(code){
+  if(!LANGUAGES[code]){
+    code="en";
+  }
 
+  if(!STATE.config.availableLanguages[code]){
+    code=STATE.config.defaultLanguage;
+  }
 
-  navButtons.forEach(btn=>{
+  if(!STATE.config.availableLanguages[code]){
+    code="en";
+  }
 
-    btn.addEventListener(
-      "click",
-      function(){
+  document.documentElement.lang=code;
+  document.documentElement.dir=LANGUAGES[code]?.direction || "ltr";
 
-        const page =
-          this.dataset.page;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key=el.getAttribute("data-i18n");
+    el.textContent=getTranslation(code,key);
+  });
 
+  populateGlobalLanguageSelector(code);
+  updateDashboard();
 
-        document
-          .querySelectorAll(
-            ".page"
-          )
-          .forEach(
-            p =>
-              p.classList.remove(
-                "active"
-              )
-          );
+  localStorage.setItem("GOVARA_UI_LANGUAGE",code);
+}
 
+function populateGlobalLanguageSelector(selected){
+  const select=document.getElementById("globalLanguage");
 
-        const target =
-          document.getElementById(
-            "page-" + page
-          );
+  if(!select)return;
 
+  const active=getActiveLanguages();
 
-        if(target){
+  select.innerHTML=active.map(code=>{
+    const l=LANGUAGES[code];
 
-          target.classList.add(
-            "active"
-          );
+    return `
+      <option value="${code}">
+        ${l.native} — ${l.name}
+      </option>
+    `;
+  }).join("");
 
-        }
+  select.value=active.includes(selected)
+    ? selected
+    : STATE.config.defaultLanguage;
+}
 
+function populateDefaultLanguage(){
+  const select=document.getElementById("defaultLanguage");
 
-        navButtons.forEach(
-          b =>
-            b.classList.remove(
-              "active"
-            )
-        );
+  select.innerHTML=Object.keys(LANGUAGES).map(code=>{
+    const l=LANGUAGES[code];
 
+    return `
+      <option value="${code}">
+        ${l.native} — ${l.name}
+      </option>
+    `;
+  }).join("");
 
-        this.classList.add(
-          "active"
-        );
+  select.value=STATE.config.defaultLanguage;
+}
 
+function renderLanguageList(){
+  const box=document.getElementById("languageList");
 
-        applyLanguage(
-          getCurrentLanguage()
-        );
+  box.innerHTML=Object.keys(LANGUAGES).map(code=>{
+    const l=LANGUAGES[code];
+    const enabled=!!STATE.config.availableLanguages[code];
 
+    const translationReady=!!I18N[code];
 
-        document.getElementById(
-          "sidebar"
-        ).classList.remove(
-          "open"
-        );
+    return `
+      <div class="lang-item">
+        <div>
+          <div class="lang-name">
+            ${l.native} — ${l.name}
+          </div>
+          <div class="lang-code">
+            ${code.toUpperCase()} •
+            ${translationReady ? "UI Pack Ready" : "Language Pack Ready / Translation Pending"}
+          </div>
+        </div>
 
+        <label class="switch">
+          <input
+            type="checkbox"
+            data-language="${code}"
+            ${enabled ? "checked" : ""}
+          >
+          <span class="slider"></span>
+        </label>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("input[data-language]").forEach(input=>{
+    input.addEventListener("change",()=>{
+      const code=input.dataset.language;
+
+      if(code==="en" && !input.checked){
+        input.checked=true;
+        return;
       }
+
+      if(code===STATE.config.defaultLanguage && !input.checked){
+        STATE.config.defaultLanguage="en";
+        document.getElementById("defaultLanguage").value="en";
+      }
+
+      STATE.config.availableLanguages[code]=input.checked;
+
+      addAudit(
+        "LANGUAGE_CONFIG_CHANGE",
+        `${code} ${input.checked ? "enabled":"disabled"}`
+      );
+
+      renderLanguageList();
+      populateGlobalLanguageSelector(
+        localStorage.getItem("GOVARA_UI_LANGUAGE") ||
+        STATE.config.defaultLanguage
+      );
+    });
+  });
+}
+
+
+/* ============================================================
+   26A RENDER
+============================================================ */
+
+function load26AForm(){
+  const c=STATE.config;
+
+  document.getElementById("systemName").value=c.systemName;
+  document.getElementById("platformType").value=c.platformType;
+  document.getElementById("systemVersion").value=c.systemVersion;
+  document.getElementById("frontendVersion").value=c.frontendVersion;
+
+  document.getElementById("environment").value=c.environment;
+  document.getElementById("systemStatus").value=c.systemStatus;
+  document.getElementById("maintenanceMessage").value=c.maintenanceMessage;
+  document.getElementById("maintenanceBehavior").value=c.maintenanceBehavior;
+
+  document.getElementById("productionLock").checked=c.productionLock;
+  document.getElementById("testingIndicator").checked=c.testingIndicator;
+
+  document.getElementById("apiEndpoint").value=c.apiEndpoint;
+
+  document.getElementById("defaultLanguage").value=c.defaultLanguage;
+  document.getElementById("languageSelectorMode").value=c.languageSelectorMode;
+
+  document.getElementById("timezone").value=c.timezone;
+  document.getElementById("currency").value=c.currency;
+  document.getElementById("dateFormat").value=c.dateFormat;
+  document.getElementById("timeFormat").value=c.timeFormat;
+
+  document.getElementById("welfareEnabled").checked=c.welfareEnabled;
+  document.getElementById("welfareVisibility").checked=c.welfareVisibility;
+
+  document.getElementById("showMaintenanceMessage").checked=c.showMaintenanceMessage;
+  document.getElementById("blockWhenSuspended").checked=c.blockWhenSuspended;
+
+  document.getElementById("configVersionDisplay").textContent=c.configVersion;
+  document.getElementById("lastUpdatedDisplay").textContent=
+    c.lastUpdated
+      ? new Date(c.lastUpdated).toLocaleString()
+      : "—";
+
+  populateDefaultLanguage();
+  renderLanguageList();
+}
+
+function collect26AForm(){
+  const c=STATE.config;
+
+  c.systemName=document.getElementById("systemName").value.trim();
+  c.platformType=document.getElementById("platformType").value;
+  c.systemVersion=document.getElementById("systemVersion").value.trim();
+  c.frontendVersion=document.getElementById("frontendVersion").value.trim();
+
+  c.environment=document.getElementById("environment").value;
+  c.systemStatus=document.getElementById("systemStatus").value;
+  c.maintenanceMessage=document.getElementById("maintenanceMessage").value.trim();
+  c.maintenanceBehavior=document.getElementById("maintenanceBehavior").value;
+
+  c.productionLock=document.getElementById("productionLock").checked;
+  c.testingIndicator=document.getElementById("testingIndicator").checked;
+
+  c.apiEndpoint=document.getElementById("apiEndpoint").value.trim();
+
+  c.defaultLanguage=document.getElementById("defaultLanguage").value;
+  c.languageSelectorMode=document.getElementById("languageSelectorMode").value;
+
+  c.timezone=document.getElementById("timezone").value;
+  c.currency=document.getElementById("currency").value;
+  c.dateFormat=document.getElementById("dateFormat").value;
+  c.timeFormat=document.getElementById("timeFormat").value;
+
+  c.welfareEnabled=document.getElementById("welfareEnabled").checked;
+  c.welfareVisibility=document.getElementById("welfareVisibility").checked;
+
+  c.showMaintenanceMessage=document.getElementById("showMaintenanceMessage").checked;
+  c.blockWhenSuspended=document.getElementById("blockWhenSuspended").checked;
+}
+
+function validate26A(){
+  collect26AForm();
+
+  if(!STATE.config.systemName){
+    alert("System Name is required.");
+    return false;
+  }
+
+  if(!STATE.config.systemVersion){
+    alert("System Version is required.");
+    return false;
+  }
+
+  if(STATE.config.environment==="PRODUCTION" &&
+     STATE.config.productionLock){
+    const ok=confirm(
+      "Production mode is protected.\n\n" +
+      "Are you sure you want to continue?"
     );
 
+    if(!ok){
+      return false;
+    }
+  }
+
+  if(STATE.config.apiEndpoint){
+    try{
+      new URL(STATE.config.apiEndpoint);
+    }catch(e){
+      alert("Please enter a valid API endpoint URL.");
+      return false;
+    }
+  }
+
+  if(!STATE.config.availableLanguages.en){
+    STATE.config.availableLanguages.en=true;
+  }
+
+  if(!STATE.config.availableLanguages[STATE.config.defaultLanguage]){
+    STATE.config.defaultLanguage="en";
+  }
+
+  return true;
+}
+
+function save26A(){
+  if(!validate26A())return;
+
+  saveConfig();
+
+  applyLanguage(
+    localStorage.getItem("GOVARA_UI_LANGUAGE") ||
+    STATE.config.defaultLanguage
+  );
+
+  alert("26A System Configuration saved successfully.");
+}
+
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+
+function updateDashboard(){
+  const c=STATE.config;
+
+  document.getElementById("dashSystemStatus").textContent=c.systemStatus;
+  document.getElementById("dashEnvironment").textContent=c.environment;
+
+  const l=LANGUAGES[c.defaultLanguage] || LANGUAGES.en;
+
+  document.getElementById("dashLanguage").textContent=l.native;
+  document.getElementById("dashLanguage2").textContent=l.native;
+
+  document.getElementById("dashTimezone").textContent=c.timezone;
+  document.getElementById("dashCurrency").textContent=c.currency;
+
+  const welfare=document.getElementById("dashWelfare");
+  welfare.textContent=c.welfareEnabled ? "ENABLED":"DISABLED";
+  welfare.className=
+    "badge " + (c.welfareEnabled ? "ready":"danger");
+
+  const apiConfigured=!!GoVaraAPI.getAPIUrl();
+
+  document.getElementById("dashApiStatus").textContent=
+    apiConfigured ? "CONFIGURED":"NOT CONFIGURED";
+
+  document.getElementById("apiBadge").textContent=
+    apiConfigured ? "API CONFIGURED":"API NOT CONFIGURED";
+
+  document.getElementById("step27Endpoint").textContent=
+    apiConfigured ? GoVaraAPI.getAPIUrl() : "NONE";
+}
+
+
+/* ============================================================
+   26B
+============================================================ */
+
+function renderRoles(){
+  const tbody=document.getElementById("rolesTable");
+
+  tbody.innerHTML=STATE.roles.map(r=>`
+    <tr>
+      <td><strong>${r.role}</strong></td>
+      <td>
+        <span class="badge ${r.active?"ready":"danger"}">
+          ${r.active?"ACTIVE":"DISABLED"}
+        </span>
+      </td>
+      <td>${r.function}</td>
+    </tr>
+  `).join("");
+}
+
+
+/* ============================================================
+   26C
+============================================================ */
+
+function renderBusiness(){
+  document.getElementById("baseFare").value=STATE.business.baseFare;
+  document.getElementById("perKmRate").value=STATE.business.perKmRate;
+  document.getElementById("serviceCharge").value=STATE.business.serviceCharge;
+  document.getElementById("taxPercent").value=STATE.business.taxPercent;
+  document.getElementById("maxDiscount").value=STATE.business.maxDiscount;
+  document.getElementById("advancePercent").value=STATE.business.advancePercent;
+
+  const box=document.getElementById("kycPolicies");
+
+  box.innerHTML=[
+    ["customer","Customer KYC Required"],
+    ["vendor","Vendor KYC Required"],
+    ["driver","Driver KYC Required"]
+  ].map(([key,label])=>`
+    <div class="toggle-row">
+      <div><strong>${label}</strong></div>
+      <label class="switch">
+        <input
+          type="checkbox"
+          data-kyc="${key}"
+          ${STATE.kyc[key]?"checked":""}
+        >
+        <span class="slider"></span>
+      </label>
+    </div>
+  `).join("");
+
+  box.querySelectorAll("[data-kyc]").forEach(el=>{
+    el.addEventListener("change",()=>{
+      STATE.kyc[el.dataset.kyc]=el.checked;
+      addAudit(
+        "KYC_POLICY_CHANGE",
+        `${el.dataset.kyc}: ${el.checked}`
+      );
+    });
+  });
+}
+
+
+/* ============================================================
+   26D
+============================================================ */
+
+function renderOperations(){
+  const op=document.getElementById("operationControls");
+
+  op.innerHTML=Object.keys(STATE.operations).map(key=>`
+    <div class="toggle-row">
+      <div>
+        <strong>${key.replace(/([A-Z])/g," $1")}</strong>
+      </div>
+      <label class="switch">
+        <input
+          type="checkbox"
+          data-op="${key}"
+          ${STATE.operations[key]?"checked":""}
+        >
+        <span class="slider"></span>
+      </label>
+    </div>
+  `).join("");
+
+  op.querySelectorAll("[data-op]").forEach(el=>{
+    el.addEventListener("change",()=>{
+      STATE.operations[el.dataset.op]=el.checked;
+      addAudit(
+        "OPERATION_CONTROL_CHANGE",
+        `${el.dataset.op}: ${el.checked}`
+      );
+    });
+  });
+
+  const services=document.getElementById("serviceControls");
+
+  services.innerHTML=Object.keys(STATE.services).map(key=>`
+    <div class="toggle-row">
+      <div><strong>${key}</strong></div>
+      <label class="switch">
+        <input
+          type="checkbox"
+          data-service="${key}"
+          ${STATE.services[key]?"checked":""}
+        >
+        <span class="slider"></span>
+      </label>
+    </div>
+  `).join("");
+
+  services.querySelectorAll("[data-service]").forEach(el=>{
+    el.addEventListener("change",()=>{
+      STATE.services[el.dataset.service]=el.checked;
+
+      addAudit(
+        "SERVICE_CONTROL_CHANGE",
+        `${el.dataset.service}: ${el.checked}`
+      );
+    });
+  });
+}
+
+
+/* ============================================================
+   26E
+============================================================ */
+
+function renderFinancial(){
+  const box=document.getElementById("financialModules");
+
+  box.innerHTML=Object.keys(STATE.financial).map(key=>`
+    <div class="toggle-row">
+      <div>
+        <strong>${key}</strong>
+        <small>
+          ${STATE.financial[key]==="BLOCKED"
+            ?"Blocked"
+            :"Backend authoritative"}
+        </small>
+      </div>
+      <span class="badge ${
+        STATE.financial[key]==="BLOCKED"
+          ?"danger":"info"
+      }">
+        ${STATE.financial[key]}
+      </span>
+    </div>
+  `).join("");
+}
+
+
+/* ============================================================
+   26F
+============================================================ */
+
+function renderDocuments(){
+  const box=document.getElementById("documentControls");
+
+  box.innerHTML=Object.keys(STATE.documents).map(key=>`
+    <div class="toggle-row">
+      <div><strong>${key}</strong></div>
+      <label class="switch">
+        <input
+          type="checkbox"
+          data-document="${key}"
+          ${STATE.documents[key]?"checked":""}
+        >
+        <span class="slider"></span>
+      </label>
+    </div>
+  `).join("");
+
+  box.querySelectorAll("[data-document]").forEach(el=>{
+    el.addEventListener("change",()=>{
+      STATE.documents[el.dataset.document]=el.checked;
+
+      addAudit(
+        "DOCUMENT_CONTROL_CHANGE",
+        `${el.dataset.document}: ${el.checked}`
+      );
+    });
+  });
+}
+
+
+/* ============================================================
+   26G AUDIT
+============================================================ */
+
+function renderAudit(){
+  const tbody=document.getElementById("auditTable");
+
+  let logs=[];
+
+  try{
+    logs=JSON.parse(localStorage.getItem(STORAGE.AUDIT)) || [];
+  }catch(e){
+    logs=[];
+  }
+
+  if(!logs.length){
+    tbody.innerHTML=`
+      <tr>
+        <td colspan="3" class="empty">
+          No local audit activity.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML=logs.map(log=>`
+    <tr>
+      <td>${log.time}</td>
+      <td><strong>${log.action}</strong></td>
+      <td>${log.details}</td>
+    </tr>
+  `).join("");
+}
+
+
+/* ============================================================
+   STEP 27
+============================================================ */
+
+const API_MODULES=[
+  "Customer",
+  "Vendor",
+  "Driver",
+  "Vehicle",
+  "Booking",
+  "Duty",
+  "Fare",
+  "Transaction",
+  "Wallet",
+  "Ledger",
+  "Settlement",
+  "Billing",
+  "Documents",
+  "Admin",
+  "Audit"
+];
+
+function renderApiModules(){
+  document.getElementById("apiModules").innerHTML=
+    API_MODULES.map(m=>`
+      <span class="badge info" style="margin:3px">
+        ${m}
+      </span>
+    `).join("");
+}
+
+function refreshApiStatus(){
+  const url=GoVaraAPI.getAPIUrl();
+
+  document.getElementById("step27Endpoint").textContent=
+    url || "NONE";
+
+  document.getElementById("step27Connection").textContent=
+    GoVaraAPI.state.verified
+      ? "VERIFIED"
+      : GoVaraAPI.state.connected
+        ? "CONNECTED"
+        : "NOT TESTED";
+
+  document.getElementById("apiBadge").textContent=
+    url ? "API CONFIGURED":"API NOT CONFIGURED";
+
+  updateDashboard();
+}
+
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+const pageTitles={
+  dashboard:"Dashboard",
+  system:"26A — System Configuration",
+  users:"26B — User & Role Control",
+  business:"26C — Business Policies",
+  operations:"26D — Operations Control",
+  financial:"26E — Financial Control",
+  documents:"26F — Documents & KYC",
+  audit:"26G — Audit & Monitoring",
+  api:"STEP 27 — Consolidated API"
+};
+
+document.querySelectorAll(".nav button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const page=btn.dataset.page;
+
+    document.querySelectorAll(".nav button")
+      .forEach(b=>b.classList.remove("active"));
+
+    btn.classList.add("active");
+
+    document.querySelectorAll(".page")
+      .forEach(p=>p.classList.remove("active"));
+
+    document.getElementById("page-"+page)
+      .classList.add("active");
+
+    document.getElementById("topTitle").textContent=
+      pageTitles[page];
+
+    document.getElementById("sidebar")
+      .classList.remove("open");
+  });
+});
+
+document.getElementById("mobileMenu")
+  .addEventListener("click",()=>{
+    document.getElementById("sidebar")
+      .classList.toggle("open");
   });
 
 
-  document
-    .getElementById(
-      "mobileMenu"
-    )
-    .addEventListener(
-      "click",
-      function(){
+/* ============================================================
+   EVENT BINDINGS
+============================================================ */
 
-        document.getElementById(
-          "sidebar"
-        ).classList.toggle(
-          "open"
-        );
+document.getElementById("save26ABottom")
+  .addEventListener("click",save26A);
 
-      }
+document.getElementById("saveConfigBtn")
+  .addEventListener("click",save26A);
+
+document.getElementById("reloadConfigBtn")
+  .addEventListener("click",()=>{
+    STATE.config=loadConfig();
+    load26AForm();
+    applyLanguage(
+      localStorage.getItem("GOVARA_UI_LANGUAGE") ||
+      STATE.config.defaultLanguage
+    );
+    addAudit(
+      "26A_CONFIG_RELOAD",
+      "System configuration reloaded."
+    );
+  });
+
+document.getElementById("resetConfigBtn")
+  .addEventListener("click",()=>{
+    const ok=confirm(
+      "Reset all 26A System Configuration values to defaults?"
     );
 
+    if(!ok)return;
 
-  /* =====================================================
-     26A FORM
-  ===================================================== */
+    STATE.config=deepClone(DEFAULT_CONFIG);
 
-  function getEnabledLanguages(){
+    saveConfig();
+    load26AForm();
 
-    return Array.from(
-      document.querySelectorAll(
-        ".language-check:checked"
-      )
-    ).map(
-      el => el.value
+    applyLanguage("en");
+
+    addAudit(
+      "26A_CONFIG_RESET",
+      "26A configuration reset to defaults."
     );
+  });
 
-  }
 
+/* API config inside 26A */
 
-  function getSystemForm(){
+document.getElementById("validateApiBtn")
+  .addEventListener("click",()=>{
+    const url=document.getElementById("apiEndpoint").value.trim();
+    const result=document.getElementById("apiValidationResult");
 
-    return {
-
-      systemName:
-        document.getElementById(
-          "systemName"
-        ).value.trim(),
-
-      platformType:
-        document.getElementById(
-          "platformType"
-        ).value.trim(),
-
-      platformId:
-        document.getElementById(
-          "platformId"
-        ).value.trim(),
-
-      frontendVersion:
-        document.getElementById(
-          "frontendVersion"
-        ).value.trim(),
-
-      configVersion:
-        document.getElementById(
-          "configVersion"
-        ).value.trim(),
-
-      environment:
-        document.getElementById(
-          "environment"
-        ).value,
-
-      systemStatus:
-        document.getElementById(
-          "systemStatus"
-        ).value,
-
-      apiEndpoint:
-        document.getElementById(
-          "apiEndpoint"
-        ).value.trim(),
-
-      defaultCountry:
-        document.getElementById(
-          "defaultCountry"
-        ).value,
-
-      defaultCurrency:
-        document.getElementById(
-          "defaultCurrency"
-        ).value,
-
-      defaultTimezone:
-        document.getElementById(
-          "defaultTimezone"
-        ).value,
-
-      defaultLanguage:
-        document.getElementById(
-          "defaultLanguage"
-        ).value,
-
-      enabledLanguages:
-        getEnabledLanguages(),
-
-      dateFormat:
-        document.getElementById(
-          "dateFormat"
-        ).value,
-
-      timeFormat:
-        document.getElementById(
-          "timeFormat"
-        ).value,
-
-      platformEnabled:
-        document.getElementById(
-          "platformEnabled"
-        ).checked,
-
-      registrationEnabled:
-        document.getElementById(
-          "registrationEnabled"
-        ).checked,
-
-      bookingEnabled:
-        document.getElementById(
-          "bookingEnabled"
-        ).checked,
-
-      notificationsEnabled:
-        document.getElementById(
-          "notificationsEnabled"
-        ).checked,
-
-      socialWelfareEnabled:
-        document.getElementById(
-          "socialWelfareEnabled"
-        ).checked,
-
-      welfareAdminControl:
-        document.getElementById(
-          "welfareAdminControl"
-        ).checked,
-
-      welfareAuditRequired:
-        document.getElementById(
-          "welfareAuditRequired"
-        ).checked,
-
-      welfareMode:
-        document.getElementById(
-          "welfareMode"
-        ).value,
-
-      globalNotifications:
-        document.getElementById(
-          "globalNotifications"
-        ).checked,
-
-      monitoringEnabled:
-        document.getElementById(
-          "monitoringEnabled"
-        ).checked,
-
-      auditEventsEnabled:
-        document.getElementById(
-          "auditEventsEnabled"
-        ).checked,
-
-      realMoney:"BLOCKED",
-      realPayment:"BLOCKED",
-      bankTransfer:"BLOCKED",
-
-      updatedAt:
-        new Date().toISOString()
-
-    };
-
-  }
-
-
-  function validateSystem(
-    config
-  ){
-
-    if(!config.systemName){
-
-      return "System Name is required.";
-
-    }
-
-
-    if(!config.platformType){
-
-      return "Platform / System Type is required.";
-
-    }
-
-
-    if(!config.platformId){
-
-      return "System / Platform ID is required.";
-
-    }
-
-
-    if(!config.frontendVersion){
-
-      return "Frontend Version is required.";
-
-    }
-
-
-    if(!config.configVersion){
-
-      return "Configuration Version is required.";
-
-    }
-
-
-    if(
-      !config.enabledLanguages.length
-    ){
-
-      return "At least one language must be enabled.";
-
-    }
-
-
-    if(
-      !config.enabledLanguages.includes(
-        config.defaultLanguage
-      )
-    ){
-
-      return "Default Language must be one of the enabled languages.";
-
-    }
-
-
-    if(config.apiEndpoint){
-
-      try{
-
-        const url =
-          new URL(
-            config.apiEndpoint
-          );
-
-
-        if(
-          url.protocol !== "https:" &&
-          location.hostname !== "localhost" &&
-          location.hostname !== "127.0.0.1"
-        ){
-
-          return "API endpoint must use HTTPS.";
-
-        }
-
-      }catch(e){
-
-        return "API endpoint format is invalid.";
-
-      }
-
-    }
-
-
-    if(
-      config.environment ===
-      "PRODUCTION"
-    ){
-
-      const proceed =
-        confirm(
-          "Production environment selected.\n\n" +
-          "Real Money, Real Payment and Bank Transfer remain BLOCKED.\n\n" +
-          "Do you want to save this environment setting?"
-        );
-
-
-      if(!proceed){
-
-        return "Production change cancelled.";
-
-      }
-
-    }
-
-
-    return null;
-
-  }
-
-
-  function fillSystem(
-    config
-  ){
-
-    Object.keys(
-      config
-    ).forEach(
-      key=>{
-
-        const el =
-          document.getElementById(
-            key
-          );
-
-
-        if(el){
-
-          if(
-            el.type ===
-            "checkbox"
-          ){
-
-            el.checked =
-              !!config[key];
-
-          }else{
-
-            el.value =
-              config[key] == null
-                ? ""
-                : config[key];
-
-          }
-
-        }
-
-      }
-    );
-
-
-    document
-      .querySelectorAll(
-        ".language-check"
-      )
-      .forEach(
-        check=>{
-
-          check.checked =
-            Array.isArray(
-              config.enabledLanguages
-            ) &&
-            config.enabledLanguages.includes(
-              check.value
-            );
-
-        }
-      );
-
-
-    updateSystemIndicators();
-
-  }
-
-
-  function updateSystemIndicators(){
-
-    const environment =
-      document.getElementById(
-        "environment"
-      ).value;
-
-
-    const status =
-      document.getElementById(
-        "systemStatus"
-      ).value;
-
-
-    const welfare =
-      document.getElementById(
-        "socialWelfareEnabled"
-      ).checked;
-
-
-    document.getElementById(
-      "dashboardEnvironment"
-    ).textContent =
-      environment;
-
-
-    document.getElementById(
-      "dashboardSystemStatus"
-    ).textContent =
-      status;
-
-
-    document.getElementById(
-      "dashboardWelfare"
-    ).textContent =
-      welfare
-        ? "ENABLED"
-        : "DISABLED";
-
-
-    document.getElementById(
-      "dashboardConfigVersion"
-    ).textContent =
-      document.getElementById(
-        "configVersion"
-      ).value ||
-      "—";
-
-
-    const productionWarning =
-      document.getElementById(
-        "productionWarning"
-      );
-
-
-    productionWarning.style.display =
-      environment ===
-      "PRODUCTION"
-        ? "block"
-        : "none";
-
-
-    const modeBadge =
-      document.getElementById(
-        "modeBadge"
-      );
-
-
-    if(
-      environment ===
-      "TESTING"
-    ){
-
-      modeBadge.textContent =
-        "TESTING MODE";
-
-      modeBadge.className =
-        "badge warning";
-
-    }else if(
-      environment ===
-      "STAGING"
-    ){
-
-      modeBadge.textContent =
-        "STAGING MODE";
-
-      modeBadge.className =
-        "badge warning";
-
-    }else{
-
-      modeBadge.textContent =
-        "PRODUCTION";
-
-      modeBadge.className =
-        "badge danger";
-
-    }
-
-  }
-
-
-  function showSystemMessage(
-    message,
-    type
-  ){
-
-    const box =
-      document.getElementById(
-        "systemMessage"
-      );
-
-
-    box.textContent =
-      message;
-
-    box.className =
-      "notice " + type;
-
-    box.style.display =
-      "block";
-
-
-    setTimeout(
-      ()=>{
-        box.style.display =
-          "none";
-      },
-      4500
-    );
-
-  }
-
-
-  document
-    .getElementById(
-      "saveSystem"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const config =
-          getSystemForm();
-
-
-        const error =
-          validateSystem(
-            config
-          );
-
-
-        if(error){
-
-          showSystemMessage(
-            error,
-            "danger"
-          );
-
-          return;
-
-        }
-
-
-        const old =
-          load(
-            CONFIG_KEY,
-            safeDefaults
-          );
-
-
-        save(
-          CONFIG_KEY,
-          config
-        );
-
-
-        if(
-          config.enabledLanguages
-            .length
-        ){
-
-          if(
-            !config.enabledLanguages
-              .includes(
-                getCurrentLanguage()
-              )
-          ){
-
-            localStorage.setItem(
-              LANGUAGE_KEY,
-              config.defaultLanguage
-            );
-
-          }
-
-        }
-
-
-        audit(
-          "SYSTEM_CONFIGURATION_SAVE",
-          "26A configuration updated"
-        );
-
-
-        if(
-          old.socialWelfareEnabled !==
-          config.socialWelfareEnabled
-        ){
-
-          audit(
-            "SOCIAL_WELFARE_SYSTEM_CHANGE",
-            "Social Welfare changed to " +
-            (
-              config.socialWelfareEnabled
-                ? "ENABLED"
-                : "DISABLED"
-            )
-          );
-
-        }
-
-
-        if(
-          old.environment !==
-          config.environment
-        ){
-
-          audit(
-            "ENVIRONMENT_CHANGE",
-            old.environment +
-            " → " +
-            config.environment
-          );
-
-        }
-
-
-        if(
-          old.systemStatus !==
-          config.systemStatus
-        ){
-
-          audit(
-            "SYSTEM_STATUS_CHANGE",
-            old.systemStatus +
-            " → " +
-            config.systemStatus
-          );
-
-        }
-
-
-        if(
-          JSON.stringify(
-            old.enabledLanguages || []
-          ) !==
-          JSON.stringify(
-            config.enabledLanguages
-          )
-        ){
-
-          audit(
-            "LANGUAGE_CONFIGURATION_CHANGE",
-            "Enabled languages updated"
-          );
-
-        }
-
-
-        updateSystemIndicators();
-
-        buildLanguageOptions();
-
-        applyLanguage(
-          getCurrentLanguage()
-        );
-
-
-        showSystemMessage(
-          getTranslation(
-            "save26A",
-            getCurrentLanguage()
-          ) + " ✓",
-          "success"
-        );
-
-      }
-    );
-
-
-  document
-    .getElementById(
-      "reloadSystem"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const config =
-          load(
-            CONFIG_KEY,
-            safeDefaults
-          );
-
-
-        fillSystem(
-          config
-        );
-
-
-        buildLanguageOptions();
-
-        applyLanguage(
-          getCurrentLanguage()
-        );
-
-
-        audit(
-          "SYSTEM_CONFIGURATION_RELOAD",
-          "Saved 26A configuration loaded"
-        );
-
-
-        showSystemMessage(
-          "Saved 26A configuration reloaded.",
-          "success"
-        );
-
-      }
-    );
-
-
-  document
-    .getElementById(
-      "resetSystem"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const proceed =
-          confirm(
-            "Restore 26A to safe defaults?\n\n" +
-            "TESTING + ACTIVE + English/Hindi + Real Money BLOCKED + API NOT CONFIGURED"
-          );
-
-
-        if(!proceed){
-
-          return;
-
-        }
-
-
-        const defaults =
-          clone(
-            safeDefaults
-          );
-
-
-        save(
-          CONFIG_KEY,
-          defaults
-        );
-
-
-        localStorage.setItem(
-          LANGUAGE_KEY,
-          defaults.defaultLanguage
-        );
-
-
-        fillSystem(
-          defaults
-        );
-
-
-        audit(
-          "SYSTEM_CONFIGURATION_RESET",
-          "26A restored to safe defaults"
-        );
-
-
-        buildLanguageOptions();
-
-        applyLanguage(
-          defaults.defaultLanguage
-        );
-
-
-        showSystemMessage(
-          "26A restored to safe defaults.",
-          "success"
-        );
-
-      }
-    );
-
-
-  [
-    "environment",
-    "systemStatus",
-    "socialWelfareEnabled",
-    "configVersion"
-  ].forEach(
-    id=>{
-
-      document
-        .getElementById(id)
-        .addEventListener(
-          "change",
-          updateSystemIndicators
-        );
-
-    }
-  );
-
-
-  /* =====================================================
-     ROLES
-  ===================================================== */
-
-  function loadRoles(){
-
-    const roles =
-      load(
-        ROLES_KEY,
-        defaultRoles
-      );
-
-
-    document.getElementById(
-      "roleAdmin"
-    ).checked =
-      roles.Admin;
-
-
-    document.getElementById(
-      "roleCustomer"
-    ).checked =
-      roles.Customer;
-
-
-    document.getElementById(
-      "roleVendor"
-    ).checked =
-      roles.Vendor;
-
-
-    document.getElementById(
-      "roleDriver"
-    ).checked =
-      roles.Driver;
-
-  }
-
-
-  document
-    .getElementById(
-      "saveRoles"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const roles = {
-
-          Admin:
-            document.getElementById(
-              "roleAdmin"
-            ).checked,
-
-          Customer:
-            document.getElementById(
-              "roleCustomer"
-            ).checked,
-
-          Vendor:
-            document.getElementById(
-              "roleVendor"
-            ).checked,
-
-          Driver:
-            document.getElementById(
-              "roleDriver"
-            ).checked
-
-        };
-
-
-        save(
-          ROLES_KEY,
-          roles
-        );
-
-
-        audit(
-          "ROLE_CONFIGURATION_SAVE",
-          "26B role controls updated"
-        );
-
-
-        alert(
-          "26B saved."
-        );
-
-      }
-    );
-
-
-  /* =====================================================
-     POLICIES
-  ===================================================== */
-
-  function loadPolicies(){
-
-    const p =
-      load(
-        POLICY_KEY,
-        defaultPolicies
-      );
-
-
-    document.getElementById(
-      "baseFare"
-    ).value =
-      p.baseFare;
-
-
-    document.getElementById(
-      "perKmRate"
-    ).value =
-      p.perKmRate;
-
-
-    document.getElementById(
-      "serviceCharge"
-    ).value =
-      p.serviceCharge;
-
-
-    document.getElementById(
-      "taxRate"
-    ).value =
-      p.taxRate;
-
-
-    document.getElementById(
-      "maxDiscount"
-    ).value =
-      p.maxDiscount;
-
-
-    document.getElementById(
-      "advancePercent"
-    ).value =
-      p.advancePercent;
-
-
-    document.getElementById(
-      "customerKyc"
-    ).checked =
-      p.customerKyc;
-
-
-    document.getElementById(
-      "vendorKyc"
-    ).checked =
-      p.vendorKyc;
-
-
-    document.getElementById(
-      "driverKyc"
-    ).checked =
-      p.driverKyc;
-
-
-    document.getElementById(
-      "welfarePolicyStatus"
-    ).value =
-      p.welfarePolicyStatus;
-
-  }
-
-
-  document
-    .getElementById(
-      "savePolicies"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const p = {
-
-          baseFare:
-            Number(
-              document.getElementById(
-                "baseFare"
-              ).value
-            ),
-
-          perKmRate:
-            Number(
-              document.getElementById(
-                "perKmRate"
-              ).value
-            ),
-
-          serviceCharge:
-            Number(
-              document.getElementById(
-                "serviceCharge"
-              ).value
-            ),
-
-          taxRate:
-            Number(
-              document.getElementById(
-                "taxRate"
-              ).value
-            ),
-
-          maxDiscount:
-            Number(
-              document.getElementById(
-                "maxDiscount"
-              ).value
-            ),
-
-          advancePercent:
-            Number(
-              document.getElementById(
-                "advancePercent"
-              ).value
-            ),
-
-          customerKyc:
-            document.getElementById(
-              "customerKyc"
-            ).checked,
-
-          vendorKyc:
-            document.getElementById(
-              "vendorKyc"
-            ).checked,
-
-          driverKyc:
-            document.getElementById(
-              "driverKyc"
-            ).checked,
-
-          welfarePolicyStatus:
-            document.getElementById(
-              "welfarePolicyStatus"
-            ).value
-
-        };
-
-
-        save(
-          POLICY_KEY,
-          p
-        );
-
-
-        audit(
-          "BUSINESS_POLICY_SAVE",
-          "26C policies updated"
-        );
-
-
-        alert(
-          "26C saved."
-        );
-
-      }
-    );
-
-
-  /* =====================================================
-     OPERATIONS
-  ===================================================== */
-
-  function loadOperations(){
-
-    const o =
-      load(
-        OPS_KEY,
-        defaultOperations
-      );
-
-
-    const map = {
-
-      booking:"opBooking",
-      cancellation:"opCancellation",
-      fare:"opFare",
-      vehicle:"opVehicle",
-      duty:"opDuty",
-      vendor:"opVendor",
-
-      city:"svcCity",
-      outstation:"svcOutstation",
-      airport:"svcAirport",
-      rental:"svcRental",
-      corporate:"svcCorporate",
-      delivery:"svcDelivery"
-
-    };
-
-
-    Object.keys(map)
-      .forEach(
-        k=>{
-
-          document.getElementById(
-            map[k]
-          ).checked =
-            !!o[k];
-
-        }
-      );
-
-  }
-
-
-  document
-    .getElementById(
-      "saveOperations"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const o = {
-
-          booking:
-            document.getElementById(
-              "opBooking"
-            ).checked,
-
-          cancellation:
-            document.getElementById(
-              "opCancellation"
-            ).checked,
-
-          fare:
-            document.getElementById(
-              "opFare"
-            ).checked,
-
-          vehicle:
-            document.getElementById(
-              "opVehicle"
-            ).checked,
-
-          duty:
-            document.getElementById(
-              "opDuty"
-            ).checked,
-
-          vendor:
-            document.getElementById(
-              "opVendor"
-            ).checked,
-
-          city:
-            document.getElementById(
-              "svcCity"
-            ).checked,
-
-          outstation:
-            document.getElementById(
-              "svcOutstation"
-            ).checked,
-
-          airport:
-            document.getElementById(
-              "svcAirport"
-            ).checked,
-
-          rental:
-            document.getElementById(
-              "svcRental"
-            ).checked,
-
-          corporate:
-            document.getElementById(
-              "svcCorporate"
-            ).checked,
-
-          delivery:
-            document.getElementById(
-              "svcDelivery"
-            ).checked
-
-        };
-
-
-        save(
-          OPS_KEY,
-          o
-        );
-
-
-        audit(
-          "OPERATIONS_CONFIGURATION_SAVE",
-          "26D controls updated"
-        );
-
-
-        alert(
-          "26D saved."
-        );
-
-      }
-    );
-
-
-  /* =====================================================
-     DOCUMENTS
-  ===================================================== */
-
-  function loadDocuments(){
-
-    const d =
-      load(
-        DOC_KEY,
-        defaultDocuments
-      );
-
-
-    const map = {
-
-      govtId:"docGovtId",
-      licence:"docLicence",
-      rc:"docRC",
-      insurance:"docInsurance",
-      verification:"docVerification",
-      expiry:"docExpiry",
-      manual:"docManual"
-
-    };
-
-
-    Object.keys(map)
-      .forEach(
-        k=>{
-
-          document.getElementById(
-            map[k]
-          ).checked =
-            !!d[k];
-
-        }
-      );
-
-  }
-
-
-  document
-    .getElementById(
-      "saveDocuments"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const d = {
-
-          govtId:
-            document.getElementById(
-              "docGovtId"
-            ).checked,
-
-          licence:
-            document.getElementById(
-              "docLicence"
-            ).checked,
-
-          rc:
-            document.getElementById(
-              "docRC"
-            ).checked,
-
-          insurance:
-            document.getElementById(
-              "docInsurance"
-            ).checked,
-
-          verification:
-            document.getElementById(
-              "docVerification"
-            ).checked,
-
-          expiry:
-            document.getElementById(
-              "docExpiry"
-            ).checked,
-
-          manual:
-            document.getElementById(
-              "docManual"
-            ).checked
-
-        };
-
-
-        save(
-          DOC_KEY,
-          d
-        );
-
-
-        audit(
-          "DOCUMENT_CONFIGURATION_SAVE",
-          "26F controls updated"
-        );
-
-
-        alert(
-          "26F saved."
-        );
-
-      }
-    );
-
-
-  /* =====================================================
-     AUDIT
-  ===================================================== */
-
-  function renderAudit(){
-
-    const body =
-      document.getElementById(
-        "auditBody"
-      );
-
-
-    const logs =
-      load(
-        AUDIT_KEY,
-        []
-      );
-
-
-    body.innerHTML = "";
-
-
-    if(!logs.length){
-
-      body.innerHTML =
-        "<tr>" +
-        "<td colspan='3'>" +
-        "No local audit events." +
-        "</td>" +
-        "</tr>";
-
+    if(!url){
+      result.textContent="No endpoint configured.";
+      result.style.color="#92400e";
       return;
-
     }
 
+    try{
+      const parsed=new URL(url);
 
-    logs.forEach(
-      log=>{
+      result.textContent=
+        `Valid URL format: ${parsed.origin}`;
+      result.style.color="#166534";
+    }catch(e){
+      result.textContent="Invalid URL format.";
+      result.style.color="#991b1b";
+    }
+  });
 
-        const tr =
-          document.createElement(
-            "tr"
-          );
-
-
-        tr.innerHTML =
-          "<td>" +
-          escapeHtml(
-            log.time
-          ) +
-          "</td>" +
-
-          "<td>" +
-          escapeHtml(
-            log.action
-          ) +
-          "</td>" +
-
-          "<td>" +
-          escapeHtml(
-            log.details
-          ) +
-          "</td>";
-
-
-        body.appendChild(
-          tr
-        );
-
-      }
-    );
-
-  }
-
-
-  function escapeHtml(
-    value
-  ){
-
-    return String(
-      value
-    )
-      .replace(
-        /&/g,
-        "&amp;"
-      )
-      .replace(
-        /</g,
-        "&lt;"
-      )
-      .replace(
-        />/g,
-        "&gt;"
-      )
-      .replace(
-        /"/g,
-        "&quot;"
-      )
-      .replace(
-        /'/g,
-        "&#039;"
-      );
-
-  }
-
-
-  document
-    .getElementById(
-      "clearAudit"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const proceed =
-          confirm(
-            "Clear all local frontend audit records?"
-          );
-
-
-        if(!proceed){
-
-          return;
-
-        }
-
-
-        localStorage.removeItem(
-          AUDIT_KEY
-        );
-
-
-        renderAudit();
-
-      }
-    );
-
-
-  /* =====================================================
-     STEP 27 API UI
-  ===================================================== */
-
-  function updateApiUI(){
-
-    const url =
-      window.GoVaraAPI
-        .getAPIUrl();
-
-
-    const apiBadge =
-      document.getElementById(
-        "apiBadge"
-      );
-
-
-    const endpointStatus =
-      document.getElementById(
-        "apiEndpointStatus"
-      );
-
-
-    const connectionStatus =
-      document.getElementById(
-        "apiConnectionStatus"
-      );
-
-
-    const output =
-      document.getElementById(
-        "apiOutput"
-      );
-
-
-    document.getElementById(
-      "step27Endpoint"
-    ).value =
-      url;
-
+document.getElementById("saveApiBtn")
+  .addEventListener("click",()=>{
+    const url=document.getElementById("apiEndpoint").value.trim();
 
     if(url){
-
-      apiBadge.textContent =
-        "API CONFIGURED";
-
-      apiBadge.className =
-        "badge warning";
-
-      endpointStatus.textContent =
-        "CONFIGURED";
-
-    }else{
-
-      apiBadge.textContent =
-        "API NOT CONFIGURED";
-
-      apiBadge.className =
-        "badge warning";
-
-      endpointStatus.textContent =
-        "NONE";
-
+      try{
+        new URL(url);
+      }catch(e){
+        alert("Invalid API endpoint.");
+        return;
+      }
     }
 
+    GoVaraAPI.configure(url);
+    STATE.config.apiEndpoint=url;
 
-    connectionStatus.textContent =
+    saveConfig();
+    refreshApiStatus();
 
-      window.GoVaraAPI
-        .APIState
-        .verified
-
-        ? "VERIFIED"
-
-        :
-
-        window.GoVaraAPI
-          .APIState
-          .connected
-
-          ? "CONNECTED"
-
-          : "NOT TESTED";
-
-
-    document.getElementById(
-      "dashboardApi"
-    ).textContent =
+    alert(
       url
-        ? "CONFIGURED"
-        : "NOT CONFIGURED";
+        ? "Consolidated API endpoint saved locally."
+        : "API endpoint cleared."
+    );
+  });
+
+document.getElementById("clearApiBtn")
+  .addEventListener("click",()=>{
+    GoVaraAPI.configure("");
+    STATE.config.apiEndpoint="";
+    document.getElementById("apiEndpoint").value="";
+
+    saveConfig();
+    refreshApiStatus();
+  });
 
 
-    output.textContent =
-      "GoVaraAPI: AVAILABLE\n" +
-      "Version: " +
-      window.GoVaraAPI.VERSION +
-      "\nEndpoint: " +
-      (
-        url ||
-        "NONE"
-      ) +
-      "\nConnection: " +
-      connectionStatus.textContent;
+/* Global language selector */
 
-  }
+document.getElementById("globalLanguage")
+  .addEventListener("change",e=>{
+    const code=e.target.value;
 
+    if(!STATE.config.availableLanguages[code]){
+      return;
+    }
 
-  document
-    .getElementById(
-      "saveApi"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        const url =
-          document.getElementById(
-            "step27Endpoint"
-          ).value.trim();
-
-
-        if(url){
-
-          try{
-
-            new URL(
-              url
-            );
-
-          }catch(e){
-
-            alert(
-              "Invalid API endpoint."
-            );
-
-            return;
-
-          }
-
-        }
-
-
-        window.GoVaraAPI
-          .configure(
-            url
-          );
-
-
-        document.getElementById(
-          "apiEndpoint"
-        ).value =
-          url;
-
-
-        const config =
-          load(
-            CONFIG_KEY,
-            safeDefaults
-          );
-
-
-        config.apiEndpoint =
-          url;
-
-
-        save(
-          CONFIG_KEY,
-          config
-        );
-
-
-        audit(
-          "API_ENDPOINT_CONFIGURATION",
-          url
-            ? "Consolidated API endpoint configured"
-            : "Consolidated API endpoint cleared"
-        );
-
-
-        updateApiUI();
-
-
-        alert(
-          url
-            ? "API endpoint saved. Connection has NOT been tested."
-            : "API endpoint cleared."
-        );
-
-      }
+    localStorage.setItem(
+      "GOVARA_UI_LANGUAGE",
+      code
     );
 
+    applyLanguage(code);
 
-  document
-    .getElementById(
-      "clearApi"
-    )
-    .addEventListener(
-      "click",
-      function(){
-
-        window.GoVaraAPI
-          .configure(
-            ""
-          );
-
-
-        document.getElementById(
-          "step27Endpoint"
-        ).value = "";
-
-
-        document.getElementById(
-          "apiEndpoint"
-        ).value = "";
-
-
-        const config =
-          load(
-            CONFIG_KEY,
-            safeDefaults
-          );
-
-
-        config.apiEndpoint =
-          "";
-
-
-        save(
-          CONFIG_KEY,
-          config
-        );
-
-
-        updateApiUI();
-
-
-        audit(
-          "API_ENDPOINT_CLEARED",
-          "Consolidated API endpoint removed"
-        );
-
-
-        alert(
-          "API endpoint cleared."
-        );
-
-      }
+    addAudit(
+      "UI_LANGUAGE_CHANGE",
+      `UI language changed to ${code}.`
     );
+  });
 
 
-  document
-    .getElementById(
-      "testApi"
-    )
-    .addEventListener(
-      "click",
-      async function(){
+/* STEP 27 */
 
-        const url =
-          window.GoVaraAPI
-            .getAPIUrl();
+document.getElementById("step27Save")
+  .addEventListener("click",()=>{
+    const url=document.getElementById("apiEndpoint").value.trim();
 
+    if(!url){
+      alert("Enter an API endpoint first.");
+      return;
+    }
 
-        if(!url){
+    try{
+      new URL(url);
+    }catch(e){
+      alert("Invalid API endpoint.");
+      return;
+    }
 
-          alert(
-            "API endpoint is not configured yet."
-          );
+    GoVaraAPI.configure(url);
 
-          return;
+    STATE.config.apiEndpoint=url;
+    saveConfig();
 
-        }
+    refreshApiStatus();
+  });
 
+document.getElementById("step27Clear")
+  .addEventListener("click",()=>{
+    GoVaraAPI.configure("");
 
-        try{
+    STATE.config.apiEndpoint="";
+    document.getElementById("apiEndpoint").value="";
 
-          const result =
-            await window.GoVaraAPI
-              .testConnection();
+    saveConfig();
+    refreshApiStatus();
+  });
 
+document.getElementById("step27Test")
+  .addEventListener("click",async()=>{
+    const url=GoVaraAPI.getAPIUrl();
 
-          updateApiUI();
+    if(!url){
+      alert(
+        "API endpoint is not configured.\n\n" +
+        "Backend connection is intentionally not active yet."
+      );
+      return;
+    }
 
+    try{
+      const result=await GoVaraAPI.testConnection();
 
-          audit(
-            "API_CONNECTION_TEST",
-            "GET_HEALTH executed"
-          );
-
-
-          alert(
-
-            result &&
-            result.project ===
-            "GoVara"
-
-              ?
-
-              "API verified successfully."
-
-              :
-
-              "API responded, but GoVara verification was not confirmed."
-
-          );
-
-
-        }catch(error){
-
-          window.GoVaraAPI
-            .APIState
-            .lastError =
-              error.message;
-
-
-          updateApiUI();
-
-
-          audit(
-            "API_CONNECTION_TEST_FAILED",
-            error.message
-          );
-
-
-          alert(
-            "API connection test failed:\n" +
-            error.message
-          );
-
-        }
-
-      }
-    );
-
-
-  /* =====================================================
-     INITIALIZATION
-  ===================================================== */
-
-  function initialize(){
-
-    const system =
-      load(
-        CONFIG_KEY,
-        safeDefaults
+      alert(
+        "API verification successful.\n\n" +
+        JSON.stringify(result,null,2)
       );
 
+      refreshApiStatus();
 
-    fillSystem(
-      system
-    );
+    }catch(error){
+      alert(
+        "API verification failed.\n\n" +
+        error.message
+      );
+
+      refreshApiStatus();
+    }
+  });
 
 
-    loadRoles();
+/* Audit */
 
-    loadPolicies();
+document.getElementById("clearAuditBtn")
+  .addEventListener("click",()=>{
+    const ok=confirm("Clear local frontend audit log?");
 
-    loadOperations();
+    if(!ok)return;
 
-    loadDocuments();
-
+    localStorage.removeItem(STORAGE.AUDIT);
     renderAudit();
-
-    updateApiUI();
-
-    buildLanguageOptions();
-
-    applyLanguage(
-      getCurrentLanguage()
-    );
+  });
 
 
-    audit(
-      "ADMIN_CONTROL_CENTER_LOAD",
-      "GoVara Administrator Control Center loaded"
-    );
+/* ============================================================
+   INITIALIZE
+============================================================ */
 
+function renderAll(){
+  load26AForm();
+  renderRoles();
+  renderBusiness();
+  renderOperations();
+  renderFinancial();
+  renderDocuments();
+  renderAudit();
+  renderApiModules();
+  refreshApiStatus();
+  updateDashboard();
+}
 
-    console.log(
-      "GoVaraAPI: AVAILABLE"
-    );
+(function init(){
 
-
-    console.log(
-      "GoVaraAPI Version:",
-      window.GoVaraAPI.VERSION
-    );
-
-
-    console.log(
-      "GoVara Administrator Control Center: READY"
-    );
-
-
-    console.log(
-      "typeof window.govaraapi",
-      typeof window.govaraapi
-    );
-
-
-    console.log(
-      "typeof window.GoVaraAPI.testConnection",
-      typeof window.GoVaraAPI.testConnection
-    );
-
+  /* Keep API shell synchronized with saved 26A endpoint. */
+  if(STATE.config.apiEndpoint){
+    GoVaraAPI.configure(STATE.config.apiEndpoint);
   }
 
+  renderAll();
 
-  initialize();
+  const savedLanguage=
+    localStorage.getItem("GOVARA_UI_LANGUAGE") ||
+    STATE.config.defaultLanguage ||
+    "en";
+
+  applyLanguage(savedLanguage);
+
+  addAudit(
+    "FRONTEND_INIT",
+    "GoVara Administrator Control Center initialized."
+  );
 
 })();
 </script>

@@ -1,259 +1,168 @@
-/* =========================================================
-   GoVara — 26F Documents & KYC Control V2
-   ---------------------------------------------------------
-   Frontend-only Admin Control Module
-
-   IMPORTANT:
-   - Frontend is NOT KYC authority.
-   - Frontend is NOT document verification authority.
-   - Backend remains authoritative.
-   - Database remains authoritative data store.
-   - Real Money / Payment / Bank Transfer are unrelated
-     to document execution and remain blocked elsewhere.
-   - No API / Backend / Database call from this module.
-   - STEP 27 will own the consolidated API boundary later.
-   ========================================================= */
+/* ============================================================
+   GoVara — 26F Documents & KYC Control
+   VERSION: GOVARA-26F-V3
+   Frontend Configuration + Upload Processing Layer
+   ============================================================ */
 
 window.GoVara26F = (function () {
 
   "use strict";
 
-  const VERSION = "GOVARA-26F-V2";
-
-  const STORAGE_KEY =
-    "GOVARA_DOCUMENTS_KYC_CONTROL_26F_V2";
-
-  const AUDIT_KEY =
-    "GOVARA_DOCUMENTS_KYC_AUDIT_26F_V2";
-
-  const LEGACY_STORAGE_KEY =
-    "GOVARA_DOCUMENTS_KYC_CONTROL_26F_V1";
-
-
-  /* =========================================================
-     DEFAULT CONFIGURATION
-     ========================================================= */
+  const VERSION = "GOVARA-26F-V3";
+  const STORAGE_KEY = "GOVARA_DOCUMENTS_KYC_CONTROL_26F_V3";
+  const AUDIT_KEY = "GOVARA_DOCUMENTS_KYC_AUDIT_26F_V3";
 
   const DEFAULT_CONFIG = {
 
-    version: VERSION,
+    environment: {
+      mode: "TESTING",
+      frontendOnly: true,
+      backendRequired: true,
+      databaseRequired: true
+    },
 
-    environment: "TESTING",
-
-    /* =======================================================
-       1. DOCUMENT SYSTEM
-       ======================================================= */
+    authority: {
+      frontendAuthority: false,
+      backendAuthority: true,
+      databaseAuthority: true,
+      frontendCanApproveKYC: false,
+      frontendCanVerifyDocument: false,
+      frontendCanRejectDocument: false,
+      automaticApproval: false,
+      automaticVerification: false
+    },
 
     documentSystem: {
-
       enabled: true,
 
-      documentUploadEnabled: true,
+      uploadEnabled: true,
+      imageUploadEnabled: true,
+      pdfUploadEnabled: true,
 
-      documentViewEnabled: true,
-
-      documentUpdateEnabled: true,
-
-      documentDeleteRequestEnabled: true,
-
-      documentHistoryEnabled: true,
-
-      documentStatusViewEnabled: true,
+      viewEnabled: true,
+      updateEnabled: true,
+      replacementEnabled: true,
+      historyEnabled: true,
 
       expiryTrackingEnabled: true,
+      expiryAlertsEnabled: true,
 
-      expiryAlertEnabled: true,
+      publicDocumentAccess: false,
+      publicDocumentListing: false,
 
-      documentVerificationEnabled: true,
-
-      manualVerificationEnabled: true,
-
-      automaticVerificationEnabled: false,
-
-      backendVerificationRequired: true,
+      permanentDeletionEnabled: false,
 
       backendDocumentAuthority: true
     },
 
-
-    /* =======================================================
-       2. KYC MASTER CONTROL
-       ======================================================= */
-
-    kyc: {
+    upload: {
 
       enabled: true,
 
-      customerKYCRequired: true,
+      allowImages: true,
+      allowPDF: true,
 
-      vendorKYCRequired: true,
+      multipleUpload: true,
 
-      driverKYCRequired: true,
+      allowedExtensions: [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp",
+        ".pdf"
+      ],
 
-      vehicleKYCRequired: true,
+      allowedMimeTypes: [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "application/pdf"
+      ],
 
-      manualReviewAllowed: true,
+      maxFileSizeMB: 10,
+      minFileSizeKB: 1,
 
-      automaticApprovalAllowed: false,
+      filenameValidation: true,
+      extensionValidation: true,
+      mimeValidation: true,
 
-      reVerificationRequired: true,
+      emptyFileBlocked: true,
+      corruptFileBlocked: true,
+      duplicateFileCheck: true,
 
-      expiredKYCBlocksActivation: true,
+      uploadProgressEnabled: true,
 
-      rejectedKYCBlocksActivation: true,
+      previewEnabled: true,
 
-      pendingKYCBlocksActivation: true,
-
-      backendKYCAuthority: true,
-
-      frontendKYCAuthority: false
+      backendFinalValidationRequired: true
     },
 
-
-    /* =======================================================
-       3. CUSTOMER KYC
-       ======================================================= */
-
-    customerKYC: {
+    imageProcessing: {
 
       enabled: true,
 
-      requiredForRegistration: false,
+      compressionEnabled: true,
+      resizeEnabled: true,
 
-      requiredForBooking: true,
+      previewBeforeUpload: true,
 
-      requiredBeforeTrip: true,
+      preserveAspectRatio: true,
 
-      requiredForWalletFeatures: false,
+      maxWidth: 2000,
+      maxHeight: 2000,
 
-      requiredForRefundRequest: false,
+      targetQuality: 0.82,
 
-      requiredForProfileCompletion: true,
+      targetMaxSizeMB: 2,
 
-      documentUpdateAllowed: true,
+      minQuality: 0.55,
 
-      manualReviewRequired: true,
+      outputFormat: "image/jpeg",
 
-      backendApprovalRequired: true
+      autoReduceLargeImages: true,
+
+      doNotCompressSmallImages: true,
+
+      originalFileNeverReplacesAuditHistory: true,
+
+      browserProcessingOnly: true,
+
+      backendFinalProcessingAuthority: true
     },
 
-
-    /* =======================================================
-       4. VENDOR KYC
-       ======================================================= */
-
-    vendorKYC: {
+    pdfProcessing: {
 
       enabled: true,
 
-      requiredForRegistration: true,
+      allowPDF: true,
 
-      requiredBeforeOperations: true,
+      maxFileSizeMB: 10,
 
-      requiredBeforeBookingManagement: true,
+      compressionRequested: true,
 
-      requiredBeforeDriverAssignment: true,
+      browserPDFCompression: false,
 
-      requiredBeforeVehicleAssignment: true,
-
-      documentUpdateAllowed: true,
-
-      manualReviewRequired: true,
-
-      backendApprovalRequired: true
+      backendPDFProcessingAuthority: true
     },
-
-
-    /* =======================================================
-       5. DRIVER KYC
-       ======================================================= */
-
-    driverKYC: {
-
-      enabled: true,
-
-      requiredForRegistration: true,
-
-      requiredBeforeDuty: true,
-
-      requiredBeforeTrip: true,
-
-      requiredBeforeBookingAcceptance: true,
-
-      documentUpdateAllowed: true,
-
-      manualReviewRequired: true,
-
-      backendApprovalRequired: true,
-
-      expiredLicenseBlocksDuty: true
-    },
-
-
-    /* =======================================================
-       6. VEHICLE DOCUMENT CONTROL
-       ======================================================= */
-
-    vehicleDocuments: {
-
-      enabled: true,
-
-      requiredForVehicleActivation: true,
-
-      requiredBeforeAssignment: true,
-
-      requiredBeforeTrip: true,
-
-      registrationRequired: true,
-
-      insuranceRequired: true,
-
-      fitnessRequired: true,
-
-      permitRequired: false,
-
-      pollutionCertificateRequired: true,
-
-      documentUpdateAllowed: true,
-
-      manualReviewRequired: true,
-
-      backendApprovalRequired: true,
-
-      expiredDocumentBlocksVehicle: true
-    },
-
-
-    /* =======================================================
-       7. DOCUMENT TYPES
-       ======================================================= */
 
     documentTypes: {
 
       identityProof: true,
-
       addressProof: true,
-
       profilePhoto: true,
 
       bankProof: true,
-
       taxDocument: true,
 
       businessRegistration: true,
-
       companyRegistration: true,
 
       drivingLicense: true,
 
       vehicleRegistration: true,
-
       vehicleInsurance: true,
-
       vehicleFitness: true,
-
       vehiclePermit: true,
-
       pollutionCertificate: true,
 
       authorizationLetter: true,
@@ -261,104 +170,153 @@ window.GoVara26F = (function () {
       otherDocument: true
     },
 
+    kyc: {
 
-    /* =======================================================
-       8. DOCUMENT STATUS
-       ======================================================= */
+      enabled: true,
+
+      customerKYCRequired: true,
+      vendorKYCRequired: true,
+      driverKYCRequired: true,
+      vehicleKYCRequired: true,
+
+      manualReview: true,
+
+      automaticApproval: false,
+      automaticVerification: false,
+
+      reVerificationEnabled: true,
+
+      pendingBlocksActivation: true,
+      rejectedBlocksActivation: true,
+      expiredBlocksActivation: true,
+
+      backendApprovalRequired: true,
+      backendAuthority: true
+    },
+
+    customerKYC: {
+
+      registrationRequirement: true,
+      bookingRequirement: false,
+      preTripRequirement: false,
+      walletRequirement: false,
+      refundRequirement: false,
+
+      profileCompletionRequired: true,
+
+      documentUpdateAllowed: true,
+      manualReviewRequired: true,
+
+      backendApprovalRequired: true
+    },
+
+    vendorKYC: {
+
+      registrationRequirement: true,
+      operationsRequirement: true,
+      bookingManagementRequirement: true,
+
+      driverAssignmentRequirement: true,
+      vehicleAssignmentRequirement: true,
+
+      documentUpdateAllowed: true,
+      manualReviewRequired: true,
+
+      backendApprovalRequired: true
+    },
+
+    driverKYC: {
+
+      registrationRequirement: true,
+      dutyRequirement: true,
+      tripRequirement: true,
+      bookingAcceptanceRequirement: true,
+
+      documentUpdateAllowed: true,
+      manualReviewRequired: true,
+
+      expiredLicenseBlocksDuty: true,
+
+      backendApprovalRequired: true
+    },
+
+    vehicleDocuments: {
+
+      activationRequirement: true,
+      assignmentRequirement: true,
+      tripRequirement: true,
+
+      registrationRequired: true,
+      insuranceRequired: true,
+      fitnessRequired: true,
+      permitRequired: true,
+      pollutionCertificateRequired: true,
+
+      documentUpdateAllowed: true,
+      manualReviewRequired: true,
+
+      expiredDocumentBlocksVehicle: true,
+
+      backendApprovalRequired: true
+    },
 
     documentStatus: {
 
       pending: true,
-
       submitted: true,
-
       underReview: true,
 
       approved: true,
-
       rejected: true,
 
       expired: true,
-
       replaced: true,
-
       suspended: true,
 
-      deleted: true
+      deleted: false
     },
-
-
-    /* =======================================================
-       9. VERIFICATION
-       ======================================================= */
 
     verification: {
 
       enabled: true,
 
       manualVerification: true,
-
       automaticVerification: false,
 
-      backendVerification: true,
+      backendVerificationRequired: true,
 
-      verificationTimestampRequired: true,
+      verificationTimestamp: true,
+      verifierIdentity: true,
 
-      verifierIdentityRequired: true,
+      rejectionReason: true,
+      approvalComment: true,
+      rejectionComment: true,
 
-      rejectionReasonRequired: true,
+      reVerification: true,
+      verificationHistory: true,
 
-      approvalCommentAllowed: true,
-
-      rejectionCommentRequired: true,
-
-      reVerificationAllowed: true,
-
-      verificationHistoryRequired: true,
-
-      frontendCanApprove: false,
-
-      frontendCanReject: false,
-
-      frontendCanMarkVerified: false
+      frontendApproval: false,
+      frontendRejection: false,
+      frontendVerification: false
     },
-
-
-    /* =======================================================
-       10. EXPIRY CONTROL
-       ======================================================= */
 
     expiry: {
 
       enabled: true,
 
       expiryDateRequired: true,
+      trackingEnabled: true,
+      alertsEnabled: true,
 
-      expiryTrackingEnabled: true,
-
-      expiryAlertEnabled: true,
-
-      alertBeforeDays: 30,
-
-      secondAlertBeforeDays: 7,
+      primaryAlertDays: 30,
+      secondAlertDays: 7,
 
       expiredStatusEnabled: true,
 
-      expiredDocumentBlocksActivation: true,
-
-      expiredDocumentBlocksDuty: true,
-
-      expiredDocumentBlocksVehicle: true,
-
-      expiredDocumentBlocksOperations: true,
+      operationalBlockOnExpiry: true,
 
       backendExpiryAuthority: true
     },
-
-
-    /* =======================================================
-       11. DOCUMENT REPLACEMENT
-       ======================================================= */
 
     replacement: {
 
@@ -366,154 +324,109 @@ window.GoVara26F = (function () {
 
       replacementAllowed: true,
 
+      newDocumentReviewRequired: true,
+
       oldDocumentHistoryRequired: true,
 
-      oldDocumentDeletionAllowed: false,
+      oldDocumentPermanentDeletion: false,
 
-      replacementVerificationRequired: true,
+      backendApprovalRequired: true,
 
-      replacementApprovalRequired: true,
-
-      backendReplacementAuthority: true
+      backendAuthority: true
     },
-
-
-    /* =======================================================
-       12. ACCESS CONTROL
-       ======================================================= */
 
     accessControl: {
 
-      customerCanViewOwnDocuments: true,
+      customerOwnDocumentView: true,
+      customerOwnDocumentUpload: true,
+      customerOwnDocumentReplace: true,
 
-      customerCanUploadOwnDocuments: true,
+      vendorOwnDocumentView: true,
+      vendorOwnDocumentUpload: true,
+      vendorOwnDocumentReplace: true,
 
-      customerCanReplaceOwnDocuments: true,
+      driverOwnDocumentView: true,
+      driverOwnDocumentUpload: true,
+      driverOwnDocumentReplace: true,
 
-      customerCanDeleteOwnDocumentRequest: true,
+      adminDocumentView: true,
+      adminConfiguration: true,
+      adminReview: true,
 
-      vendorCanViewOwnDocuments: true,
-
-      vendorCanUploadOwnDocuments: true,
-
-      vendorCanReplaceOwnDocuments: true,
-
-      driverCanViewOwnDocuments: true,
-
-      driverCanUploadOwnDocuments: true,
-
-      driverCanReplaceOwnDocuments: true,
-
-      adminCanViewDocuments: true,
-
-      adminCanConfigureKYC: true,
-
-      adminCanConfigureDocumentTypes: true,
-
-      adminCanReviewQueue: true,
-
-      frontendCanModifyVerificationResult: false
+      frontendVerificationModification: false
     },
-
-
-    /* =======================================================
-       13. PRIVACY / SECURITY
-       ======================================================= */
 
     privacySecurity: {
 
       sensitiveDocumentProtection: true,
 
-      documentAccessControl: true,
+      accessControlEnabled: true,
 
-      ownerOnlyDocumentAccess: true,
+      ownerOnlyAccess: true,
 
       adminControlledAccess: true,
 
       unauthorizedAccessBlocked: true,
 
-      publicDocumentUrlAllowed: false,
+      publicURL: false,
+      publicListing: false,
 
-      publicDocumentListingAllowed: false,
-
-      documentDownloadAuditRequired: true,
-
-      documentViewAuditRequired: true,
-
-      documentUploadAuditRequired: true,
-
-      documentDeleteAuditRequired: true,
-
-      verificationAuditRequired: true,
-
-      backendSecurityAuthority: true
+      uploadAudit: true,
+      viewAudit: true,
+      downloadAudit: true,
+      replacementAudit: true,
+      deleteAudit: true,
+      verificationAudit: true
     },
-
-
-    /* =======================================================
-       14. FILE VALIDATION
-       ======================================================= */
 
     fileValidation: {
 
       enabled: true,
 
-      allowedMimeTypes: [
-
+      allowedImageTypes: [
         "image/jpeg",
-
         "image/png",
+        "image/webp"
+      ],
 
+      allowedDocumentTypes: [
         "application/pdf"
       ],
 
-      maxFileSizeMB: 10,
+      maxImageSizeMB: 10,
+      maxPDFSizeMB: 10,
 
-      minimumFileSizeKB: 1,
+      minFileSizeKB: 1,
 
-      filenameRequired: true,
-
-      extensionValidationRequired: true,
-
-      mimeValidationRequired: true,
+      filenameValidation: true,
+      extensionValidation: true,
+      mimeValidation: true,
 
       emptyFileBlocked: true,
+      corruptFileBlocked: true,
 
-      corruptedFileCheckRequired: true,
+      duplicateCheck: true,
 
-      duplicateFileCheckEnabled: true
+      backendValidationRequired: true
     },
-
-
-    /* =======================================================
-       15. DOCUMENT QUALITY
-       ======================================================= */
 
     qualityControl: {
 
       enabled: true,
 
-      imageQualityCheckEnabled: true,
+      imageQualityCheck: true,
+      readabilityCheck: true,
 
-      documentReadabilityCheckEnabled: true,
+      blurCheck: true,
+      completenessCheck: true,
 
-      blurDetectionEnabled: true,
+      tamperCheck: true,
+      mismatchCheck: true,
 
-      documentCompletenessCheckEnabled: true,
-
-      tamperCheckEnabled: true,
-
-      mismatchCheckEnabled: true,
-
-      qualityFailureRequiresResubmission: true,
+      failedQualityRequiresResubmission: true,
 
       backendQualityAuthority: true
     },
-
-
-    /* =======================================================
-       16. KYC WORKFLOW
-       ======================================================= */
 
     workflow: {
 
@@ -522,7 +435,6 @@ window.GoVara26F = (function () {
       uploadToReview: true,
 
       reviewToApproval: true,
-
       reviewToRejection: true,
 
       rejectionToResubmission: true,
@@ -536,51 +448,33 @@ window.GoVara26F = (function () {
       backendWorkflowAuthority: true
     },
 
-
-    /* =======================================================
-       17. DOCUMENT RETENTION
-       ======================================================= */
-
     retention: {
 
       enabled: true,
 
       historyEnabled: true,
 
-      approvedDocumentHistoryRequired: true,
+      approvedHistory: true,
+      rejectedHistory: true,
+      replacedHistory: true,
+      deletedHistory: true,
 
-      rejectedDocumentHistoryRequired: true,
-
-      replacedDocumentHistoryRequired: true,
-
-      deletedRecordRetentionRequired: true,
-
-      frontendPermanentDeletionAllowed: false,
+      frontendPermanentDeletion: false,
 
       backendRetentionAuthority: true
     },
 
-
-    /* =======================================================
-       18. NOTIFICATIONS
-       ======================================================= */
-
     notifications: {
 
-      enabled: true,
-
       uploadNotification: true,
-
-      reviewStartedNotification: true,
+      reviewNotification: true,
 
       approvalNotification: true,
-
       rejectionNotification: true,
 
       resubmissionNotification: true,
 
       expiryNotification: true,
-
       renewalNotification: true,
 
       replacementNotification: true,
@@ -590,597 +484,407 @@ window.GoVara26F = (function () {
       backendNotificationAuthority: true
     },
 
-
-    /* =======================================================
-       19. OPERATIONAL BLOCKS
-       ======================================================= */
-
     operationalBlocks: {
 
-      pendingKYCBlockEnabled: true,
+      pendingKYCBlock: true,
+      rejectedKYCBlock: true,
+      expiredKYCBlock: true,
 
-      rejectedKYCBlockEnabled: true,
+      missingDocumentBlock: true,
+      failedVerificationBlock: true,
+      failedQualityBlock: true,
 
-      expiredDocumentBlockEnabled: true,
+      vendorOperationBlock: true,
+      driverDutyBlock: true,
+      vehicleOperationBlock: true,
+      tripBlock: true,
 
-      missingRequiredDocumentBlockEnabled: true,
-
-      failedVerificationBlockEnabled: true,
-
-      failedQualityCheckBlockEnabled: true,
-
-      vendorOperationBlockEnabled: true,
-
-      driverDutyBlockEnabled: true,
-
-      vehicleAssignmentBlockEnabled: true,
-
-      tripActivationBlockEnabled: true,
-
-      backendBlockAuthority: true
+      backendAuthority: true
     },
-
-
-    /* =======================================================
-       20. AUDIT
-       ======================================================= */
 
     audit: {
 
       enabled: true,
 
-      localHistoryEnabled: true,
+      localHistory: true,
 
-      maxLocalEvents: 200
+      maxEntries: 200
     }
   };
 
 
-  /* =========================================================
-     UTILITY
-     ========================================================= */
+  /* ==========================================================
+     Utility
+     ========================================================== */
 
-  function deepClone(value) {
-
-    return JSON.parse(JSON.stringify(value));
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
   }
 
+  function deepMerge(base, incoming) {
 
-  function mergeDeep(target, source) {
-
-    if (!source || typeof source !== "object") {
-      return target;
+    if (!incoming || typeof incoming !== "object") {
+      return clone(base);
     }
 
-    Object.keys(source).forEach(function (key) {
+    const output = clone(base);
+
+    Object.keys(incoming).forEach(function (key) {
 
       if (
-        source[key] &&
-        typeof source[key] === "object" &&
-        !Array.isArray(source[key])
+        incoming[key] &&
+        typeof incoming[key] === "object" &&
+        !Array.isArray(incoming[key]) &&
+        output[key] &&
+        typeof output[key] === "object" &&
+        !Array.isArray(output[key])
       ) {
-
-        if (
-          !target[key] ||
-          typeof target[key] !== "object" ||
-          Array.isArray(target[key])
-        ) {
-
-          target[key] = {};
-        }
-
-        mergeDeep(target[key], source[key]);
-
+        output[key] = deepMerge(output[key], incoming[key]);
       } else {
-
-        target[key] = source[key];
+        output[key] = incoming[key];
       }
 
     });
 
-    return target;
+    return output;
   }
-
-
-  /* =========================================================
-     LOAD CONFIG
-     ========================================================= */
 
   function loadConfig() {
 
-    let stored = null;
-
     try {
 
-      stored = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "null"
+      const raw = localStorage.getItem(STORAGE_KEY);
+
+      if (!raw) {
+        return clone(DEFAULT_CONFIG);
+      }
+
+      return deepMerge(
+        DEFAULT_CONFIG,
+        JSON.parse(raw)
       );
 
     } catch (error) {
 
-      stored = null;
+      console.warn(
+        "GoVara 26F: configuration load failed.",
+        error
+      );
+
+      return clone(DEFAULT_CONFIG);
     }
+  }
 
+  function saveConfig(config) {
 
-    if (!stored) {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(config)
+    );
+  }
 
-      try {
+  function addAudit(action, details) {
 
-        const legacy = JSON.parse(
-          localStorage.getItem(LEGACY_STORAGE_KEY) || "null"
+    try {
+
+      const existing =
+        JSON.parse(
+          localStorage.getItem(AUDIT_KEY) || "[]"
         );
 
-        if (legacy) {
-          stored = legacy;
-        }
+      existing.unshift({
 
-      } catch (error) {
+        timestamp: new Date().toISOString(),
 
-        stored = null;
-      }
+        action: action,
+
+        details: details || {},
+
+        module: "26F",
+
+        version: VERSION
+      });
+
+      const limited =
+        existing.slice(
+          0,
+          DEFAULT_CONFIG.audit.maxEntries
+        );
+
+      localStorage.setItem(
+        AUDIT_KEY,
+        JSON.stringify(limited)
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "GoVara 26F audit error:",
+        error
+      );
     }
-
-
-    const config = deepClone(DEFAULT_CONFIG);
-
-    if (stored) {
-      mergeDeep(config, stored);
-    }
-
-    enforceSafety(config);
-
-    return config;
   }
 
 
-  /* =========================================================
-     SAFETY ENFORCEMENT
-     ========================================================= */
+  /* ==========================================================
+     Safety Enforcement
+     ========================================================== */
 
   function enforceSafety(config) {
 
-    config.version = VERSION;
+    config = config || loadConfig();
 
-    config.environment = "TESTING";
+    config.environment.mode = "TESTING";
 
+    config.environment.frontendOnly = true;
+    config.environment.backendRequired = true;
+    config.environment.databaseRequired = true;
 
-    /* -------------------------------------------------------
-       Core Authority
-       ------------------------------------------------------- */
+    config.authority.frontendAuthority = false;
+    config.authority.backendAuthority = true;
+    config.authority.databaseAuthority = true;
 
-    config.documentSystem.backendVerificationRequired = true;
+    config.authority.frontendCanApproveKYC = false;
+    config.authority.frontendCanVerifyDocument = false;
+    config.authority.frontendCanRejectDocument = false;
 
-    config.documentSystem.backendDocumentAuthority = true;
+    config.authority.automaticApproval = false;
+    config.authority.automaticVerification = false;
 
-    config.kyc.backendKYCAuthority = true;
-
-    config.kyc.frontendKYCAuthority = false;
-
-
-    /* -------------------------------------------------------
-       No automatic approval
-       ------------------------------------------------------- */
-
-    config.kyc.automaticApprovalAllowed = false;
+    config.documentSystem.publicDocumentAccess = false;
+    config.documentSystem.publicDocumentListing = false;
+    config.documentSystem.permanentDeletionEnabled = false;
 
     config.verification.automaticVerification = false;
+    config.verification.frontendApproval = false;
+    config.verification.frontendRejection = false;
+    config.verification.frontendVerification = false;
 
-    config.verification.frontendCanApprove = false;
+    config.replacement.oldDocumentPermanentDeletion = false;
 
-    config.verification.frontendCanReject = false;
+    config.accessControl.frontendVerificationModification = false;
 
-    config.verification.frontendCanMarkVerified = false;
+    config.privacySecurity.publicURL = false;
+    config.privacySecurity.publicListing = false;
 
-
-    /* -------------------------------------------------------
-       Security
-       ------------------------------------------------------- */
-
-    config.privacySecurity.publicDocumentUrlAllowed = false;
-
-    config.privacySecurity.publicDocumentListingAllowed = false;
-
-    config.privacySecurity.backendSecurityAuthority = true;
-
-
-    /* -------------------------------------------------------
-       Deletion protection
-       ------------------------------------------------------- */
-
-    config.replacement.oldDocumentDeletionAllowed = false;
-
-    config.retention.frontendPermanentDeletionAllowed = false;
-
-
-    /* -------------------------------------------------------
-       Operational authority
-       ------------------------------------------------------- */
+    config.retention.frontendPermanentDeletion = false;
 
     config.workflow.backendWorkflowAuthority = true;
-
-    config.operationalBlocks.backendBlockAuthority = true;
-
-
-    /* -------------------------------------------------------
-       Backend authorities
-       ------------------------------------------------------- */
-
-    config.expiry.backendExpiryAuthority = true;
-
-    config.replacement.backendReplacementAuthority = true;
-
-    config.qualityControl.backendQualityAuthority = true;
-
-    config.retention.backendRetentionAuthority = true;
-
-    config.notifications.backendNotificationAuthority = true;
-
 
     return config;
   }
 
 
-  /* =========================================================
-     VALIDATION
-     ========================================================= */
+  /* ==========================================================
+     Validation
+     ========================================================== */
 
-  function validateConfig(input) {
+  function validateConfig(config) {
 
-    const config = deepClone(
-      input || loadConfig()
+    config = enforceSafety(
+      config || loadConfig()
     );
 
     const errors = [];
-
     const warnings = [];
 
-
-    /* -------------------------------------------------------
-       Environment
-       ------------------------------------------------------- */
-
-    if (config.environment !== "TESTING") {
-
+    if (!config.environment.frontendOnly) {
       errors.push(
-        "26F environment must remain TESTING."
+        "26F must remain frontend-only."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Authority
-       ------------------------------------------------------- */
-
-    if (
-      config.kyc.frontendKYCAuthority !== false
-    ) {
-
+    if (!config.authority.backendAuthority) {
       errors.push(
-        "Frontend KYC authority must remain FALSE."
+        "Backend authority must remain enabled."
       );
     }
 
-
-    if (
-      config.kyc.backendKYCAuthority !== true
-    ) {
-
+    if (!config.authority.databaseAuthority) {
       errors.push(
-        "Backend KYC authority must remain TRUE."
+        "Database authority must remain enabled."
       );
     }
 
-
-    if (
-      config.documentSystem.backendDocumentAuthority !== true
-    ) {
-
+    if (config.authority.frontendCanApproveKYC) {
       errors.push(
-        "Backend document authority must remain TRUE."
+        "Frontend KYC approval must remain disabled."
       );
     }
 
-
-    if (
-      config.documentSystem.backendVerificationRequired !== true
-    ) {
-
+    if (config.authority.frontendCanVerifyDocument) {
       errors.push(
-        "Backend document verification is required."
+        "Frontend document verification must remain disabled."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Approval Safety
-       ------------------------------------------------------- */
-
-    if (
-      config.kyc.automaticApprovalAllowed !== false
-    ) {
-
+    if (config.authority.automaticApproval) {
       errors.push(
-        "Automatic KYC approval must remain disabled."
+        "Automatic KYC approval is not allowed."
       );
     }
 
-
-    if (
-      config.verification.automaticVerification !== false
-    ) {
-
+    if (config.authority.automaticVerification) {
       errors.push(
-        "Automatic verification must remain disabled."
+        "Automatic document verification is not allowed."
       );
     }
 
-
-    if (
-      config.verification.frontendCanApprove !== false
-    ) {
-
+    if (config.documentSystem.publicDocumentAccess) {
       errors.push(
-        "Frontend cannot approve KYC."
+        "Public document access must remain disabled."
       );
     }
 
-
-    if (
-      config.verification.frontendCanReject !== false
-    ) {
-
-      errors.push(
-        "Frontend cannot reject KYC."
-      );
-    }
-
-
-    if (
-      config.verification.frontendCanMarkVerified !== false
-    ) {
-
-      errors.push(
-        "Frontend cannot mark documents verified."
-      );
-    }
-
-
-    /* -------------------------------------------------------
-       Privacy
-       ------------------------------------------------------- */
-
-    if (
-      config.privacySecurity.publicDocumentUrlAllowed !== false
-    ) {
-
-      errors.push(
-        "Public document URLs must remain disabled."
-      );
-    }
-
-
-    if (
-      config.privacySecurity.publicDocumentListingAllowed !== false
-    ) {
-
+    if (config.documentSystem.publicDocumentListing) {
       errors.push(
         "Public document listing must remain disabled."
       );
     }
 
-
-    if (
-      config.privacySecurity.backendSecurityAuthority !== true
-    ) {
-
+    if (config.documentSystem.permanentDeletionEnabled) {
       errors.push(
-        "Backend security authority is required."
+        "Permanent document deletion must remain disabled."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Deletion
-       ------------------------------------------------------- */
-
-    if (
-      config.replacement.oldDocumentDeletionAllowed !== false
-    ) {
-
-      errors.push(
-        "Permanent old-document deletion must remain disabled."
+    if (!config.upload.enabled) {
+      warnings.push(
+        "Document upload is disabled."
       );
     }
 
-
     if (
-      config.retention.frontendPermanentDeletionAllowed !== false
+      config.upload.maxFileSizeMB <= 0
     ) {
-
       errors.push(
-        "Frontend permanent document deletion must remain disabled."
+        "Maximum upload file size must be greater than zero."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Workflow
-       ------------------------------------------------------- */
-
     if (
-      config.workflow.backendWorkflowAuthority !== true
+      config.upload.minFileSizeKB < 0
     ) {
-
       errors.push(
-        "Backend workflow authority is required."
+        "Minimum upload file size cannot be negative."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Operational Blocks
-       ------------------------------------------------------- */
-
     if (
-      config.operationalBlocks.backendBlockAuthority !== true
+      config.imageProcessing.maxWidth <= 0 ||
+      config.imageProcessing.maxHeight <= 0
     ) {
-
       errors.push(
-        "Backend operational block authority is required."
+        "Image maximum dimensions must be greater than zero."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Expiry
-       ------------------------------------------------------- */
-
-    const alertDays =
-      Number(config.expiry.alertBeforeDays);
-
-    const secondAlertDays =
-      Number(config.expiry.secondAlertBeforeDays);
-
-
     if (
-      !Number.isFinite(alertDays) ||
-      alertDays < 0 ||
-      alertDays > 365
+      config.imageProcessing.targetQuality <= 0 ||
+      config.imageProcessing.targetQuality > 1
     ) {
-
       errors.push(
-        "Primary expiry alert must be between 0 and 365 days."
+        "Image target quality must be between 0 and 1."
       );
     }
 
-
     if (
-      !Number.isFinite(secondAlertDays) ||
-      secondAlertDays < 0 ||
-      secondAlertDays > 365
+      config.imageProcessing.minQuality <= 0 ||
+      config.imageProcessing.minQuality > 1
     ) {
-
       errors.push(
-        "Second expiry alert must be between 0 and 365 days."
+        "Image minimum quality must be between 0 and 1."
       );
     }
 
-
     if (
-      secondAlertDays > alertDays
+      config.imageProcessing.minQuality >
+      config.imageProcessing.targetQuality
     ) {
-
       errors.push(
-        "Second expiry alert cannot be later than primary alert."
+        "Minimum image quality cannot exceed target quality."
       );
     }
 
-
-    /* -------------------------------------------------------
-       File Validation
-       ------------------------------------------------------- */
-
-    const maxFileSize =
-      Number(config.fileValidation.maxFileSizeMB);
-
-    const minFileSize =
-      Number(config.fileValidation.minimumFileSizeKB);
-
-
     if (
-      !Number.isFinite(maxFileSize) ||
-      maxFileSize <= 0 ||
-      maxFileSize > 100
+      config.imageProcessing.targetMaxSizeMB <= 0
     ) {
-
       errors.push(
-        "Maximum file size must be between 0 and 100 MB."
+        "Image target maximum size must be greater than zero."
       );
     }
 
-
     if (
-      !Number.isFinite(minFileSize) ||
-      minFileSize < 0 ||
-      minFileSize > 1024
+      config.expiry.primaryAlertDays < 0 ||
+      config.expiry.secondAlertDays < 0
     ) {
-
       errors.push(
-        "Minimum file size must be between 0 and 1024 KB."
+        "Expiry alert days cannot be negative."
       );
     }
 
-
     if (
-      !Array.isArray(
-        config.fileValidation.allowedMimeTypes
-      ) ||
-      config.fileValidation.allowedMimeTypes.length === 0
+      config.expiry.primaryAlertDays <
+      config.expiry.secondAlertDays
     ) {
-
-      errors.push(
-        "At least one allowed document MIME type is required."
+      warnings.push(
+        "Primary expiry alert should normally be earlier than the second alert."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Required Documents
-       ------------------------------------------------------- */
-
     if (
-      config.kyc.driverKYCRequired &&
+      config.kyc.driverKYCRequired === true &&
       !config.documentTypes.drivingLicense
     ) {
-
       errors.push(
-        "Driving License document type is required for Driver KYC."
+        "Driving License document type is required."
       );
     }
 
-
     if (
-      config.vehicleKYC.vehicleKYCRequired === true &&
+      config.kyc.vehicleKYCRequired === true &&
       !config.documentTypes.vehicleRegistration
     ) {
-
       errors.push(
         "Vehicle Registration document type is required."
       );
     }
 
-
-    /* -------------------------------------------------------
-       Audit
-       ------------------------------------------------------- */
+    if (
+      config.vehicleDocuments.insuranceRequired &&
+      !config.documentTypes.vehicleInsurance
+    ) {
+      errors.push(
+        "Vehicle Insurance document type is required."
+      );
+    }
 
     if (
-      config.audit.enabled !== true
+      config.vehicleDocuments.fitnessRequired &&
+      !config.documentTypes.vehicleFitness
     ) {
-
       errors.push(
-        "26F audit must remain enabled."
+        "Vehicle Fitness document type is required."
       );
     }
-
 
     if (
-      config.audit.localHistoryEnabled !== true
+      config.vehicleDocuments.permitRequired &&
+      !config.documentTypes.vehiclePermit
     ) {
-
       errors.push(
-        "26F local audit history must remain enabled."
+        "Vehicle Permit document type is required."
       );
     }
 
-
-    if (errors.length === 0) {
-
-      warnings.push(
-        "Document and KYC verification authority remains with the backend."
+    if (
+      config.vehicleDocuments.pollutionCertificateRequired &&
+      !config.documentTypes.pollutionCertificate
+    ) {
+      errors.push(
+        "Pollution Certificate document type is required."
       );
     }
-
 
     return {
 
@@ -1188,120 +892,573 @@ window.GoVara26F = (function () {
 
       errors: errors,
 
-      warnings: warnings
+      warnings: warnings,
+
+      checkedAt: new Date().toISOString(),
+
+      version: VERSION
     };
   }
 
 
-  /* =========================================================
-     AUDIT
-     ========================================================= */
+  /* ==========================================================
+     File Helpers
+     ========================================================== */
 
-  function getAudit() {
-
-    try {
-
-      const data = JSON.parse(
-        localStorage.getItem(AUDIT_KEY) || "[]"
-      );
-
-      return Array.isArray(data)
-        ? data
-        : [];
-
-    } catch (error) {
-
-      return [];
-    }
+  function bytesToMB(bytes) {
+    return bytes / (1024 * 1024);
   }
 
-
-  function writeAudit(action, details) {
-
-    const config = loadConfig();
-
-    if (
-      !config.audit.enabled ||
-      !config.audit.localHistoryEnabled
-    ) {
-
-      return;
-    }
-
-
-    const events = getAudit();
-
-
-    events.unshift({
-
-      id:
-        "26F-" +
-        Date.now() +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2, 8),
-
-      module: "26F",
-
-      action: action,
-
-      timestamp:
-        new Date().toISOString(),
-
-      details:
-        details || {}
-    });
-
-
-    const limit =
-      Number(config.audit.maxLocalEvents) || 200;
-
-
-    try {
-
-      localStorage.setItem(
-
-        AUDIT_KEY,
-
-        JSON.stringify(
-          events.slice(0, limit)
-        )
-      );
-
-    } catch (error) {
-
-      /* Ignore local storage errors */
-    }
+  function bytesToKB(bytes) {
+    return bytes / 1024;
   }
 
+  function formatFileSize(bytes) {
 
-  /* =========================================================
-     CONFIGURATION METHODS
-     ========================================================= */
+    if (!Number.isFinite(bytes)) {
+      return "0 B";
+    }
 
-  function getConfig() {
+    if (bytes < 1024) {
+      return bytes + " B";
+    }
 
-    return deepClone(
-      loadConfig()
+    if (bytes < 1024 * 1024) {
+      return (
+        (bytes / 1024).toFixed(1) +
+        " KB"
+      );
+    }
+
+    return (
+      (bytes / (1024 * 1024)).toFixed(2) +
+      " MB"
+    );
+  }
+
+  function extensionOf(name) {
+
+    if (!name || name.indexOf(".") === -1) {
+      return "";
+    }
+
+    return (
+      "." +
+      name
+        .split(".")
+        .pop()
+        .toLowerCase()
     );
   }
 
 
-  function save(config) {
+  /* ==========================================================
+     File Validation
+     ========================================================== */
 
-    const candidate =
-      deepClone(
-        config || loadConfig()
+  function validateFile(file) {
+
+    const config = loadConfig();
+
+    const errors = [];
+
+    if (!file) {
+
+      return {
+        valid: false,
+        errors: ["No file selected."]
+      };
+    }
+
+    if (
+      config.upload.emptyFileBlocked &&
+      file.size <= 0
+    ) {
+      errors.push(
+        "Empty files are not allowed."
+      );
+    }
+
+    const maxBytes =
+      file.type === "application/pdf"
+        ? config.fileValidation.maxPDFSizeMB *
+          1024 *
+          1024
+        : config.fileValidation.maxImageSizeMB *
+          1024 *
+          1024;
+
+    if (file.size > maxBytes) {
+
+      errors.push(
+        "File exceeds the maximum allowed size of " +
+        maxBytes / (1024 * 1024) +
+        " MB."
+      );
+    }
+
+    if (
+      file.size <
+      config.fileValidation.minFileSizeKB *
+      1024
+    ) {
+      errors.push(
+        "File is smaller than the minimum allowed size."
+      );
+    }
+
+    const allowedMime =
+      config.upload.allowedMimeTypes
+        .map(function (x) {
+          return x.toLowerCase();
+        });
+
+    if (
+      config.fileValidation.mimeValidation &&
+      allowedMime.indexOf(
+        String(file.type || "").toLowerCase()
+      ) === -1
+    ) {
+      errors.push(
+        "File MIME type is not allowed."
+      );
+    }
+
+    const extension =
+      extensionOf(file.name);
+
+    if (
+      config.fileValidation.extensionValidation &&
+      config.upload.allowedExtensions.indexOf(
+        extension
+      ) === -1
+    ) {
+      errors.push(
+        "File extension is not allowed."
+      );
+    }
+
+    if (
+      config.fileValidation.filenameValidation &&
+      !/^[a-zA-Z0-9._ -]+$/.test(
+        file.name
+      )
+    ) {
+      errors.push(
+        "Filename contains unsupported characters."
+      );
+    }
+
+    return {
+
+      valid: errors.length === 0,
+
+      errors: errors,
+
+      name: file.name,
+      type: file.type,
+      size: file.size,
+
+      formattedSize:
+        formatFileSize(file.size)
+    };
+  }
+
+
+  /* ==========================================================
+     Image Detection
+     ========================================================== */
+
+  function isImageFile(file) {
+
+    return !!(
+      file &&
+      file.type &&
+      file.type.indexOf("image/") === 0
+    );
+  }
+
+  function isPDFFile(file) {
+
+    return !!(
+      file &&
+      file.type === "application/pdf"
+    );
+  }
+
+
+  /* ==========================================================
+     Image Compression
+     ========================================================== */
+
+  function loadImage(file) {
+
+    return new Promise(function (
+      resolve,
+      reject
+    ) {
+
+      const reader =
+        new FileReader();
+
+      reader.onload = function () {
+
+        const image =
+          new Image();
+
+        image.onload = function () {
+          resolve(image);
+        };
+
+        image.onerror = function () {
+          reject(
+            new Error(
+              "Unable to read image."
+            )
+          );
+        };
+
+        image.src = reader.result;
+      };
+
+      reader.onerror = function () {
+
+        reject(
+          new Error(
+            "Unable to read selected file."
+          )
+        );
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+
+  function calculateDimensions(
+    width,
+    height,
+    maxWidth,
+    maxHeight
+  ) {
+
+    let newWidth = width;
+    let newHeight = height;
+
+    const ratio =
+      Math.min(
+        maxWidth / width,
+        maxHeight / height,
+        1
       );
 
+    newWidth =
+      Math.round(
+        width * ratio
+      );
 
-    enforceSafety(candidate);
+    newHeight =
+      Math.round(
+        height * ratio
+      );
 
+    return {
+
+      width: newWidth,
+      height: newHeight
+    };
+  }
+
+
+  function canvasToBlob(
+    canvas,
+    type,
+    quality
+  ) {
+
+    return new Promise(function (
+      resolve,
+      reject
+    ) {
+
+      canvas.toBlob(
+        function (blob) {
+
+          if (!blob) {
+
+            reject(
+              new Error(
+                "Image compression failed."
+              )
+            );
+
+            return;
+          }
+
+          resolve(blob);
+
+        },
+        type,
+        quality
+      );
+    });
+  }
+
+
+  async function compressImage(
+    file,
+    options
+  ) {
+
+    const config =
+      loadConfig();
+
+    options =
+      options || {};
 
     const validation =
-      validateConfig(candidate);
+      validateFile(file);
 
+    if (!validation.valid) {
+
+      throw new Error(
+        validation.errors.join(" ")
+      );
+    }
+
+    if (!isImageFile(file)) {
+
+      return {
+
+        originalFile: file,
+
+        processedFile: file,
+
+        compressed: false,
+
+        resized: false,
+
+        originalSize: file.size,
+
+        processedSize: file.size,
+
+        originalSizeFormatted:
+          formatFileSize(file.size),
+
+        processedSizeFormatted:
+          formatFileSize(file.size),
+
+        message:
+          "Image compression was not required."
+      };
+    }
+
+    if (
+      !config.imageProcessing.enabled ||
+      !config.imageProcessing.compressionEnabled
+    ) {
+
+      return {
+
+        originalFile: file,
+
+        processedFile: file,
+
+        compressed: false,
+
+        resized: false,
+
+        originalSize: file.size,
+
+        processedSize: file.size
+      };
+    }
+
+    const image =
+      await loadImage(file);
+
+    const dimensions =
+      calculateDimensions(
+        image.naturalWidth,
+        image.naturalHeight,
+        config.imageProcessing.maxWidth,
+        config.imageProcessing.maxHeight
+      );
+
+    const canvas =
+      document.createElement(
+        "canvas"
+      );
+
+    canvas.width =
+      dimensions.width;
+
+    canvas.height =
+      dimensions.height;
+
+    const context =
+      canvas.getContext("2d");
+
+    context.drawImage(
+      image,
+      0,
+      0,
+      dimensions.width,
+      dimensions.height
+    );
+
+    let quality =
+      config.imageProcessing.targetQuality;
+
+    let blob =
+      await canvasToBlob(
+        canvas,
+        config.imageProcessing.outputFormat,
+        quality
+      );
+
+    const targetBytes =
+      config.imageProcessing.targetMaxSizeMB *
+      1024 *
+      1024;
+
+    while (
+      blob.size > targetBytes &&
+      quality >
+      config.imageProcessing.minQuality
+    ) {
+
+      quality -= 0.05;
+
+      blob =
+        await canvasToBlob(
+          canvas,
+          config.imageProcessing.outputFormat,
+          quality
+        );
+    }
+
+    const outputName =
+      file.name.replace(
+        /\.[^/.]+$/,
+        ""
+      ) + ".jpg";
+
+    const processedFile =
+      new File(
+        [blob],
+        outputName,
+        {
+          type:
+            config.imageProcessing.outputFormat,
+          lastModified:
+            Date.now()
+        }
+      );
+
+    const resized =
+      dimensions.width !==
+        image.naturalWidth ||
+      dimensions.height !==
+        image.naturalHeight;
+
+    const compressed =
+      processedFile.size <
+      file.size;
+
+    addAudit(
+      "IMAGE_PROCESSED",
+      {
+        originalName: file.name,
+
+        originalSize: file.size,
+
+        processedSize:
+          processedFile.size,
+
+        originalDimensions: {
+          width: image.naturalWidth,
+          height: image.naturalHeight
+        },
+
+        processedDimensions: {
+          width: dimensions.width,
+          height: dimensions.height
+        },
+
+        quality: quality,
+
+        compressed: compressed,
+
+        resized: resized
+      }
+    );
+
+    return {
+
+      originalFile: file,
+
+      processedFile: processedFile,
+
+      compressed: compressed,
+
+      resized: resized,
+
+      originalSize: file.size,
+
+      processedSize:
+        processedFile.size,
+
+      originalSizeFormatted:
+        formatFileSize(file.size),
+
+      processedSizeFormatted:
+        formatFileSize(
+          processedFile.size
+        ),
+
+      originalDimensions: {
+        width: image.naturalWidth,
+        height: image.naturalHeight
+      },
+
+      processedDimensions: {
+        width: dimensions.width,
+        height: dimensions.height
+      },
+
+      quality: quality,
+
+      reductionBytes:
+        Math.max(
+          0,
+          file.size -
+          processedFile.size
+        ),
+
+      reductionPercent:
+        file.size > 0
+          ? Math.max(
+              0,
+              (
+                1 -
+                processedFile.size /
+                  file.size
+              ) * 100
+            )
+          : 0
+    };
+  }
+
+
+  /* ==========================================================
+     Document Processing
+     ========================================================== */
+
+  async function processFile(file) {
+
+    const validation =
+      validateFile(file);
 
     if (!validation.valid) {
 
@@ -1309,439 +1466,355 @@ window.GoVara26F = (function () {
 
         success: false,
 
-        saved: false,
+        validation: validation,
 
-        validation: validation
+        originalFile: file,
+
+        processedFile: null
       };
     }
-
 
     try {
 
-      localStorage.setItem(
+      if (isImageFile(file)) {
 
-        STORAGE_KEY,
+        const result =
+          await compressImage(
+            file
+          );
 
-        JSON.stringify(candidate)
-      );
+        return {
 
+          success: true,
 
-      writeAudit(
-        "DOCUMENT_KYC_CONFIG_SAVE",
-        {
-          version: VERSION
-        }
-      );
+          validation: validation,
 
+          type: "IMAGE",
 
-      return {
-
-        success: true,
-
-        saved: true,
-
-        validation: validation,
-
-        config:
-          deepClone(candidate)
-      };
-
-
-    } catch (error) {
-
-      return {
-
-        success: false,
-
-        saved: false,
-
-        validation: validation,
-
-        error:
-          error.message
-      };
-    }
-  }
-
-
-  function reset() {
-
-    const config =
-      deepClone(
-        DEFAULT_CONFIG
-      );
-
-
-    enforceSafety(config);
-
-
-    try {
-
-      localStorage.setItem(
-
-        STORAGE_KEY,
-
-        JSON.stringify(config)
-      );
-
-
-      writeAudit(
-        "DOCUMENT_KYC_CONFIG_RESET",
-        {
-          version: VERSION
-        }
-      );
-
-
-      return {
-
-        success: true,
-
-        config:
-          deepClone(config)
-      };
-
-
-    } catch (error) {
-
-      return {
-
-        success: false,
-
-        error:
-          error.message
-      };
-    }
-  }
-
-
-  function reload() {
-
-    const config =
-      loadConfig();
-
-
-    writeAudit(
-      "DOCUMENT_KYC_CONFIG_RELOAD",
-      {
-        version: VERSION
+          ...result
+        };
       }
-    );
 
+      if (isPDFFile(file)) {
 
-    return deepClone(config);
-  }
+        addAudit(
+          "PDF_SELECTED",
+          {
+            name: file.name,
+            size: file.size
+          }
+        );
 
+        return {
 
-  function setPolicy(path, value) {
+          success: true,
 
-    const config =
-      loadConfig();
+          validation: validation,
 
+          type: "PDF",
 
-    const parts =
-      String(path || "")
-        .split(".")
-        .filter(Boolean);
+          originalFile: file,
 
+          processedFile: file,
 
-    if (!parts.length) {
+          compressed: false,
+
+          resized: false,
+
+          originalSize: file.size,
+
+          processedSize: file.size,
+
+          originalSizeFormatted:
+            formatFileSize(
+              file.size
+            ),
+
+          processedSizeFormatted:
+            formatFileSize(
+              file.size
+            ),
+
+          message:
+            "PDF accepted. Final PDF compression/validation remains backend-authoritative."
+        };
+      }
 
       return {
 
         success: false,
 
-        error:
-          "Invalid policy path."
+        validation: {
+
+          valid: false,
+
+          errors: [
+            "Unsupported document type."
+          ]
+        }
+      };
+
+    } catch (error) {
+
+      console.error(
+        "GoVara 26F file processing error:",
+        error
+      );
+
+      return {
+
+        success: false,
+
+        validation: {
+
+          valid: false,
+
+          errors: [
+            error.message ||
+            "File processing failed."
+          ]
+        }
       };
     }
+  }
 
 
-    let cursor = config;
+  /* ==========================================================
+     Upload Queue
+     ========================================================== */
 
+  async function processFiles(
+    files
+  ) {
+
+    const list =
+      Array.from(files || []);
+
+    const results = [];
 
     for (
       let i = 0;
-      i < parts.length - 1;
+      i < list.length;
       i++
     ) {
 
-      if (
-        !cursor[parts[i]] ||
-        typeof cursor[parts[i]] !== "object"
-      ) {
+      const result =
+        await processFile(
+          list[i]
+        );
 
-        cursor[parts[i]] = {};
-      }
-
-
-      cursor =
-        cursor[parts[i]];
+      results.push(result);
     }
 
-
-    cursor[
-      parts[parts.length - 1]
-    ] = value;
-
-
-    return save(config);
+    return results;
   }
 
 
-  /* =========================================================
-     STATUS
-     ========================================================= */
+  /* ==========================================================
+     Document Record Builder
+     ========================================================== */
 
-  function getStatus() {
+  function createDocumentRecord(
+    processed,
+    ownerType,
+    ownerId,
+    documentType
+  ) {
 
-    const config =
-      loadConfig();
+    if (
+      !processed ||
+      !processed.success
+    ) {
+      return null;
+    }
 
+    const file =
+      processed.processedFile;
 
     return {
 
-      environment:
-        config.environment,
+      localId:
+        "DOC-" +
+        Date.now() +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2, 8),
 
-      documentSystemEnabled:
-        config.documentSystem.enabled,
+      ownerType:
+        ownerType || "",
 
-      kycEnabled:
-        config.kyc.enabled,
+      ownerId:
+        ownerId || "",
 
-      backendKYCAuthority:
-        config.kyc.backendKYCAuthority,
+      documentType:
+        documentType || "otherDocument",
 
-      frontendKYCAuthority:
-        config.kyc.frontendKYCAuthority,
+      filename:
+        file.name,
 
-      backendDocumentAuthority:
-        config.documentSystem.backendDocumentAuthority,
+      mimeType:
+        file.type,
 
-      automaticApprovalBlocked:
-        config.kyc.automaticApprovalAllowed === false,
+      originalFilename:
+        processed.originalFile
+          ? processed.originalFile.name
+          : file.name,
 
-      frontendApprovalBlocked:
-        config.verification.frontendCanApprove === false,
+      originalSize:
+        processed.originalSize,
 
-      publicDocumentsBlocked:
-        config.privacySecurity.publicDocumentUrlAllowed === false,
+      processedSize:
+        processed.processedSize,
 
-      expiryTracking:
-        config.expiry.expiryTrackingEnabled,
+      originalSizeFormatted:
+        processed.originalSizeFormatted,
 
-      auditEnabled:
-        config.audit.enabled
+      processedSizeFormatted:
+        processed.processedSizeFormatted,
+
+      compressed:
+        !!processed.compressed,
+
+      resized:
+        !!processed.resized,
+
+      status:
+        "pending",
+
+      verificationStatus:
+        "PENDING_BACKEND_VERIFICATION",
+
+      uploadedAt:
+        new Date().toISOString(),
+
+      expiryDate:
+        null,
+
+      replacementOf:
+        null,
+
+      backendAuthoritative:
+        true,
+
+      frontendCanApprove:
+        false,
+
+      frontendCanVerify:
+        false
     };
   }
 
 
-  /* =========================================================
-     UI HELPERS
-     ========================================================= */
-
-  function escapeHtml(value) {
-
-    return String(value)
-
-      .replace(/&/g, "&amp;")
-
-      .replace(/</g, "&lt;")
-
-      .replace(/>/g, "&gt;")
-
-      .replace(/"/g, "&quot;")
-
-      .replace(/'/g, "&#039;");
-  }
-
-
-  function checked(value) {
-
-    return value
-      ? "checked"
-      : "";
-  }
-
-
-  function numberValue(value) {
-
-    return escapeHtml(
-
-      Number.isFinite(
-        Number(value)
-      )
-
-        ? Number(value)
-
-        : 0
-    );
-  }
-
-
-  function checkbox(
-    path,
-    label,
-    value
-  ) {
-
-    return `
-
-      <label class="govara26f-check">
-
-        <input
-          type="checkbox"
-          data-26f-path="${escapeHtml(path)}"
-          ${checked(value)}
-        >
-
-        <span>
-          ${escapeHtml(label)}
-        </span>
-
-      </label>
-
-    `;
-  }
-
-
-  function numberInput(
-    path,
-    label,
-    value,
-    min,
-    max,
-    step
-  ) {
-
-    return `
-
-      <label class="govara26f-field">
-
-        <span>
-          ${escapeHtml(label)}
-        </span>
-
-        <input
-          type="number"
-          data-26f-path="${escapeHtml(path)}"
-          value="${numberValue(value)}"
-          min="${min}"
-          max="${max}"
-          step="${step || "1"}"
-        >
-
-      </label>
-
-    `;
-  }
-
-
-  function section(
-    title,
-    description,
-    content
-  ) {
-
-    return `
-
-      <section class="card govara26f-section">
-
-        <div class="govara26f-section-head">
-
-          <div>
-
-            <h2>
-              ${escapeHtml(title)}
-            </h2>
-
-            <div class="muted">
-              ${escapeHtml(description)}
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="govara26f-section-body">
-
-          ${content}
-
-        </div>
-
-      </section>
-
-    `;
-  }
-
-
-  /* =========================================================
-     RENDER
-     ========================================================= */
+  /* ==========================================================
+     UI
+     ========================================================== */
 
   function render() {
 
-    const config =
-      loadConfig();
+    const mount =
+      document.getElementById(
+        "module-26F"
+      );
 
+    if (!mount) {
+      return;
+    }
+
+    const config =
+      enforceSafety(
+        loadConfig()
+      );
 
     const validation =
-      validateConfig(config);
+      validateConfig(
+        config
+      );
 
-
-    return `
+    mount.innerHTML = `
 
       <div class="page-head">
 
         <h1>
-          26F — Documents & KYC
+          26F — Documents & KYC Control
         </h1>
 
         <div class="muted">
-
-          Document management, KYC policy,
-          verification, expiry and document security controls.
-
+          Document upload, image compression,
+          KYC workflow, expiry and security control.
         </div>
 
       </div>
 
 
-      <!-- ===================================================
-           STATUS
-           =================================================== -->
+      <section class="card">
 
-      <section class="card govara26f-status-card">
-
-        <h2>
-          Documents & KYC Status
-        </h2>
-
+        <h2>26F Status</h2>
 
         <div class="grid four">
 
           <div>
+            <b>${VERSION}</b>
+            <div class="muted">
+              Module Version
+            </div>
+          </div>
 
-            <b>
-              TESTING
-            </b>
-
+          <div>
+            <b>TESTING</b>
             <div class="muted">
               Environment
             </div>
-
           </div>
 
+          <div>
+            <b>
+              ${validation.valid
+                ? "VALID"
+                : "ERROR"}
+            </b>
+            <div class="muted">
+              Configuration
+            </div>
+          </div>
+
+          <div>
+            <b>BACKEND</b>
+            <div class="muted">
+              Authority
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h2>
+          Document Upload
+        </h2>
+
+        <div class="grid two">
 
           <div>
 
-            <b>
-              KYC ENABLED
-            </b>
+            <label>
+              Select Documents
+            </label>
+
+            <input
+              id="govara26f-file-input"
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+            />
 
             <div class="muted">
-              Master Control
+              JPG, JPEG, PNG, WebP and PDF.
+              Maximum ${config.upload.maxFileSizeMB} MB
+              before processing.
             </div>
 
           </div>
@@ -1750,47 +1823,101 @@ window.GoVara26F = (function () {
           <div>
 
             <b>
-              BACKEND AUTHORITY
+              Image Processing
             </b>
 
             <div class="muted">
-              Verification Authority
-            </div>
 
-          </div>
+              Images can be automatically resized
+              and compressed before upload.
 
+              Maximum dimensions:
+              ${config.imageProcessing.maxWidth}
+              ×
+              ${config.imageProcessing.maxHeight}
 
-          <div>
+              <br>
 
-            <b>
-              PUBLIC DOCS BLOCKED
-            </b>
+              Target image size:
+              ${config.imageProcessing.targetMaxSizeMB}
+              MB
 
-            <div class="muted">
-              Privacy
             </div>
 
           </div>
 
         </div>
 
+
+        <div
+          id="govara26f-upload-results"
+          class="govara26f-upload-results"
+          style="margin-top:16px;"
+        >
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h2>
+          KYC Authority
+        </h2>
 
         <div class="notice warn">
 
-          <strong>
-            Authority Boundary
-          </strong>
+          Frontend केवल document selection,
+          validation, preview और image processing करेगा.
+
+          <br><br>
+
+          KYC approval, verification,
+          rejection और final document authority
+          Backend के पास रहेगी.
+
+        </div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h2>
+          File Controls
+        </h2>
+
+        <div class="grid three">
 
           <div>
-            Frontend = Configuration / Upload UI / Display / Request
+            <b>
+              ${config.upload.maxFileSizeMB} MB
+            </b>
+            <div class="muted">
+              Max Upload Size
+            </div>
           </div>
 
           <div>
-            Backend = KYC Verification / Approval / Rejection / Authority
+            <b>
+              ${config.imageProcessing.compressionEnabled
+                ? "ON"
+                : "OFF"}
+            </b>
+            <div class="muted">
+              Image Compression
+            </div>
           </div>
 
           <div>
-            Database = Authoritative Document & KYC Records
+            <b>
+              ${config.imageProcessing.resizeEnabled
+                ? "ON"
+                : "OFF"}
+            </b>
+            <div class="muted">
+              Image Resize
+            </div>
           </div>
 
         </div>
@@ -1798,1851 +1925,136 @@ window.GoVara26F = (function () {
       </section>
 
 
-      <!-- ===================================================
-           1
-           =================================================== -->
-
-      ${section(
-
-        "1. Document System",
-
-        "Master document-management controls.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "documentSystem.enabled",
-              "Document System Enabled",
-              config.documentSystem.enabled
-            )}
-
-            ${checkbox(
-              "documentSystem.documentUploadEnabled",
-              "Document Upload",
-              config.documentSystem.documentUploadEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.documentViewEnabled",
-              "Document View",
-              config.documentSystem.documentViewEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.documentUpdateEnabled",
-              "Document Update",
-              config.documentSystem.documentUpdateEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.documentDeleteRequestEnabled",
-              "Delete Request",
-              config.documentSystem.documentDeleteRequestEnabled
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "documentSystem.documentHistoryEnabled",
-              "Document History",
-              config.documentSystem.documentHistoryEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.documentStatusViewEnabled",
-              "Document Status View",
-              config.documentSystem.documentStatusViewEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.expiryTrackingEnabled",
-              "Expiry Tracking",
-              config.documentSystem.expiryTrackingEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.expiryAlertEnabled",
-              "Expiry Alerts",
-              config.documentSystem.expiryAlertEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.documentVerificationEnabled",
-              "Document Verification",
-              config.documentSystem.documentVerificationEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.manualVerificationEnabled",
-              "Manual Verification",
-              config.documentSystem.manualVerificationEnabled
-            )}
-
-            ${checkbox(
-              "documentSystem.automaticVerificationEnabled",
-              "Automatic Verification",
-              config.documentSystem.automaticVerificationEnabled
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           2
-           =================================================== -->
-
-      ${section(
-
-        "2. KYC Master Control",
-
-        "Global KYC activation and authority rules.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "kyc.enabled",
-              "KYC Enabled",
-              config.kyc.enabled
-            )}
-
-            ${checkbox(
-              "kyc.customerKYCRequired",
-              "Customer KYC Required",
-              config.kyc.customerKYCRequired
-            )}
-
-            ${checkbox(
-              "kyc.vendorKYCRequired",
-              "Vendor KYC Required",
-              config.kyc.vendorKYCRequired
-            )}
-
-            ${checkbox(
-              "kyc.driverKYCRequired",
-              "Driver KYC Required",
-              config.kyc.driverKYCRequired
-            )}
-
-            ${checkbox(
-              "kyc.vehicleKYCRequired",
-              "Vehicle KYC Required",
-              config.kyc.vehicleKYCRequired
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "kyc.manualReviewAllowed",
-              "Manual Review",
-              config.kyc.manualReviewAllowed
-            )}
-
-            ${checkbox(
-              "kyc.automaticApprovalAllowed",
-              "Automatic Approval",
-              config.kyc.automaticApprovalAllowed
-            )}
-
-            ${checkbox(
-              "kyc.reVerificationRequired",
-              "Re-verification Required",
-              config.kyc.reVerificationRequired
-            )}
-
-            ${checkbox(
-              "kyc.expiredKYCBlocksActivation",
-              "Expired KYC Blocks Activation",
-              config.kyc.expiredKYCBlocksActivation
-            )}
-
-            ${checkbox(
-              "kyc.rejectedKYCBlocksActivation",
-              "Rejected KYC Blocks Activation",
-              config.kyc.rejectedKYCBlocksActivation
-            )}
-
-            ${checkbox(
-              "kyc.pendingKYCBlocksActivation",
-              "Pending KYC Blocks Activation",
-              config.kyc.pendingKYCBlocksActivation
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           3
-           =================================================== -->
-
-      ${section(
-
-        "3. Customer KYC",
-
-        "Customer-specific KYC requirements.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "customerKYC.enabled",
-              "Customer KYC Enabled",
-              config.customerKYC.enabled
-            )}
-
-            ${checkbox(
-              "customerKYC.requiredForRegistration",
-              "Required for Registration",
-              config.customerKYC.requiredForRegistration
-            )}
-
-            ${checkbox(
-              "customerKYC.requiredForBooking",
-              "Required for Booking",
-              config.customerKYC.requiredForBooking
-            )}
-
-            ${checkbox(
-              "customerKYC.requiredBeforeTrip",
-              "Required Before Trip",
-              config.customerKYC.requiredBeforeTrip
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "customerKYC.requiredForWalletFeatures",
-              "Required for Wallet Features",
-              config.customerKYC.requiredForWalletFeatures
-            )}
-
-            ${checkbox(
-              "customerKYC.requiredForRefundRequest",
-              "Required for Refund Request",
-              config.customerKYC.requiredForRefundRequest
-            )}
-
-            ${checkbox(
-              "customerKYC.requiredForProfileCompletion",
-              "Required for Profile Completion",
-              config.customerKYC.requiredForProfileCompletion
-            )}
-
-            ${checkbox(
-              "customerKYC.documentUpdateAllowed",
-              "Document Update Allowed",
-              config.customerKYC.documentUpdateAllowed
-            )}
-
-            ${checkbox(
-              "customerKYC.manualReviewRequired",
-              "Manual Review Required",
-              config.customerKYC.manualReviewRequired
-            )}
-
-            ${checkbox(
-              "customerKYC.backendApprovalRequired",
-              "Backend Approval Required",
-              config.customerKYC.backendApprovalRequired
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           4
-           =================================================== -->
-
-      ${section(
-
-        "4. Vendor KYC",
-
-        "Vendor/company verification requirements.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "vendorKYC.enabled",
-              "Vendor KYC Enabled",
-              config.vendorKYC.enabled
-            )}
-
-            ${checkbox(
-              "vendorKYC.requiredForRegistration",
-              "Required for Registration",
-              config.vendorKYC.requiredForRegistration
-            )}
-
-            ${checkbox(
-              "vendorKYC.requiredBeforeOperations",
-              "Required Before Operations",
-              config.vendorKYC.requiredBeforeOperations
-            )}
-
-            ${checkbox(
-              "vendorKYC.requiredBeforeBookingManagement",
-              "Required Before Booking Management",
-              config.vendorKYC.requiredBeforeBookingManagement
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "vendorKYC.requiredBeforeDriverAssignment",
-              "Required Before Driver Assignment",
-              config.vendorKYC.requiredBeforeDriverAssignment
-            )}
-
-            ${checkbox(
-              "vendorKYC.requiredBeforeVehicleAssignment",
-              "Required Before Vehicle Assignment",
-              config.vendorKYC.requiredBeforeVehicleAssignment
-            )}
-
-            ${checkbox(
-              "vendorKYC.documentUpdateAllowed",
-              "Document Update Allowed",
-              config.vendorKYC.documentUpdateAllowed
-            )}
-
-            ${checkbox(
-              "vendorKYC.manualReviewRequired",
-              "Manual Review Required",
-              config.vendorKYC.manualReviewRequired
-            )}
-
-            ${checkbox(
-              "vendorKYC.backendApprovalRequired",
-              "Backend Approval Required",
-              config.vendorKYC.backendApprovalRequired
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           5
-           =================================================== -->
-
-      ${section(
-
-        "5. Driver KYC",
-
-        "Driver identity, license and operational eligibility.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "driverKYC.enabled",
-              "Driver KYC Enabled",
-              config.driverKYC.enabled
-            )}
-
-            ${checkbox(
-              "driverKYC.requiredForRegistration",
-              "Required for Registration",
-              config.driverKYC.requiredForRegistration
-            )}
-
-            ${checkbox(
-              "driverKYC.requiredBeforeDuty",
-              "Required Before Duty",
-              config.driverKYC.requiredBeforeDuty
-            )}
-
-            ${checkbox(
-              "driverKYC.requiredBeforeTrip",
-              "Required Before Trip",
-              config.driverKYC.requiredBeforeTrip
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "driverKYC.requiredBeforeBookingAcceptance",
-              "Required Before Booking Acceptance",
-              config.driverKYC.requiredBeforeBookingAcceptance
-            )}
-
-            ${checkbox(
-              "driverKYC.documentUpdateAllowed",
-              "Document Update Allowed",
-              config.driverKYC.documentUpdateAllowed
-            )}
-
-            ${checkbox(
-              "driverKYC.manualReviewRequired",
-              "Manual Review Required",
-              config.driverKYC.manualReviewRequired
-            )}
-
-            ${checkbox(
-              "driverKYC.backendApprovalRequired",
-              "Backend Approval Required",
-              config.driverKYC.backendApprovalRequired
-            )}
-
-            ${checkbox(
-              "driverKYC.expiredLicenseBlocksDuty",
-              "Expired License Blocks Duty",
-              config.driverKYC.expiredLicenseBlocksDuty
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           6
-           =================================================== -->
-
-      ${section(
-
-        "6. Vehicle Documents",
-
-        "Vehicle registration, insurance and compliance documents.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "vehicleDocuments.enabled",
-              "Vehicle Documents Enabled",
-              config.vehicleDocuments.enabled
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.requiredForVehicleActivation",
-              "Required for Vehicle Activation",
-              config.vehicleDocuments.requiredForVehicleActivation
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.requiredBeforeAssignment",
-              "Required Before Assignment",
-              config.vehicleDocuments.requiredBeforeAssignment
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.requiredBeforeTrip",
-              "Required Before Trip",
-              config.vehicleDocuments.requiredBeforeTrip
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.registrationRequired",
-              "Vehicle Registration",
-              config.vehicleDocuments.registrationRequired
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.insuranceRequired",
-              "Insurance",
-              config.vehicleDocuments.insuranceRequired
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "vehicleDocuments.fitnessRequired",
-              "Fitness Certificate",
-              config.vehicleDocuments.fitnessRequired
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.permitRequired",
-              "Permit",
-              config.vehicleDocuments.permitRequired
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.pollutionCertificateRequired",
-              "Pollution Certificate",
-              config.vehicleDocuments.pollutionCertificateRequired
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.documentUpdateAllowed",
-              "Document Update Allowed",
-              config.vehicleDocuments.documentUpdateAllowed
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.manualReviewRequired",
-              "Manual Review Required",
-              config.vehicleDocuments.manualReviewRequired
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.backendApprovalRequired",
-              "Backend Approval Required",
-              config.vehicleDocuments.backendApprovalRequired
-            )}
-
-            ${checkbox(
-              "vehicleDocuments.expiredDocumentBlocksVehicle",
-              "Expired Document Blocks Vehicle",
-              config.vehicleDocuments.expiredDocumentBlocksVehicle
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           7
-           =================================================== -->
-
-      ${section(
-
-        "7. Document Types",
-
-        "Supported document categories.",
-
-        `
-
-        <div class="grid three">
-
-          ${checkbox(
-            "documentTypes.identityProof",
-            "Identity Proof",
-            config.documentTypes.identityProof
-          )}
-
-          ${checkbox(
-            "documentTypes.addressProof",
-            "Address Proof",
-            config.documentTypes.addressProof
-          )}
-
-          ${checkbox(
-            "documentTypes.profilePhoto",
-            "Profile Photo",
-            config.documentTypes.profilePhoto
-          )}
-
-          ${checkbox(
-            "documentTypes.bankProof",
-            "Bank Proof",
-            config.documentTypes.bankProof
-          )}
-
-          ${checkbox(
-            "documentTypes.taxDocument",
-            "Tax Document",
-            config.documentTypes.taxDocument
-          )}
-
-          ${checkbox(
-            "documentTypes.businessRegistration",
-            "Business Registration",
-            config.documentTypes.businessRegistration
-          )}
-
-          ${checkbox(
-            "documentTypes.companyRegistration",
-            "Company Registration",
-            config.documentTypes.companyRegistration
-          )}
-
-          ${checkbox(
-            "documentTypes.drivingLicense",
-            "Driving License",
-            config.documentTypes.drivingLicense
-          )}
-
-          ${checkbox(
-            "documentTypes.vehicleRegistration",
-            "Vehicle Registration",
-            config.documentTypes.vehicleRegistration
-          )}
-
-          ${checkbox(
-            "documentTypes.vehicleInsurance",
-            "Vehicle Insurance",
-            config.documentTypes.vehicleInsurance
-          )}
-
-          ${checkbox(
-            "documentTypes.vehicleFitness",
-            "Vehicle Fitness",
-            config.documentTypes.vehicleFitness
-          )}
-
-          ${checkbox(
-            "documentTypes.vehiclePermit",
-            "Vehicle Permit",
-            config.documentTypes.vehiclePermit
-          )}
-
-          ${checkbox(
-            "documentTypes.pollutionCertificate",
-            "Pollution Certificate",
-            config.documentTypes.pollutionCertificate
-          )}
-
-          ${checkbox(
-            "documentTypes.authorizationLetter",
-            "Authorization Letter",
-            config.documentTypes.authorizationLetter
-          )}
-
-          ${checkbox(
-            "documentTypes.otherDocument",
-            "Other Document",
-            config.documentTypes.otherDocument
-          )}
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           8
-           =================================================== -->
-
-      ${section(
-
-        "8. Document Status",
-
-        "Document lifecycle statuses.",
-
-        `
-
-        <div class="grid four">
-
-          ${checkbox(
-            "documentStatus.pending",
-            "Pending",
-            config.documentStatus.pending
-          )}
-
-          ${checkbox(
-            "documentStatus.submitted",
-            "Submitted",
-            config.documentStatus.submitted
-          )}
-
-          ${checkbox(
-            "documentStatus.underReview",
-            "Under Review",
-            config.documentStatus.underReview
-          )}
-
-          ${checkbox(
-            "documentStatus.approved",
-            "Approved",
-            config.documentStatus.approved
-          )}
-
-          ${checkbox(
-            "documentStatus.rejected",
-            "Rejected",
-            config.documentStatus.rejected
-          )}
-
-          ${checkbox(
-            "documentStatus.expired",
-            "Expired",
-            config.documentStatus.expired
-          )}
-
-          ${checkbox(
-            "documentStatus.replaced",
-            "Replaced",
-            config.documentStatus.replaced
-          )}
-
-          ${checkbox(
-            "documentStatus.suspended",
-            "Suspended",
-            config.documentStatus.suspended
-          )}
-
-          ${checkbox(
-            "documentStatus.deleted",
-            "Deleted",
-            config.documentStatus.deleted
-          )}
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           9
-           =================================================== -->
-
-      ${section(
-
-        "9. Verification",
-
-        "Verification workflow and authority controls.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "verification.enabled",
-              "Verification Enabled",
-              config.verification.enabled
-            )}
-
-            ${checkbox(
-              "verification.manualVerification",
-              "Manual Verification",
-              config.verification.manualVerification
-            )}
-
-            ${checkbox(
-              "verification.automaticVerification",
-              "Automatic Verification",
-              config.verification.automaticVerification
-            )}
-
-            ${checkbox(
-              "verification.backendVerification",
-              "Backend Verification",
-              config.verification.backendVerification
-            )}
-
-            ${checkbox(
-              "verification.verificationTimestampRequired",
-              "Verification Timestamp Required",
-              config.verification.verificationTimestampRequired
-            )}
-
-            ${checkbox(
-              "verification.verifierIdentityRequired",
-              "Verifier Identity Required",
-              config.verification.verifierIdentityRequired
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "verification.rejectionReasonRequired",
-              "Rejection Reason Required",
-              config.verification.rejectionReasonRequired
-            )}
-
-            ${checkbox(
-              "verification.approvalCommentAllowed",
-              "Approval Comment",
-              config.verification.approvalCommentAllowed
-            )}
-
-            ${checkbox(
-              "verification.rejectionCommentRequired",
-              "Rejection Comment Required",
-              config.verification.rejectionCommentRequired
-            )}
-
-            ${checkbox(
-              "verification.reVerificationAllowed",
-              "Re-verification Allowed",
-              config.verification.reVerificationAllowed
-            )}
-
-            ${checkbox(
-              "verification.verificationHistoryRequired",
-              "Verification History Required",
-              config.verification.verificationHistoryRequired
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           10
-           =================================================== -->
-
-      ${section(
-
-        "10. Expiry Control",
-
-        "Document expiry monitoring and operational blocking.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "expiry.enabled",
-              "Expiry Control Enabled",
-              config.expiry.enabled
-            )}
-
-            ${checkbox(
-              "expiry.expiryDateRequired",
-              "Expiry Date Required",
-              config.expiry.expiryDateRequired
-            )}
-
-            ${checkbox(
-              "expiry.expiryTrackingEnabled",
-              "Expiry Tracking",
-              config.expiry.expiryTrackingEnabled
-            )}
-
-            ${checkbox(
-              "expiry.expiryAlertEnabled",
-              "Expiry Alerts",
-              config.expiry.expiryAlertEnabled
-            )}
-
-            ${numberInput(
-              "expiry.alertBeforeDays",
-              "Primary Alert Before Days",
-              config.expiry.alertBeforeDays,
-              0,
-              365,
-              1
-            )}
-
-            ${numberInput(
-              "expiry.secondAlertBeforeDays",
-              "Second Alert Before Days",
-              config.expiry.secondAlertBeforeDays,
-              0,
-              365,
-              1
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "expiry.expiredStatusEnabled",
-              "Expired Status",
-              config.expiry.expiredStatusEnabled
-            )}
-
-            ${checkbox(
-              "expiry.expiredDocumentBlocksActivation",
-              "Expired Document Blocks Activation",
-              config.expiry.expiredDocumentBlocksActivation
-            )}
-
-            ${checkbox(
-              "expiry.expiredDocumentBlocksDuty",
-              "Expired Document Blocks Duty",
-              config.expiry.expiredDocumentBlocksDuty
-            )}
-
-            ${checkbox(
-              "expiry.expiredDocumentBlocksVehicle",
-              "Expired Document Blocks Vehicle",
-              config.expiry.expiredDocumentBlocksVehicle
-            )}
-
-            ${checkbox(
-              "expiry.expiredDocumentBlocksOperations",
-              "Expired Document Blocks Operations",
-              config.expiry.expiredDocumentBlocksOperations
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           11
-           =================================================== -->
-
-      ${section(
-
-        "11. Document Replacement",
-
-        "Safe replacement without losing document history.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "replacement.enabled",
-              "Replacement Enabled",
-              config.replacement.enabled
-            )}
-
-            ${checkbox(
-              "replacement.replacementAllowed",
-              "Replacement Allowed",
-              config.replacement.replacementAllowed
-            )}
-
-            ${checkbox(
-              "replacement.oldDocumentHistoryRequired",
-              "Old Document History Required",
-              config.replacement.oldDocumentHistoryRequired
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "replacement.oldDocumentDeletionAllowed",
-              "Old Document Permanent Deletion",
-              config.replacement.oldDocumentDeletionAllowed
-            )}
-
-            ${checkbox(
-              "replacement.replacementVerificationRequired",
-              "Replacement Verification Required",
-              config.replacement.replacementVerificationRequired
-            )}
-
-            ${checkbox(
-              "replacement.replacementApprovalRequired",
-              "Replacement Approval Required",
-              config.replacement.replacementApprovalRequired
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           12
-           =================================================== -->
-
-      ${section(
-
-        "12. Access Control",
-
-        "Role-based document access boundaries.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "accessControl.customerCanViewOwnDocuments",
-              "Customer — View Own Documents",
-              config.accessControl.customerCanViewOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.customerCanUploadOwnDocuments",
-              "Customer — Upload Own Documents",
-              config.accessControl.customerCanUploadOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.customerCanReplaceOwnDocuments",
-              "Customer — Replace Own Documents",
-              config.accessControl.customerCanReplaceOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.customerCanDeleteOwnDocumentRequest",
-              "Customer — Delete Request",
-              config.accessControl.customerCanDeleteOwnDocumentRequest
-            )}
-
-            ${checkbox(
-              "accessControl.vendorCanViewOwnDocuments",
-              "Vendor — View Own Documents",
-              config.accessControl.vendorCanViewOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.vendorCanUploadOwnDocuments",
-              "Vendor — Upload Own Documents",
-              config.accessControl.vendorCanUploadOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.vendorCanReplaceOwnDocuments",
-              "Vendor — Replace Own Documents",
-              config.accessControl.vendorCanReplaceOwnDocuments
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "accessControl.driverCanViewOwnDocuments",
-              "Driver — View Own Documents",
-              config.accessControl.driverCanViewOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.driverCanUploadOwnDocuments",
-              "Driver — Upload Own Documents",
-              config.accessControl.driverCanUploadOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.driverCanReplaceOwnDocuments",
-              "Driver — Replace Own Documents",
-              config.accessControl.driverCanReplaceOwnDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.adminCanViewDocuments",
-              "Admin — View Documents",
-              config.accessControl.adminCanViewDocuments
-            )}
-
-            ${checkbox(
-              "accessControl.adminCanConfigureKYC",
-              "Admin — Configure KYC",
-              config.accessControl.adminCanConfigureKYC
-            )}
-
-            ${checkbox(
-              "accessControl.adminCanConfigureDocumentTypes",
-              "Admin — Configure Document Types",
-              config.accessControl.adminCanConfigureDocumentTypes
-            )}
-
-            ${checkbox(
-              "accessControl.adminCanReviewQueue",
-              "Admin — Review Queue",
-              config.accessControl.adminCanReviewQueue
-            )}
-
-            ${checkbox(
-              "accessControl.frontendCanModifyVerificationResult",
-              "Frontend Can Modify Verification Result",
-              config.accessControl.frontendCanModifyVerificationResult
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           13
-           =================================================== -->
-
-      ${section(
-
-        "13. Privacy & Security",
-
-        "Sensitive document protection.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "privacySecurity.sensitiveDocumentProtection",
-              "Sensitive Document Protection",
-              config.privacySecurity.sensitiveDocumentProtection
-            )}
-
-            ${checkbox(
-              "privacySecurity.documentAccessControl",
-              "Document Access Control",
-              config.privacySecurity.documentAccessControl
-            )}
-
-            ${checkbox(
-              "privacySecurity.ownerOnlyDocumentAccess",
-              "Owner-only Document Access",
-              config.privacySecurity.ownerOnlyDocumentAccess
-            )}
-
-            ${checkbox(
-              "privacySecurity.adminControlledAccess",
-              "Admin Controlled Access",
-              config.privacySecurity.adminControlledAccess
-            )}
-
-            ${checkbox(
-              "privacySecurity.unauthorizedAccessBlocked",
-              "Unauthorized Access Blocked",
-              config.privacySecurity.unauthorizedAccessBlocked
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "privacySecurity.publicDocumentUrlAllowed",
-              "Public Document URL",
-              config.privacySecurity.publicDocumentUrlAllowed
-            )}
-
-            ${checkbox(
-              "privacySecurity.publicDocumentListingAllowed",
-              "Public Document Listing",
-              config.privacySecurity.publicDocumentListingAllowed
-            )}
-
-            ${checkbox(
-              "privacySecurity.documentDownloadAuditRequired",
-              "Download Audit Required",
-              config.privacySecurity.documentDownloadAuditRequired
-            )}
-
-            ${checkbox(
-              "privacySecurity.documentViewAuditRequired",
-              "View Audit Required",
-              config.privacySecurity.documentViewAuditRequired
-            )}
-
-            ${checkbox(
-              "privacySecurity.documentUploadAuditRequired",
-              "Upload Audit Required",
-              config.privacySecurity.documentUploadAuditRequired
-            )}
-
-            ${checkbox(
-              "privacySecurity.documentDeleteAuditRequired",
-              "Delete Audit Required",
-              config.privacySecurity.documentDeleteAuditRequired
-            )}
-
-            ${checkbox(
-              "privacySecurity.verificationAuditRequired",
-              "Verification Audit Required",
-              config.privacySecurity.verificationAuditRequired
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           14
-           =================================================== -->
-
-      ${section(
-
-        "14. File Validation",
-
-        "File type, size and integrity controls.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "fileValidation.enabled",
-              "File Validation Enabled",
-              config.fileValidation.enabled
-            )}
-
-            ${numberInput(
-              "fileValidation.maxFileSizeMB",
-              "Maximum File Size (MB)",
-              config.fileValidation.maxFileSizeMB,
-              1,
-              100,
-              1
-            )}
-
-            ${numberInput(
-              "fileValidation.minimumFileSizeKB",
-              "Minimum File Size (KB)",
-              config.fileValidation.minimumFileSizeKB,
-              0,
-              1024,
-              1
-            )}
-
-            ${checkbox(
-              "fileValidation.filenameRequired",
-              "Filename Required",
-              config.fileValidation.filenameRequired
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "fileValidation.extensionValidationRequired",
-              "Extension Validation",
-              config.fileValidation.extensionValidationRequired
-            )}
-
-            ${checkbox(
-              "fileValidation.mimeValidationRequired",
-              "MIME Validation",
-              config.fileValidation.mimeValidationRequired
-            )}
-
-            ${checkbox(
-              "fileValidation.emptyFileBlocked",
-              "Empty File Blocked",
-              config.fileValidation.emptyFileBlocked
-            )}
-
-            ${checkbox(
-              "fileValidation.corruptedFileCheckRequired",
-              "Corrupted File Check",
-              config.fileValidation.corruptedFileCheckRequired
-            )}
-
-            ${checkbox(
-              "fileValidation.duplicateFileCheckEnabled",
-              "Duplicate File Check",
-              config.fileValidation.duplicateFileCheckEnabled
-            )}
-
-          </div>
-
-        </div>
+      <section class="card">
+
+        <h2>
+          Document Lifecycle
+        </h2>
 
         <div class="notice">
 
-          Allowed file types:
-
-          <strong>
-            ${escapeHtml(
-              config.fileValidation.allowedMimeTypes.join(", ")
-            )}
-          </strong>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           15
-           =================================================== -->
-
-      ${section(
-
-        "15. Document Quality",
-
-        "Quality and integrity checks before verification.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "qualityControl.enabled",
-              "Quality Control Enabled",
-              config.qualityControl.enabled
-            )}
-
-            ${checkbox(
-              "qualityControl.imageQualityCheckEnabled",
-              "Image Quality Check",
-              config.qualityControl.imageQualityCheckEnabled
-            )}
-
-            ${checkbox(
-              "qualityControl.documentReadabilityCheckEnabled",
-              "Readability Check",
-              config.qualityControl.documentReadabilityCheckEnabled
-            )}
-
-            ${checkbox(
-              "qualityControl.blurDetectionEnabled",
-              "Blur Detection",
-              config.qualityControl.blurDetectionEnabled
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "qualityControl.documentCompletenessCheckEnabled",
-              "Completeness Check",
-              config.qualityControl.documentCompletenessCheckEnabled
-            )}
-
-            ${checkbox(
-              "qualityControl.tamperCheckEnabled",
-              "Tamper Check",
-              config.qualityControl.tamperCheckEnabled
-            )}
-
-            ${checkbox(
-              "qualityControl.mismatchCheckEnabled",
-              "Identity/Data Mismatch Check",
-              config.qualityControl.mismatchCheckEnabled
-            )}
-
-            ${checkbox(
-              "qualityControl.qualityFailureRequiresResubmission",
-              "Quality Failure Requires Resubmission",
-              config.qualityControl.qualityFailureRequiresResubmission
-            )}
-
-          </div>
+          Upload →
+          Validation →
+          Image Processing →
+          Submission →
+          Backend Review →
+          Approval / Rejection →
+          Active / Resubmission →
+          Expiry →
+          Renewal / Replacement
 
         </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           16
-           =================================================== -->
-
-      ${section(
-
-        "16. KYC Workflow",
-
-        "Lifecycle from submission through approval or resubmission.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "workflow.registrationToKYC",
-              "Registration → KYC",
-              config.workflow.registrationToKYC
-            )}
-
-            ${checkbox(
-              "workflow.uploadToReview",
-              "Upload → Review",
-              config.workflow.uploadToReview
-            )}
-
-            ${checkbox(
-              "workflow.reviewToApproval",
-              "Review → Approval",
-              config.workflow.reviewToApproval
-            )}
-
-            ${checkbox(
-              "workflow.reviewToRejection",
-              "Review → Rejection",
-              config.workflow.reviewToRejection
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "workflow.rejectionToResubmission",
-              "Rejection → Resubmission",
-              config.workflow.rejectionToResubmission
-            )}
-
-            ${checkbox(
-              "workflow.expiryToRenewal",
-              "Expiry → Renewal",
-              config.workflow.expiryToRenewal
-            )}
-
-            ${checkbox(
-              "workflow.replacementToReview",
-              "Replacement → Review",
-              config.workflow.replacementToReview
-            )}
-
-            ${checkbox(
-              "workflow.approvalActivatesEligibleProfile",
-              "Approval Activates Eligible Profile",
-              config.workflow.approvalActivatesEligibleProfile
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           17
-           =================================================== -->
-
-      ${section(
-
-        "17. Document Retention",
-
-        "Document history and retention boundaries.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "retention.enabled",
-              "Retention Enabled",
-              config.retention.enabled
-            )}
-
-            ${checkbox(
-              "retention.historyEnabled",
-              "History Enabled",
-              config.retention.historyEnabled
-            )}
-
-            ${checkbox(
-              "retention.approvedDocumentHistoryRequired",
-              "Approved History Required",
-              config.retention.approvedDocumentHistoryRequired
-            )}
-
-            ${checkbox(
-              "retention.rejectedDocumentHistoryRequired",
-              "Rejected History Required",
-              config.retention.rejectedDocumentHistoryRequired
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "retention.replacedDocumentHistoryRequired",
-              "Replaced History Required",
-              config.retention.replacedDocumentHistoryRequired
-            )}
-
-            ${checkbox(
-              "retention.deletedRecordRetentionRequired",
-              "Deleted Record Retention Required",
-              config.retention.deletedRecordRetentionRequired
-            )}
-
-            ${checkbox(
-              "retention.frontendPermanentDeletionAllowed",
-              "Frontend Permanent Deletion",
-              config.retention.frontendPermanentDeletionAllowed
-            )}
-
-            ${checkbox(
-              "retention.backendRetentionAuthority",
-              "Backend Retention Authority",
-              config.retention.backendRetentionAuthority
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           18
-           =================================================== -->
-
-      ${section(
-
-        "18. Notifications",
-
-        "Document and KYC lifecycle notifications.",
-
-        `
-
-        <div class="grid three">
-
-          ${checkbox(
-            "notifications.enabled",
-            "Notifications Enabled",
-            config.notifications.enabled
-          )}
-
-          ${checkbox(
-            "notifications.uploadNotification",
-            "Upload",
-            config.notifications.uploadNotification
-          )}
-
-          ${checkbox(
-            "notifications.reviewStartedNotification",
-            "Review Started",
-            config.notifications.reviewStartedNotification
-          )}
-
-          ${checkbox(
-            "notifications.approvalNotification",
-            "Approval",
-            config.notifications.approvalNotification
-          )}
-
-          ${checkbox(
-            "notifications.rejectionNotification",
-            "Rejection",
-            config.notifications.rejectionNotification
-          )}
-
-          ${checkbox(
-            "notifications.resubmissionNotification",
-            "Resubmission",
-            config.notifications.resubmissionNotification
-          )}
-
-          ${checkbox(
-            "notifications.expiryNotification",
-            "Expiry",
-            config.notifications.expiryNotification
-          )}
-
-          ${checkbox(
-            "notifications.renewalNotification",
-            "Renewal",
-            config.notifications.renewalNotification
-          )}
-
-          ${checkbox(
-            "notifications.replacementNotification",
-            "Replacement",
-            config.notifications.replacementNotification
-          )}
-
-          ${checkbox(
-            "notifications.operationalBlockNotification",
-            "Operational Block",
-            config.notifications.operationalBlockNotification
-          )}
-
-          ${checkbox(
-            "notifications.backendNotificationAuthority",
-            "Backend Notification Authority",
-            config.notifications.backendNotificationAuthority
-          )}
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           19
-           =================================================== -->
-
-      ${section(
-
-        "19. Operational Blocks",
-
-        "Rules preventing unsafe activation or operation.",
-
-        `
-
-        <div class="grid two">
-
-          <div>
-
-            ${checkbox(
-              "operationalBlocks.pendingKYCBlockEnabled",
-              "Pending KYC Block",
-              config.operationalBlocks.pendingKYCBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.rejectedKYCBlockEnabled",
-              "Rejected KYC Block",
-              config.operationalBlocks.rejectedKYCBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.expiredDocumentBlockEnabled",
-              "Expired Document Block",
-              config.operationalBlocks.expiredDocumentBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.missingRequiredDocumentBlockEnabled",
-              "Missing Required Document Block",
-              config.operationalBlocks.missingRequiredDocumentBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.failedVerificationBlockEnabled",
-              "Failed Verification Block",
-              config.operationalBlocks.failedVerificationBlockEnabled
-            )}
-
-          </div>
-
-
-          <div>
-
-            ${checkbox(
-              "operationalBlocks.failedQualityCheckBlockEnabled",
-              "Failed Quality Check Block",
-              config.operationalBlocks.failedQualityCheckBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.vendorOperationBlockEnabled",
-              "Vendor Operation Block",
-              config.operationalBlocks.vendorOperationBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.driverDutyBlockEnabled",
-              "Driver Duty Block",
-              config.operationalBlocks.driverDutyBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.vehicleAssignmentBlockEnabled",
-              "Vehicle Assignment Block",
-              config.operationalBlocks.vehicleAssignmentBlockEnabled
-            )}
-
-            ${checkbox(
-              "operationalBlocks.tripActivationBlockEnabled",
-              "Trip Activation Block",
-              config.operationalBlocks.tripActivationBlockEnabled
-            )}
-
-          </div>
-
-        </div>
-
-        `
-      )}
-
-
-      <!-- ===================================================
-           VALIDATION
-           =================================================== -->
-
-      <section class="card">
-
-        <h2>
-          Configuration Validation
-        </h2>
-
-
-        ${
-          validation.valid
-
-            ? `
-
-              <div class="notice success">
-
-                <strong>
-                  VALID
-                </strong>
-
-                <div>
-                  26F configuration satisfies the
-                  Documents & KYC safety boundary.
-                </div>
-
-              </div>
-
-            `
-
-            : `
-
-              <div class="notice danger">
-
-                <strong>
-                  INVALID
-                </strong>
-
-                <ul>
-
-                  ${
-                    validation.errors
-                      .map(function (error) {
-
-                        return `
-                          <li>
-                            ${escapeHtml(error)}
-                          </li>
-                        `;
-
-                      })
-                      .join("")
-                  }
-
-                </ul>
-
-              </div>
-
-            `
-        }
-
-
-        ${
-          validation.warnings.length
-
-            ? `
-
-              <div class="notice warn">
-
-                ${
-                  validation.warnings
-                    .map(function (warning) {
-
-                      return `
-                        <div>
-                          ${escapeHtml(warning)}
-                        </div>
-                      `;
-
-                    })
-                    .join("")
-                }
-
-              </div>
-
-            `
-
-            : ""
-        }
 
       </section>
 
 
-      <!-- ===================================================
-           CONTROLS
-           =================================================== -->
+      <section class="card">
+
+        <h2>
+          Security
+        </h2>
+
+        <div class="grid two">
+
+          <div>
+
+            <b>
+              Public Access
+            </b>
+
+            <div class="muted">
+              BLOCKED
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              Permanent Delete
+            </b>
+
+            <div class="muted">
+              BLOCKED
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              Automatic KYC Approval
+            </b>
+
+            <div class="muted">
+              BLOCKED
+            </div>
+
+          </div>
+
+          <div>
+
+            <b>
+              Frontend Verification
+            </b>
+
+            <div class="muted">
+              BLOCKED
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
 
       <section class="card">
 
         <h2>
-          26F Controls
+          Configuration
         </h2>
 
+        ${
+          validation.errors.length
+            ? `
+              <div class="notice danger">
+                ${validation.errors
+                  .map(function (x) {
+                    return "• " + x;
+                  })
+                  .join("<br>")}
+              </div>
+            `
+            : `
+              <div class="notice success">
+                26F configuration is valid.
+              </div>
+            `
+        }
 
-        <div class="govara26f-actions">
+        ${
+          validation.warnings.length
+            ? `
+              <div class="notice warn">
+                ${validation.warnings
+                  .map(function (x) {
+                    return "• " + x;
+                  })
+                  .join("<br>")}
+              </div>
+            `
+            : ""
+        }
+
+        <div style="margin-top:16px;">
 
           <button
             type="button"
-            class="primary"
             data-26f-action="save"
           >
-            Save Configuration
+            Save
           </button>
-
 
           <button
             type="button"
@@ -3651,7 +2063,6 @@ window.GoVara26F = (function () {
             Reload
           </button>
 
-
           <button
             type="button"
             data-26f-action="validate"
@@ -3659,328 +2070,222 @@ window.GoVara26F = (function () {
             Validate
           </button>
 
-
           <button
             type="button"
             data-26f-action="reset"
           >
-            Reset Defaults
+            Reset
           </button>
-
-        </div>
-
-
-        <div
-          id="govara26f-message"
-          class="govara26f-message"
-          aria-live="polite"
-        ></div>
-
-
-        <div class="muted govara26f-version">
-
-          Module Version:
-          ${escapeHtml(VERSION)}
 
         </div>
 
       </section>
 
     `;
+
+    bind();
   }
 
 
-  /* =========================================================
-     READ FORM
-     ========================================================= */
+  /* ==========================================================
+     Bind
+     ========================================================== */
 
-  function readForm(root) {
+  function bind() {
 
-    const config =
-      loadConfig();
+    const input =
+      document.getElementById(
+        "govara26f-file-input"
+      );
 
+    const resultBox =
+      document.getElementById(
+        "govara26f-upload-results"
+      );
 
-    if (!root) {
-      return config;
-    }
+    if (input) {
 
+      input.addEventListener(
+        "change",
+        async function () {
 
-    root
-      .querySelectorAll(
-        "[data-26f-path]"
-      )
-      .forEach(function (element) {
-
-        const path =
-          element.getAttribute(
-            "data-26f-path"
-          );
-
-
-        if (!path) {
-          return;
-        }
-
-
-        let value;
-
-
-        if (
-          element.type === "checkbox"
-        ) {
-
-          value =
-            element.checked;
-
-        } else if (
-          element.type === "number"
-        ) {
-
-          value =
-            Number(element.value);
-
-        } else {
-
-          value =
-            element.value;
-        }
-
-
-        const parts =
-          path
-            .split(".")
-            .filter(Boolean);
-
-
-        let cursor =
-          config;
-
-
-        for (
-          let i = 0;
-          i < parts.length - 1;
-          i++
-        ) {
-
-          if (
-            !cursor[parts[i]] ||
-            typeof cursor[parts[i]] !== "object"
-          ) {
-
-            cursor[parts[i]] = {};
+          if (!resultBox) {
+            return;
           }
 
+          resultBox.innerHTML =
+            "<div class='notice'>Processing files...</div>";
 
-          cursor =
-            cursor[parts[i]];
+          const results =
+            await processFiles(
+              input.files
+            );
+
+          resultBox.innerHTML =
+            results.map(
+              function (result) {
+
+                if (!result.success) {
+
+                  return `
+                    <div class="notice danger"
+                         style="margin-top:8px;">
+                      ❌ File rejected:
+                      ${
+                        result.validation &&
+                        result.validation.errors
+                          ? result.validation.errors.join(
+                              " "
+                            )
+                          : "Processing failed."
+                      }
+                    </div>
+                  `;
+                }
+
+                return `
+
+                  <div
+                    class="notice"
+                    style="margin-top:8px;"
+                  >
+
+                    <b>
+                      ${
+                        result.originalFile
+                          ? result.originalFile.name
+                          : "Document"
+                      }
+                    </b>
+
+                    <br>
+
+                    Type:
+                    ${result.type || "DOCUMENT"}
+
+                    <br>
+
+                    Original:
+                    ${
+                      result.originalSizeFormatted ||
+                      formatFileSize(
+                        result.originalSize
+                      )
+                    }
+
+                    <br>
+
+                    Processed:
+                    ${
+                      result.processedSizeFormatted ||
+                      formatFileSize(
+                        result.processedSize
+                      )
+                    }
+
+                    ${
+                      result.reductionPercent
+                        ? `
+                          <br>
+                          Reduced by:
+                          ${result.reductionPercent.toFixed(
+                            1
+                          )}%
+                        `
+                        : ""
+                    }
+
+                    ${
+                      result.originalDimensions
+                        ? `
+                          <br>
+                          Dimensions:
+                          ${
+                            result.originalDimensions.width
+                          }
+                          ×
+                          ${
+                            result.originalDimensions.height
+                          }
+                          →
+                          ${
+                            result.processedDimensions.width
+                          }
+                          ×
+                          ${
+                            result.processedDimensions.height
+                          }
+                        `
+                        : ""
+                    }
+
+                    <br>
+
+                    Status:
+                    READY FOR BACKEND SUBMISSION
+
+                  </div>
+
+                `;
+              }
+            ).join("");
+
         }
-
-
-        cursor[
-          parts[parts.length - 1]
-        ] = value;
-
-      });
-
-
-    enforceSafety(config);
-
-
-    return config;
-  }
-
-
-  /* =========================================================
-     BIND
-     ========================================================= */
-
-  function bind(root) {
-
-    const container =
-      root ||
-      document.getElementById(
-        "module-26F"
       );
-
-
-    if (!container) {
-      return;
     }
 
 
-    const message =
-      container.querySelector(
-        "#govara26f-message"
-      );
-
-
-    function showMessage(
-      text,
-      type
-    ) {
-
-      if (!message) {
-        return;
-      }
-
-
-      message.className =
-        "govara26f-message " +
-        (type || "");
-
-
-      message.textContent =
-        text;
-    }
-
-
-    container
+    document
       .querySelectorAll(
         "[data-26f-action]"
       )
       .forEach(function (button) {
 
-
         button.addEventListener(
           "click",
           function () {
-
 
             const action =
               button.getAttribute(
                 "data-26f-action"
               );
 
+            if (action === "save") {
 
-            /* ---------------------------------------------
-               SAVE
-               --------------------------------------------- */
+              save();
 
-            if (
-              action === "save"
-            ) {
+              alert(
+                "26F configuration saved."
+              );
 
-              const config =
-                readForm(
-                  container
-                );
+              render();
 
-
-              const result =
-                save(config);
-
-
-              if (result.success) {
-
-                showMessage(
-                  "26F Documents & KYC configuration saved successfully.",
-                  "success"
-                );
-
-              } else {
-
-                showMessage(
-                  "Save blocked: " +
-                  result.validation.errors.join(" "),
-                  "danger"
-                );
-              }
-
-
-              return;
             }
 
+            if (action === "reload") {
 
-            /* ---------------------------------------------
-               RELOAD
-               --------------------------------------------- */
+              render();
 
-            if (
-              action === "reload"
-            ) {
-
-              renderAndBind();
-
-              return;
             }
 
-
-            /* ---------------------------------------------
-               VALIDATE
-               --------------------------------------------- */
-
-            if (
-              action === "validate"
-            ) {
-
-              const config =
-                readForm(
-                  container
-                );
-
+            if (action === "validate") {
 
               const result =
-                validateConfig(
-                  config
-                );
+                validate();
 
+              alert(
+                result.valid
+                  ? "26F configuration is valid."
+                  : result.errors.join("\n")
+              );
 
-              if (result.valid) {
-
-                showMessage(
-                  "26F configuration is VALID.",
-                  "success"
-                );
-
-              } else {
-
-                showMessage(
-                  "Validation failed: " +
-                  result.errors.join(" "),
-                  "danger"
-                );
-              }
-
-
-              return;
             }
 
+            if (action === "reset") {
 
-            /* ---------------------------------------------
-               RESET
-               --------------------------------------------- */
+              reset();
 
-            if (
-              action === "reset"
-            ) {
-
-              const confirmed =
-                window.confirm(
-                  "Reset 26F Documents & KYC Control to safe defaults?"
-                );
-
-
-              if (!confirmed) {
-                return;
-              }
-
-
-              const result =
-                reset();
-
-
-              if (result.success) {
-
-                renderAndBind();
-
-              } else {
-
-                showMessage(
-                  "Reset failed: " +
-                  result.error,
-                  "danger"
-                );
-              }
+              render();
 
             }
 
@@ -3991,100 +2296,282 @@ window.GoVara26F = (function () {
   }
 
 
-  /* =========================================================
-     RENDER + BIND
-     ========================================================= */
+  /* ==========================================================
+     Public Configuration Methods
+     ========================================================== */
 
-  function renderAndBind() {
+  function getConfig() {
 
-    const container =
-      document.getElementById(
-        "module-26F"
-      );
-
-
-    if (!container) {
-      return;
-    }
-
-
-    container.innerHTML =
-      render();
-
-
-    bind(
-      container
+    return enforceSafety(
+      loadConfig()
     );
   }
 
+  function getStatus() {
 
-  /* =========================================================
-     PUBLIC API
-     ========================================================= */
+    const config =
+      getConfig();
+
+    const validation =
+      validateConfig(
+        config
+      );
+
+    return {
+
+      version: VERSION,
+
+      environment:
+        config.environment.mode,
+
+      valid:
+        validation.valid,
+
+      errors:
+        validation.errors,
+
+      warnings:
+        validation.warnings,
+
+      uploadEnabled:
+        config.upload.enabled,
+
+      imageCompressionEnabled:
+        config.imageProcessing
+          .compressionEnabled,
+
+      imageResizeEnabled:
+        config.imageProcessing
+          .resizeEnabled,
+
+      maxFileSizeMB:
+        config.upload.maxFileSizeMB,
+
+      backendAuthority:
+        config.authority.backendAuthority,
+
+      frontendAuthority:
+        config.authority.frontendAuthority
+    };
+  }
+
+  function save(config) {
+
+    config =
+      enforceSafety(
+        config || loadConfig()
+      );
+
+    const validation =
+      validateConfig(
+        config
+      );
+
+    if (!validation.valid) {
+
+      throw new Error(
+        validation.errors.join(" ")
+      );
+    }
+
+    saveConfig(config);
+
+    addAudit(
+      "CONFIG_SAVED",
+      {
+        version: VERSION
+      }
+    );
+
+    return {
+      success: true,
+      validation: validation
+    };
+  }
+
+  function reset() {
+
+    const config =
+      enforceSafety(
+        clone(DEFAULT_CONFIG)
+      );
+
+    saveConfig(config);
+
+    addAudit(
+      "CONFIG_RESET",
+      {
+        version: VERSION
+      }
+    );
+
+    return config;
+  }
+
+  function reload() {
+    return loadConfig();
+  }
+
+  function validate() {
+
+    return validateConfig(
+      loadConfig()
+    );
+  }
+
+  function setPolicy(
+    path,
+    value
+  ) {
+
+    const config =
+      loadConfig();
+
+    const parts =
+      String(path).split(".");
+
+    let target =
+      config;
+
+    for (
+      let i = 0;
+      i < parts.length - 1;
+      i++
+    ) {
+
+      if (
+        !target[parts[i]] ||
+        typeof target[parts[i]] !== "object"
+      ) {
+        target[parts[i]] = {};
+      }
+
+      target =
+        target[parts[i]];
+    }
+
+    target[
+      parts[parts.length - 1]
+    ] = value;
+
+    enforceSafety(config);
+
+    saveConfig(config);
+
+    addAudit(
+      "POLICY_UPDATED",
+      {
+        path: path,
+        value: value
+      }
+    );
+
+    return config;
+  }
+
+  function getAudit() {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(
+          AUDIT_KEY
+        ) || "[]"
+      );
+
+    } catch (error) {
+
+      return [];
+    }
+  }
+
+
+  /* ==========================================================
+     Initialization
+     ========================================================== */
+
+  function renderAndBind() {
+
+    render();
+  }
+
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+      try {
+
+        const mount =
+          document.getElementById(
+            "module-26F"
+          );
+
+        if (mount) {
+          renderAndBind();
+        }
+
+      } catch (error) {
+
+        console.error(
+          "GoVara 26F initialization error:",
+          error
+        );
+      }
+
+    }
+  );
+
+
+  /* ==========================================================
+     Public API
+     ========================================================== */
 
   return {
 
-    VERSION:
-      VERSION,
+    VERSION: VERSION,
 
-    STORAGE_KEY:
-      STORAGE_KEY,
+    STORAGE_KEY: STORAGE_KEY,
 
-    render:
-      render,
+    AUDIT_KEY: AUDIT_KEY,
 
-    bind:
-      bind,
+    render: render,
 
-    renderAndBind:
-      renderAndBind,
+    bind: bind,
 
-    getConfig:
-      getConfig,
+    renderAndBind: renderAndBind,
 
-    getStatus:
-      getStatus,
+    getConfig: getConfig,
 
-    save:
-      save,
+    getStatus: getStatus,
 
-    reset:
-      reset,
+    save: save,
 
-    reload:
-      reload,
+    reset: reset,
 
-    validate:
-      validateConfig,
+    reload: reload,
 
-    setPolicy:
-      setPolicy,
+    validate: validate,
 
-    getAudit:
-      getAudit,
+    setPolicy: setPolicy,
 
-    enforceSafety:
-      enforceSafety
+    getAudit: getAudit,
+
+    enforceSafety: enforceSafety,
+
+    validateFile: validateFile,
+
+    processFile: processFile,
+
+    processFiles: processFiles,
+
+    compressImage: compressImage,
+
+    createDocumentRecord:
+      createDocumentRecord,
+
+    formatFileSize:
+      formatFileSize
   };
 
 })();
-
-
-/* =========================================================
-   AUTO RENDER
-   ========================================================= */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
-
-    if (
-      window.GoVara26F &&
-      typeof window.GoVara26F.renderAndBind === "function"
-    ) {
-
-      window.GoVara26F.renderAndBind();
-    }
-
-  }
-);

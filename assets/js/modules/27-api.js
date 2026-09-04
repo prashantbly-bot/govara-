@@ -1445,120 +1445,30 @@
    * No automatic API request.
    * ========================================================== */
 
-  function render(container) {
+ case "27":
 
-    var target = container;
+  if (
+    window.GoVara27 &&
+    typeof window.GoVara27.render === "function"
+  ) {
 
-    if (typeof target === 'string') {
-      target = document.querySelector(target);
+    var step27Container =
+      document.getElementById("module-27");
+
+    if (step27Container) {
+      window.GoVara27.render(step27Container);
     }
 
-    if (!target) {
-      return false;
-    }
+  } else {
 
+    renderGoVaraModule(
+      window.GoVara27 || window.GoVaraAPI,
+      "module-27"
+    );
 
-    target.innerHTML =
-
-      '<div class="govara-step27-panel">' +
-
-        '<div class="govara-step27-header">' +
-
-          '<div>' +
-            '<h2>STEP 27 — Consolidated API</h2>' +
-            '<p>ONE Frontend API Boundary</p>' +
-          '</div>' +
-
-          '<div class="govara-step27-status">' +
-            '<span id="govara-step27-status">' +
-              'NOT CONFIGURED' +
-            '</span>' +
-          '</div>' +
-
-        '</div>' +
-
-
-        '<div class="govara-step27-card">' +
-
-          '<label for="govara-step27-endpoint">' +
-            'Consolidated API Endpoint' +
-          '</label>' +
-
-          '<input ' +
-            'id="govara-step27-endpoint" ' +
-            'type="url" ' +
-            'placeholder="https://script.google.com/macros/s/.../exec"' +
-          ' />' +
-
-
-          '<div class="govara-step27-actions">' +
-
-            '<button ' +
-              'type="button" ' +
-              'id="govara-step27-validate">' +
-              'Validate Endpoint' +
-            '</button>' +
-
-            '<button ' +
-              'type="button" ' +
-              'id="govara-step27-save">' +
-              'Save API Configuration' +
-            '</button>' +
-
-            '<button ' +
-              'type="button" ' +
-              'id="govara-step27-clear">' +
-              'Clear API' +
-            '</button>' +
-
-          '</div>' +
-
-        '</div>' +
-
-
-        '<div class="govara-step27-card">' +
-
-          '<h3>API Status</h3>' +
-
-          '<div id="govara-step27-diagnostics">' +
-            'API test has not been run.' +
-          '</div>' +
-
-        '</div>' +
-
-
-        '<div class="govara-step27-card">' +
-
-          '<h3>Safety Boundary</h3>' +
-
-          '<div>Real Money: <strong>BLOCKED</strong></div>' +
-          '<div>Real Payment: <strong>BLOCKED</strong></div>' +
-          '<div>Bank Transfer: <strong>BLOCKED</strong></div>' +
-
-        '</div>' +
-
-      '</div>';
-
-
-    var endpointInput =
-      target.querySelector(
-        '#govara-step27-endpoint'
-      );
-
-
-    var savedURL = getAPIUrl();
-
-    if (endpointInput) {
-      endpointInput.value = savedURL;
-    }
-
-
-    updateRenderedStatus(target);
-
-    bindRenderEvents(target);
-
-    return true;
   }
+
+  break;
 
 
   /* ==========================================================

@@ -8,7 +8,1322 @@
    IMPORTANT:
    - No automatic API connection test
    - API remains NOT CONFIGURED until intentionally configured
-   - Real Money / Payment / Bank Transfer remain BLOCKED
+   - Real Money / Payment / Bank Transfer remain BLOCKED(function (window, document) {
+  "use strict";
+
+  /* =========================================================
+     GoVara STEP 27 — Consolidated API Boundary
+     Version: V4
+     Frontend Boundary Only
+     Backend / Database remain authoritative
+     ========================================================= */
+
+  var VERSION = "GOVARA-CONSOLIDATED-API-V4";
+
+  var MODULES = [
+    "Customer",
+    "Vendor",
+    "Driver",
+    "Vehicle",
+    "Booking",
+    "Duty",
+    "Fare",
+    "Transaction",
+    "Wallet",
+    "Ledger",
+    "Settlement",
+    "Billing",
+    "Documents",
+    "KYC",
+    "Admin",
+    "Audit",
+    "Auth",
+    "Notification",
+    "Location",
+    "Travel",
+    "Welfare"
+  ];
+
+  var ACTIONS = {
+    GET_HEALTH: "GET_HEALTH",
+
+    AUTH_LOGIN: "AUTH_LOGIN",
+    AUTH_REGISTER: "AUTH_REGISTER",
+    AUTH_LOGOUT: "AUTH_LOGOUT",
+    AUTH_SESSION: "AUTH_SESSION",
+
+    CUSTOMER_LIST: "CUSTOMER_LIST",
+    CUSTOMER_GET: "CUSTOMER_GET",
+    CUSTOMER_SAVE: "CUSTOMER_SAVE",
+    CUSTOMER_UPDATE: "CUSTOMER_UPDATE",
+
+    VENDOR_LIST: "VENDOR_LIST",
+    VENDOR_GET: "VENDOR_GET",
+    VENDOR_SAVE: "VENDOR_SAVE",
+    VENDOR_UPDATE: "VENDOR_UPDATE",
+
+    DRIVER_LIST: "DRIVER_LIST",
+    DRIVER_GET: "DRIVER_GET",
+    DRIVER_SAVE: "DRIVER_SAVE",
+    DRIVER_UPDATE: "DRIVER_UPDATE",
+
+    VEHICLE_LIST: "VEHICLE_LIST",
+    VEHICLE_GET: "VEHICLE_GET",
+    VEHICLE_SAVE: "VEHICLE_SAVE",
+    VEHICLE_UPDATE: "VEHICLE_UPDATE",
+
+    BOOKING_LIST: "BOOKING_LIST",
+    BOOKING_GET: "BOOKING_GET",
+    BOOKING_SAVE: "BOOKING_SAVE",
+    BOOKING_UPDATE: "BOOKING_UPDATE",
+
+    DUTY_LIST: "DUTY_LIST",
+    DUTY_GET: "DUTY_GET",
+    DUTY_SAVE: "DUTY_SAVE",
+    DUTY_UPDATE: "DUTY_UPDATE",
+
+    FARE_CALCULATE: "FARE_CALCULATE",
+
+    TRANSACTION_LIST: "TRANSACTION_LIST",
+    TRANSACTION_GET: "TRANSACTION_GET",
+    TRANSACTION_CREATE: "TRANSACTION_CREATE",
+
+    WALLET_GET: "WALLET_GET",
+    WALLET_UPDATE: "WALLET_UPDATE",
+
+    LEDGER_LIST: "LEDGER_LIST",
+    SETTLEMENT_LIST: "SETTLEMENT_LIST",
+
+    BILLING_LIST: "BILLING_LIST",
+    BILLING_GET: "BILLING_GET",
+
+    DOCUMENT_LIST: "DOCUMENT_LIST",
+    DOCUMENT_GET: "DOCUMENT_GET",
+    DOCUMENT_SAVE: "DOCUMENT_SAVE",
+
+    KYC_GET: "KYC_GET",
+    KYC_SAVE: "KYC_SAVE",
+    KYC_REVIEW: "KYC_REVIEW",
+
+    ADMIN_GET: "ADMIN_GET",
+    ADMIN_UPDATE: "ADMIN_UPDATE",
+
+    AUDIT_LIST: "AUDIT_LIST",
+
+    NOTIFICATION_LIST: "NOTIFICATION_LIST",
+    NOTIFICATION_SEND: "NOTIFICATION_SEND",
+
+    LOCATION_GET: "LOCATION_GET",
+    LOCATION_UPDATE: "LOCATION_UPDATE",
+
+    WELFARE_GET: "WELFARE_GET",
+    WELFARE_SAVE: "WELFARE_SAVE",
+
+    PAYMENT_EXECUTE: "PAYMENT_EXECUTE",
+    BANK_TRANSFER_EXECUTE: "BANK_TRANSFER_EXECUTE",
+    REAL_MONEY_TRANSFER: "REAL_MONEY_TRANSFER"
+  };
+
+  /* =========================================================
+     CONFIGURATION
+     ========================================================= */
+
+  var CONFIG = {
+    API_URL: "",
+    REQUEST_TIMEOUT: 20000,
+
+    VERSION: VERSION,
+    PROJECT: "GoVara",
+    ENVIRONMENT: "TESTING",
+
+    REAL_MONEY: false,
+    REAL_PAYMENT: false,
+    BANK_TRANSFER: false,
+
+    FRONTEND_FINANCIAL_AUTHORITY: false,
+    BACKEND_FINANCIAL_AUTHORITY: true,
+
+    FRONTEND_KYC_AUTHORITY: false,
+    BACKEND_KYC_AUTHORITY: true,
+
+    DATABASE_AUTHORITY: true
+  };
+
+  try {
+    if (
+      typeof window.GOVARA_API_URL === "string" &&
+      window.GOVARA_API_URL.trim() !== ""
+    ) {
+      CONFIG.API_URL = window.GOVARA_API_URL.trim();
+    }
+  } catch (e) {
+    CONFIG.API_URL = "";
+  }
+
+  /* =========================================================
+     STATE
+     ========================================================= */
+
+  var APIState = {
+    configured: false,
+    connected: false,
+    verified: false,
+    loading: false,
+
+    lastAction: null,
+    lastResponse: null,
+    lastError: null,
+
+    requestCount: 0,
+    successCount: 0,
+    errorCount: 0,
+
+    lastRequestId: null,
+    lastCorrelationId: null,
+
+    lastRequestAt: null,
+    lastResponseAt: null
+  };
+
+  /* =========================================================
+     SAFETY
+     ========================================================= */
+
+  function enforceSafety() {
+    CONFIG.ENVIRONMENT = "TESTING";
+
+    CONFIG.REAL_MONEY = false;
+    CONFIG.REAL_PAYMENT = false;
+    CONFIG.BANK_TRANSFER = false;
+
+    CONFIG.FRONTEND_FINANCIAL_AUTHORITY = false;
+    CONFIG.BACKEND_FINANCIAL_AUTHORITY = true;
+
+    CONFIG.FRONTEND_KYC_AUTHORITY = false;
+    CONFIG.BACKEND_KYC_AUTHORITY = true;
+
+    CONFIG.DATABASE_AUTHORITY = true;
+
+    APIState.configured =
+      typeof CONFIG.API_URL === "string" &&
+      CONFIG.API_URL.trim() !== "";
+
+    return true;
+  }
+
+  enforceSafety();
+
+  /* =========================================================
+     UTILITIES
+     ========================================================= */
+
+  function makeId(prefix) {
+    return (
+      prefix +
+      "_" +
+      Date.now().toString(36) +
+      "_" +
+      Math.random().toString(36).slice(2, 10)
+    );
+  }
+
+  function sanitize(value) {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(sanitize);
+    }
+
+    if (typeof value !== "object") {
+      return value;
+    }
+
+    var output = {};
+    var blocked = [
+      "password",
+      "pass",
+      "otp",
+      "pin",
+      "cvv",
+      "cardnumber",
+      "accountnumber",
+      "token",
+      "accesstoken",
+      "refreshtoken",
+      "secret",
+      "privatekey",
+      "authorization",
+      "rawdocument",
+      "documentbinary",
+      "filebinary"
+    ];
+
+    Object.keys(value).forEach(function (key) {
+      var normalized = String(key).toLowerCase();
+
+      if (
+        blocked.some(function (item) {
+          return normalized.indexOf(item) !== -1;
+        })
+      ) {
+        output[key] = "[REDACTED]";
+      } else {
+        output[key] = sanitize(value[key]);
+      }
+    });
+
+    return output;
+  }
+
+  function normalizeResponse(raw, action) {
+    var data = raw;
+
+    if (typeof raw === "string") {
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        data = {
+          success: false,
+          status: "INVALID_JSON_RESPONSE",
+          raw: raw
+        };
+      }
+    }
+
+    if (!data || typeof data !== "object") {
+      data = {
+        success: false,
+        status: "INVALID_RESPONSE",
+        data: data
+      };
+    }
+
+    return {
+      success:
+        data.success === true ||
+        data.status === "SUCCESS" ||
+        data.status === "DATA_SAVED" ||
+        data.status === "OK",
+
+      action: data.action || action,
+      status: data.status || null,
+      message: data.message || null,
+      data: data.data !== undefined ? data.data : data,
+      raw: data
+    };
+  }
+
+  function safetyBlocked(action) {
+    return (
+      action === ACTIONS.PAYMENT_EXECUTE ||
+      action === ACTIONS.BANK_TRANSFER_EXECUTE ||
+      action === ACTIONS.REAL_MONEY_TRANSFER
+    );
+  }
+
+  /* =========================================================
+     CENTRAL REQUEST ENGINE
+     ========================================================= */
+
+  async function request(action, payload, options) {
+    options = options || {};
+
+    enforceSafety();
+
+    APIState.lastAction = action;
+    APIState.lastError = null;
+
+    if (!CONFIG.API_URL) {
+      var notConfigured = {
+        success: false,
+        status: "API_NOT_CONFIGURED",
+        action: action,
+        message: "GoVara API endpoint is not configured.",
+        data: null
+      };
+
+      APIState.lastResponse = notConfigured;
+      APIState.errorCount++;
+
+      return notConfigured;
+    }
+
+    if (safetyBlocked(action)) {
+      var blocked = {
+        success: false,
+        status: "BLOCKED",
+        action: action,
+        message: "Real money/payment/bank transfer is blocked.",
+        data: null
+      };
+
+      APIState.lastResponse = blocked;
+      APIState.errorCount++;
+
+      return blocked;
+    }
+
+    if (typeof window.fetch !== "function") {
+      var noFetch = {
+        success: false,
+        status: "FETCH_UNAVAILABLE",
+        action: action,
+        message: "Fetch API is unavailable in this environment.",
+        data: null
+      };
+
+      APIState.lastResponse = noFetch;
+      APIState.errorCount++;
+
+      return noFetch;
+    }
+
+    var requestId = makeId("REQ");
+    var correlationId =
+      options.correlationId || makeId("CORR");
+
+    APIState.loading = true;
+    APIState.requestCount++;
+    APIState.lastRequestId = requestId;
+    APIState.lastCorrelationId = correlationId;
+    APIState.lastRequestAt = new Date().toISOString();
+
+    var controller = null;
+    var timeoutId = null;
+
+    try {
+      if (typeof AbortController !== "undefined") {
+        controller = new AbortController();
+
+        timeoutId = setTimeout(function () {
+          try {
+            controller.abort();
+          } catch (e) {}
+        }, CONFIG.REQUEST_TIMEOUT);
+      }
+
+      var body = {
+        project: CONFIG.PROJECT,
+        version: VERSION,
+        environment: CONFIG.ENVIRONMENT,
+
+        action: action,
+
+        requestId: requestId,
+        correlationId: correlationId,
+
+        payload: sanitize(payload || {})
+      };
+
+      var response = await window.fetch(CONFIG.API_URL, {
+        method: options.method || "POST",
+
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+          Accept: "application/json"
+        },
+
+        body:
+          options.method === "GET"
+            ? undefined
+            : JSON.stringify(body),
+
+        signal: controller ? controller.signal : undefined
+      });
+
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      var text = await response.text();
+      var normalized = normalizeResponse(text, action);
+
+      normalized.httpStatus = response.status;
+      normalized.requestId = requestId;
+      normalized.correlationId = correlationId;
+
+      APIState.lastResponseAt = new Date().toISOString();
+      APIState.lastResponse = normalized;
+      APIState.loading = false;
+
+      if (response.ok && normalized.success) {
+        APIState.connected = true;
+        APIState.successCount++;
+      } else {
+        APIState.errorCount++;
+      }
+
+      return normalized;
+    } catch (error) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      APIState.loading = false;
+      APIState.errorCount++;
+
+      var message =
+        error && error.name === "AbortError"
+          ? "API request timed out."
+          : error && error.message
+          ? error.message
+          : "API request failed.";
+
+      APIState.lastError = message;
+
+      var failed = {
+        success: false,
+        status:
+          error && error.name === "AbortError"
+            ? "TIMEOUT"
+            : "REQUEST_FAILED",
+
+        action: action,
+        message: message,
+
+        requestId: requestId,
+        correlationId: correlationId,
+
+        data: null
+      };
+
+      APIState.lastResponse = failed;
+
+      return failed;
+    }
+  }
+
+  /* =========================================================
+     CONNECTION
+     ========================================================= */
+
+  async function testConnection() {
+    enforceSafety();
+
+    if (!CONFIG.API_URL) {
+      APIState.configured = false;
+      APIState.connected = false;
+      APIState.verified = false;
+
+      var result = {
+        success: false,
+        status: "API_NOT_CONFIGURED",
+        action: ACTIONS.GET_HEALTH,
+        message: "API endpoint is not configured."
+      };
+
+      APIState.lastResponse = result;
+
+      return result;
+    }
+
+    var result = await request(
+      ACTIONS.GET_HEALTH,
+      {
+        project: CONFIG.PROJECT
+      },
+      {
+        method: "GET"
+      }
+    );
+
+    if (
+      result.success &&
+      result.data &&
+      result.data.project === CONFIG.PROJECT
+    ) {
+      APIState.connected = true;
+      APIState.verified = true;
+      return result;
+    }
+
+    APIState.connected = false;
+    APIState.verified = false;
+
+    return {
+      success: false,
+      status: "BACKEND_VERIFICATION_FAILED",
+      action: ACTIONS.GET_HEALTH,
+      message: "Backend project verification failed.",
+      data: result
+    };
+  }
+
+  function resetConnectionState() {
+    APIState.connected = false;
+    APIState.verified = false;
+    APIState.lastResponse = null;
+    APIState.lastError = null;
+    APIState.lastAction = null;
+
+    return APIState;
+  }
+
+  /* =========================================================
+     GENERIC MODULE API
+     ========================================================= */
+
+  function actionName(module, operation) {
+    return (
+      String(module).toUpperCase() +
+      "_" +
+      String(operation).toUpperCase()
+    );
+  }
+
+  function list(module, filters) {
+    return request(
+      actionName(module, "LIST"),
+      filters || {}
+    );
+  }
+
+  function get(module, id) {
+    return request(
+      actionName(module, "GET"),
+      {
+        id: id
+      }
+    );
+  }
+
+  function save(module, data) {
+    return request(
+      actionName(module, "SAVE"),
+      data || {}
+    );
+  }
+
+  function update(module, id, data) {
+    return request(
+      actionName(module, "UPDATE"),
+      {
+        id: id,
+        data: data || {}
+      }
+    );
+  }
+
+  /* =========================================================
+     AUTH
+     ========================================================= */
+
+  function login(data) {
+    return request(ACTIONS.AUTH_LOGIN, data || {});
+  }
+
+  function register(data) {
+    return request(ACTIONS.AUTH_REGISTER, data || {});
+  }
+
+  function logout(data) {
+    return request(ACTIONS.AUTH_LOGOUT, data || {});
+  }
+
+  function session(data) {
+    return request(ACTIONS.AUTH_SESSION, data || {});
+  }
+
+  /* =========================================================
+     SPECIALIZED APIs
+     ========================================================= */
+
+  function fareCalculate(data) {
+    return request(ACTIONS.FARE_CALCULATE, data || {});
+  }
+
+  function transactionCreate(data) {
+    return request(ACTIONS.TRANSACTION_CREATE, data || {});
+  }
+
+  function walletGet(data) {
+    return request(ACTIONS.WALLET_GET, data || {});
+  }
+
+  function walletUpdate(data) {
+    return request(ACTIONS.WALLET_UPDATE, data || {});
+  }
+
+  function adminGet(data) {
+    return request(ACTIONS.ADMIN_GET, data || {});
+  }
+
+  function adminUpdate(data) {
+    return request(ACTIONS.ADMIN_UPDATE, data || {});
+  }
+
+  function auditList(data) {
+    return request(ACTIONS.AUDIT_LIST, data || {});
+  }
+
+  function documentList(data) {
+    return request(ACTIONS.DOCUMENT_LIST, data || {});
+  }
+
+  function documentGet(data) {
+    return request(ACTIONS.DOCUMENT_GET, data || {});
+  }
+
+  function documentSave(data) {
+    return request(ACTIONS.DOCUMENT_SAVE, data || {});
+  }
+
+  function kycGet(data) {
+    return request(ACTIONS.KYC_GET, data || {});
+  }
+
+  function kycSave(data) {
+    return request(ACTIONS.KYC_SAVE, data || {});
+  }
+
+  function kycReview(data) {
+    return request(ACTIONS.KYC_REVIEW, data || {});
+  }
+
+  function notifications(data) {
+    return request(ACTIONS.NOTIFICATION_LIST, data || {});
+  }
+
+  function location(data) {
+    return request(ACTIONS.LOCATION_GET, data || {});
+  }
+
+  function welfare(data) {
+    return request(ACTIONS.WELFARE_GET, data || {});
+  }
+
+  function travel(type, data) {
+    return request(
+      "TRAVEL_" + String(type || "").toUpperCase(),
+      data || {}
+    );
+  }
+
+  /* =========================================================
+     MODULE REGISTRY
+     ========================================================= */
+
+  var ModuleAPI = {
+    VERSION: VERSION,
+
+    render: render,
+    bind: bind,
+    renderAndBind: renderAndBind,
+
+    getAPIUrl: function () {
+      return CONFIG.API_URL;
+    },
+
+    setAPIUrl: function (url) {
+      if (typeof url !== "string") {
+        return false;
+      }
+
+      CONFIG.API_URL = url.trim();
+      enforceSafety();
+
+      renderAndBind();
+
+      return true;
+    },
+
+    getState: function () {
+      return APIState;
+    },
+
+    getConfig: function () {
+      return CONFIG;
+    },
+
+    testConnection: testConnection,
+    resetConnectionState: resetConnectionState,
+
+    request: request,
+
+    list: list,
+    get: get,
+    save: save,
+    update: update,
+
+    login: login,
+    register: register,
+    logout: logout,
+    session: session,
+
+    fareCalculate: fareCalculate,
+    transactionCreate: transactionCreate,
+
+    walletGet: walletGet,
+    walletUpdate: walletUpdate,
+
+    adminGet: adminGet,
+    adminUpdate: adminUpdate,
+
+    auditList: auditList,
+
+    documentList: documentList,
+    documentGet: documentGet,
+    documentSave: documentSave,
+
+    kycGet: kycGet,
+    kycSave: kycSave,
+    kycReview: kycReview,
+
+    notifications: notifications,
+    location: location,
+    welfare: welfare,
+    travel: travel,
+
+    modules: MODULES,
+    actions: ACTIONS,
+
+    enforceSafety: enforceSafety
+  };
+
+  /* =========================================================
+     MASTER FRONTEND MODULE REGISTRATION
+     ========================================================= */
+
+  function registerModule() {
+    /*
+      Important:
+      Master frontend may use any of the following registries.
+      We safely populate existing registries without replacing them.
+    */
+
+    if (!window.GoVaraModules) {
+      window.GoVaraModules = {};
+    }
+
+    window.GoVaraModules["27"] = ModuleAPI;
+    window.GoVaraModules["27-api"] = ModuleAPI;
+    window.GoVaraModules["STEP 27"] = ModuleAPI;
+    window.GoVaraModules["Consolidated API"] = ModuleAPI;
+    window.GoVaraModules["ConsolidatedAPI"] = ModuleAPI;
+
+    /*
+      Additional common registry names.
+      Only create them if absent.
+    */
+
+    if (!window.GoVaraModuleRegistry) {
+      window.GoVaraModuleRegistry = {};
+    }
+
+    window.GoVaraModuleRegistry["27"] = ModuleAPI;
+    window.GoVaraModuleRegistry["27-api"] = ModuleAPI;
+    window.GoVaraModuleRegistry["STEP 27"] = ModuleAPI;
+
+    /*
+      Direct global aliases.
+    */
+
+    window.GoVaraAPI = ModuleAPI;
+    window.GoVaraAPI27 = ModuleAPI;
+
+    return ModuleAPI;
+  }
+
+  /* =========================================================
+     UI RENDER
+     ========================================================= */
+
+  function getMount() {
+    return (
+      document.getElementById("module-27") ||
+      document.getElementById("module-27-api") ||
+      document.querySelector('[data-module="27"]')
+    );
+  }
+
+  function statusClass(value) {
+    return value ? "status-ok" : "status-off";
+  }
+
+  function render() {
+    var mount = getMount();
+
+    if (!mount) {
+      return false;
+    }
+
+    enforceSafety();
+
+    var configured = !!CONFIG.API_URL;
+    var connected = !!APIState.connected;
+    var verified = !!APIState.verified;
+
+    mount.innerHTML = `
+      <div class="govara27-wrapper">
+
+        <div class="govara27-header">
+          <div>
+            <div class="govara27-kicker">STEP 27</div>
+            <h2>Consolidated API Boundary</h2>
+            <p>
+              Single API boundary for the GoVara modular frontend.
+            </p>
+          </div>
+
+          <div class="govara27-version">
+            ${VERSION}
+          </div>
+        </div>
+
+        <div class="govara27-grid">
+
+          <div class="govara27-card">
+            <span>API Configuration</span>
+            <strong class="${statusClass(configured)}">
+              ${configured ? "CONFIGURED" : "NOT CONFIGURED"}
+            </strong>
+          </div>
+
+          <div class="govara27-card">
+            <span>Connection</span>
+            <strong class="${statusClass(connected)}">
+              ${connected ? "CONNECTED" : "NOT CONNECTED"}
+            </strong>
+          </div>
+
+          <div class="govara27-card">
+            <span>Verification</span>
+            <strong class="${statusClass(verified)}">
+              ${verified ? "VERIFIED" : "NOT VERIFIED"}
+            </strong>
+          </div>
+
+          <div class="govara27-card">
+            <span>Environment</span>
+            <strong>TESTING</strong>
+          </div>
+
+        </div>
+
+        <div class="govara27-section">
+          <h3>API Endpoint</h3>
+
+          <div class="govara27-endpoint">
+            <input
+              id="govara27-api-url"
+              type="text"
+              value="${escapeHtml(CONFIG.API_URL)}"
+              placeholder="Apps Script Web App URL"
+              autocomplete="off"
+            />
+
+            <button id="govara27-save-url">
+              Save Endpoint
+            </button>
+
+            <button id="govara27-test">
+              Test Connection
+            </button>
+          </div>
+
+          <small>
+            API connection is manual. No automatic backend request is made.
+          </small>
+        </div>
+
+        <div class="govara27-section">
+          <h3>Financial Safety Boundary</h3>
+
+          <div class="govara27-safety-grid">
+
+            <div>
+              <span>Real Money</span>
+              <strong>BLOCKED</strong>
+            </div>
+
+            <div>
+              <span>Real Payment</span>
+              <strong>BLOCKED</strong>
+            </div>
+
+            <div>
+              <span>Bank Transfer</span>
+              <strong>BLOCKED</strong>
+            </div>
+
+            <div>
+              <span>Frontend Financial Authority</span>
+              <strong>DISABLED</strong>
+            </div>
+
+            <div>
+              <span>Backend Financial Authority</span>
+              <strong>AUTHORITATIVE</strong>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="govara27-section">
+          <h3>KYC & Database Authority</h3>
+
+          <div class="govara27-safety-grid">
+
+            <div>
+              <span>Frontend KYC Authority</span>
+              <strong>DISABLED</strong>
+            </div>
+
+            <div>
+              <span>Backend KYC Authority</span>
+              <strong>AUTHORITATIVE</strong>
+            </div>
+
+            <div>
+              <span>Database Authority</span>
+              <strong>AUTHORITATIVE</strong>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="govara27-section">
+          <h3>Consolidated Modules</h3>
+
+          <div class="govara27-modules">
+            ${MODULES.map(function (module) {
+              return `<span>${escapeHtml(module)}</span>`;
+            }).join("")}
+          </div>
+        </div>
+
+        <div class="govara27-section">
+          <h3>Request Diagnostics</h3>
+
+          <div class="govara27-diagnostics">
+
+            <div>
+              <span>Requests</span>
+              <strong>${APIState.requestCount}</strong>
+            </div>
+
+            <div>
+              <span>Success</span>
+              <strong>${APIState.successCount}</strong>
+            </div>
+
+            <div>
+              <span>Errors</span>
+              <strong>${APIState.errorCount}</strong>
+            </div>
+
+            <div>
+              <span>Last Action</span>
+              <strong>${escapeHtml(
+                APIState.lastAction || "—"
+              )}</strong>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="govara27-section">
+          <h3>Architecture Boundary</h3>
+
+          <ul class="govara27-boundary">
+            <li>Frontend = UI / API consumer</li>
+            <li>Consolidated API = single frontend boundary</li>
+            <li>Backend = business authority</li>
+            <li>Database = authoritative data store</li>
+            <li>Financial execution = blocked in frontend</li>
+            <li>KYC final authority = backend</li>
+          </ul>
+        </div>
+
+        <div id="govara27-message" class="govara27-message"></div>
+
+      </div>
+    `;
+
+    injectStyles();
+
+    return true;
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  /* =========================================================
+     UI BIND
+     ========================================================= */
+
+  function bind() {
+    var saveButton =
+      document.getElementById("govara27-save-url");
+
+    var testButton =
+      document.getElementById("govara27-test");
+
+    var urlInput =
+      document.getElementById("govara27-api-url");
+
+    if (saveButton) {
+      saveButton.onclick = function () {
+        var value = urlInput ? urlInput.value.trim() : "";
+
+        CONFIG.API_URL = value;
+
+        enforceSafety();
+
+        showMessage(
+          value
+            ? "API endpoint saved. Connection test is still manual."
+            : "API endpoint cleared."
+        );
+
+        renderAndBind();
+      };
+    }
+
+    if (testButton) {
+      testButton.onclick = async function () {
+        showMessage("Testing API connection...");
+
+        var result = await testConnection();
+
+        renderAndBind();
+
+        if (result.success) {
+          showMessage("API connection verified successfully.");
+        } else {
+          showMessage(
+            result.message ||
+              result.status ||
+              "API connection was not verified."
+          );
+        }
+      };
+    }
+  }
+
+  function showMessage(message) {
+    var box =
+      document.getElementById("govara27-message");
+
+    if (box) {
+      box.textContent = message || "";
+    }
+  }
+
+  function renderAndBind() {
+    try {
+      var rendered = render();
+
+      if (rendered) {
+        bind();
+      }
+
+      return rendered;
+    } catch (error) {
+      console.error(
+        "GoVara STEP 27 render error:",
+        error
+      );
+
+      return false;
+    }
+  }
+
+  /* =========================================================
+     STYLES
+     ========================================================= */
+
+  function injectStyles() {
+    if (document.getElementById("govara27-styles")) {
+      return;
+    }
+
+    var style = document.createElement("style");
+
+    style.id = "govara27-styles";
+
+    style.textContent = `
+      .govara27-wrapper {
+        padding: 24px;
+        color: inherit;
+      }
+
+      .govara27-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      .govara27-kicker {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        opacity: .65;
+      }
+
+      .govara27-header h2 {
+        margin: 6px 0;
+      }
+
+      .govara27-header p {
+        margin: 0;
+        opacity: .7;
+      }
+
+      .govara27-version {
+        font-size: 11px;
+        opacity: .55;
+      }
+
+      .govara27-grid,
+      .govara27-safety-grid,
+      .govara27-diagnostics {
+        display: grid;
+        grid-template-columns:
+          repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+      }
+
+      .govara27-card,
+      .govara27-section {
+        border: 1px solid rgba(128,128,128,.25);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+
+      .govara27-card span,
+      .govara27-safety-grid span,
+      .govara27-diagnostics span {
+        display: block;
+        font-size: 12px;
+        opacity: .65;
+        margin-bottom: 7px;
+      }
+
+      .govara27-card strong,
+      .govara27-safety-grid strong,
+      .govara27-diagnostics strong {
+        font-size: 14px;
+      }
+
+      .status-ok {
+        font-weight: 700;
+      }
+
+      .status-off {
+        opacity: .65;
+      }
+
+      .govara27-endpoint {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .govara27-endpoint input {
+        flex: 1 1 420px;
+        min-width: 220px;
+        padding: 11px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(128,128,128,.35);
+        background: transparent;
+        color: inherit;
+      }
+
+      .govara27-endpoint button {
+        padding: 11px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(128,128,128,.35);
+        cursor: pointer;
+      }
+
+      .govara27-section small {
+        display: block;
+        margin-top: 10px;
+        opacity: .55;
+      }
+
+      .govara27-modules {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .govara27-modules span {
+        border: 1px solid rgba(128,128,128,.3);
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+
+      .govara27-boundary {
+        margin: 0;
+        padding-left: 20px;
+        line-height: 1.9;
+      }
+
+      .govara27-message {
+        margin-top: 14px;
+        min-height: 20px;
+        font-size: 13px;
+        opacity: .75;
+      }
+
+      @media (max-width: 700px) {
+        .govara27-wrapper {
+          padding: 14px;
+        }
+
+        .govara27-header {
+          flex-direction: column;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  /* =========================================================
+     REGISTER FIRST — IMPORTANT
+     ========================================================= */
+
+  registerModule();
+
+  /*
+    Do not automatically test the backend.
+    Render only when the Master Frontend has already mounted
+    the STEP 27 page.
+  */
+
+  if (
+    document.readyState === "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+        registerModule();
+        renderAndBind();
+      },
+      { once: true }
+    );
+  } else {
+    registerModule();
+    renderAndBind();
+  }
+
+})(window, document);
+
    ============================================================ */
 
 (function () {

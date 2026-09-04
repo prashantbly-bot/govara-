@@ -2121,25 +2121,67 @@ case "27":
              STEP 27 — CONSOLIDATED API
              ================================================== */
 
-          case "27":
+case "27":
 
-            renderGoVaraModule(
-              window.GoVara27 ||
-              window.GoVaraAPI,
-              "module-27"
-            );
+  const step27Container =
+    document.getElementById("module-27");
 
-            break;
+  if (
+    window.GoVara27 &&
+    typeof window.GoVara27.render === "function"
+  ) {
+
+    if (step27Container) {
+
+      window.GoVara27.render(
+        step27Container
+      );
+
+    } else {
+
+      console.error(
+        "STEP 27 mount element not found: module-27"
+      );
+
+    }
+
+  } else {
+
+    console.error(
+      "STEP 27 module is not loaded: GoVara27"
+    );
+
+    if (step27Container) {
+
+      step27Container.innerHTML = `
+        <div class="module-placeholder">
+
+          <h2>
+            STEP 27 — Consolidated API
+          </h2>
+
+          <div class="muted">
+            STEP 27 module JavaScript is not loaded.
+          </div>
+
+        </div>
+      `;
+
+    }
+
+  }
+
+  break;
 
 
-          default:
+default:
 
-            console.warn(
-              "Unknown GoVara page:",
-              requestedPage
-            );
+  console.warn(
+    "Unknown GoVara page:",
+    requestedPage
+  );
 
-        }
+}
 
       }
 

@@ -2006,209 +2006,199 @@
           );
 
 
-        /* ====================================================
-           Module Routing
-           ==================================================== */
+       /* ====================================================
+   Module Routing
+   ==================================================== */
 
-        switch (requestedPage) {
+switch (requestedPage) {
 
-          case "dashboard":
+  case "dashboard":
 
-            updateDashboardStatus();
+    updateDashboardStatus();
 
-            break;
-
-
- case "26A":
-
-            renderGoVaraModule(
-              window.GoVara26A,
-              "module-26A"
-            );
-
-            break;
+    break;
 
 
-          case "26B":
+  /* ==================================================
+     26A — SYSTEM CONFIGURATION
+     ================================================== */
 
-            renderGoVaraModule(
-              window.GoVara26B,
-              "module-26B"
-            );
+  case "26A":
 
-            break;
+    renderGoVaraModule(
+      window.GoVara26A,
+      "module-26A"
+    );
 
-
-          case "26C":
-
-            renderGoVaraModule(
-              window.GoVara26C,
-              "module-26C"
-            );
-
-            break;
+    break;
 
 
-          case "26D":
+  /* ==================================================
+     26B — USER & ROLE CONTROL
+     ================================================== */
 
-            renderGoVaraModule(
-              window.GoVara26D,
-              "module-26D"
-            );
+  case "26B":
 
-            break;
+    renderGoVaraModule(
+      window.GoVara26B,
+      "module-26B"
+    );
 
-
-          case "26E":
-
-            renderGoVaraModule(
-              window.GoVara26E,
-              "module-26E"
-            );
-
-            break;
+    break;
 
 
-          case "26F":
+  /* ==================================================
+     26C — BUSINESS POLICIES
+     ================================================== */
 
-            renderGoVaraModule(
-              window.GoVara26F,
-              "module-26F"
-            );
+  case "26C":
 
-            break;
+    renderGoVaraModule(
+      window.GoVara26C,
+      "module-26C"
+    );
 
-
-          case "26G":
-
-            renderGoVaraModule(
-              window.GoVara26G,
-              "module-26G"
-            );
-
-            break;
+    break;
 
 
-          case "27":
+  /* ==================================================
+     26D — OPERATIONS CONTROL
+     ================================================== */
 
-            if (
-              window.GoVara27 &&
-              typeof window.GoVara27.render === "function"
-            ) {
+  case "26D":
 
-              const step27Container =
-                document.getElementById("module-27");
+    renderGoVaraModule(
+      window.GoVara26D,
+      "module-26D"
+    );
 
-              if (step27Container) {
-
-                window.GoVara27.render(
-                  step27Container
-                );
-
-              }
-
-            } else {
-
-              renderGoVaraModule(
-                window.GoVara27 ||
-                window.GoVaraAPI,
-                "module-27"
-              );
-
-            }
-
-            break;
+    break;
 
 
-          default:
+  /* ==================================================
+     26E — FINANCIAL CONTROL
+     ================================================== */
 
-            console.warn(
-              "Unknown GoVara page:",
-              requestedPage
-            );
+  case "26E":
 
-        }
-          /* ==================================================
-             STEP 28 — CUSTOMER
-             ================================================== */
+    renderGoVaraModule(
+      window.GoVara26E,
+      "module-26E"
+    );
 
-          case "28":
-
-            renderCustomerModule();
-
-            break;
+    break;
 
 
-          /* ==================================================
-             STEP 27 — CONSOLIDATED API
-             ================================================== */
+  /* ==================================================
+     26F — DOCUMENTS & KYC
+     ================================================== */
 
-case "27":
+  case "26F":
 
-  const step27Container =
-    document.getElementById("module-27");
+    renderGoVaraModule(
+      window.GoVara26F,
+      "module-26F"
+    );
 
-  if (
-    window.GoVara27 &&
-    typeof window.GoVara27.render === "function"
-  ) {
+    break;
 
-    if (step27Container) {
 
-      window.GoVara27.render(
-        step27Container
-      );
+  /* ==================================================
+     26G — AUDIT & MONITORING
+     ================================================== */
+
+  case "26G":
+
+    renderGoVaraModule(
+      window.GoVara26G,
+      "module-26G"
+    );
+
+    break;
+
+
+  /* ==================================================
+     STEP 27 — CONSOLIDATED API
+     ================================================== */
+
+  case "27": {
+
+    var step27Container =
+      document.getElementById("module-27");
+
+    if (
+      window.GoVara27 &&
+      typeof window.GoVara27.render === "function"
+    ) {
+
+      if (step27Container) {
+
+        window.GoVara27.render(
+          step27Container
+        );
+
+      } else {
+
+        console.error(
+          "STEP 27 mount element not found: module-27"
+        );
+
+      }
 
     } else {
 
       console.error(
-        "STEP 27 mount element not found: module-27"
+        "STEP 27 module is not loaded: GoVara27"
       );
 
-    }
+      if (step27Container) {
 
-  } else {
+        step27Container.innerHTML = `
+          <div class="module-placeholder">
 
-    console.error(
-      "STEP 27 module is not loaded: GoVara27"
-    );
+            <h2>
+              STEP 27 — Consolidated API
+            </h2>
 
-    if (step27Container) {
+            <div class="muted">
+              STEP 27 module JavaScript is not loaded.
+            </div>
 
-      step27Container.innerHTML = `
-        <div class="module-placeholder">
-
-          <h2>
-            STEP 27 — Consolidated API
-          </h2>
-
-          <div class="muted">
-            STEP 27 module JavaScript is not loaded.
           </div>
-
-        </div>
-      `;
-
-    }
-
-  }
-
-  break;
-
-
-default:
-
-  console.warn(
-    "Unknown GoVara page:",
-    requestedPage
-  );
-
-}
+        `;
 
       }
 
+    }
 
-      /* ======================================================
+    break;
+  }
+
+
+  /* ==================================================
+     STEP 28 — CUSTOMER
+     ================================================== */
+
+  case "28":
+
+    renderCustomerModule();
+
+    break;
+
+
+  /* ==================================================
+     DEFAULT
+     ================================================== */
+
+  default:
+
+    console.warn(
+      "Unknown GoVara page:",
+      requestedPage
+    );
+
+}
+        /* ======================================================
          Dashboard Status
          ====================================================== */
 

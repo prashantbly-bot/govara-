@@ -1,16 +1,46 @@
 /* ============================================================
-   GoVara — 26F Documents & KYC Control
-   VERSION: GOVARA-26F-V3
-   Frontend Configuration + Upload Processing Layer
+   GoVara — 26F DOCUMENTS & KYC ADMIN CONTROL CENTER
+   VERSION: GOVARA-26F-V4
+
+   Scope:
+   - Documents
+   - KYC
+   - Admin document management
+   - Role permissions
+   - Document permissions
+   - Upload / Preview / Compression / Resize
+   - Verification workflow
+   - Replacement
+   - Expiry / Renewal
+   - Audit
+   - Security
+
+   Architecture:
+   Frontend = Control UI / Local configuration / File preprocessing
+   Backend  = Authoritative business + verification authority
+   Database = Authoritative persistent document/KYC store
+
+   IMPORTANT:
+   Frontend approval actions are administrative workflow controls.
+   Final authoritative verification remains Backend controlled.
    ============================================================ */
 
 window.GoVara26F = (function () {
 
   "use strict";
 
-  const VERSION = "GOVARA-26F-V3";
-  const STORAGE_KEY = "GOVARA_DOCUMENTS_KYC_CONTROL_26F_V3";
-  const AUDIT_KEY = "GOVARA_DOCUMENTS_KYC_AUDIT_26F_V3";
+  const VERSION = "GOVARA-26F-V4";
+
+  const STORAGE_KEY =
+    "GOVARA_DOCUMENTS_KYC_ADMIN_CONTROL_26F_V4";
+
+  const AUDIT_KEY =
+    "GOVARA_DOCUMENTS_KYC_ADMIN_AUDIT_26F_V4";
+
+
+  /* ============================================================
+     DEFAULT CONFIGURATION
+     ============================================================ */
 
   const DEFAULT_CONFIG = {
 
@@ -21,33 +51,69 @@ window.GoVara26F = (function () {
       databaseRequired: true
     },
 
+
+    /* ----------------------------------------------------------
+       AUTHORITY
+       ---------------------------------------------------------- */
+
     authority: {
+
       frontendAuthority: false,
+
       backendAuthority: true,
+
       databaseAuthority: true,
-      frontendCanApproveKYC: false,
-      frontendCanVerifyDocument: false,
-      frontendCanRejectDocument: false,
+
+      adminCanManageDocuments: true,
+
+      adminCanPerformReview: true,
+
+      adminCanInitiateVerification: true,
+
+      adminCanRecordAdministrativeDecision: true,
+
+      finalVerificationAuthority: "BACKEND",
+
+      finalKYCAuthority: "BACKEND",
+
       automaticApproval: false,
-      automaticVerification: false
+
+      automaticVerification: false,
+
+      frontendCannotOverrideBackend: true
     },
 
+
+    /* ----------------------------------------------------------
+       DOCUMENT SYSTEM
+       ---------------------------------------------------------- */
+
     documentSystem: {
+
       enabled: true,
 
       uploadEnabled: true,
-      imageUploadEnabled: true,
-      pdfUploadEnabled: true,
 
       viewEnabled: true,
+
       updateEnabled: true,
+
       replacementEnabled: true,
+
       historyEnabled: true,
 
       expiryTrackingEnabled: true,
+
       expiryAlertsEnabled: true,
 
+      documentReviewEnabled: true,
+
+      documentVerificationEnabled: true,
+
+      adminDocumentManagement: true,
+
       publicDocumentAccess: false,
+
       publicDocumentListing: false,
 
       permanentDeletionEnabled: false,
@@ -55,16 +121,650 @@ window.GoVara26F = (function () {
       backendDocumentAuthority: true
     },
 
+
+    /* ----------------------------------------------------------
+       DOCUMENT TYPES
+       ---------------------------------------------------------- */
+
+    documentTypes: {
+
+      identityProof: {
+        enabled: true,
+        label: "Identity Proof",
+        customer: true,
+        vendor: true,
+        driver: true,
+        vehicle: false,
+        mandatory: false
+      },
+
+      addressProof: {
+        enabled: true,
+        label: "Address Proof",
+        customer: true,
+        vendor: true,
+        driver: true,
+        vehicle: false,
+        mandatory: false
+      },
+
+      profilePhoto: {
+        enabled: true,
+        label: "Profile Photo",
+        customer: true,
+        vendor: true,
+        driver: true,
+        vehicle: false,
+        mandatory: false
+      },
+
+      bankProof: {
+        enabled: true,
+        label: "Bank Proof",
+        customer: false,
+        vendor: true,
+        driver: true,
+        vehicle: false,
+        mandatory: false
+      },
+
+      taxDocument: {
+        enabled: true,
+        label: "Tax Document",
+        customer: false,
+        vendor: true,
+        driver: false,
+        vehicle: false,
+        mandatory: false
+      },
+
+      businessRegistration: {
+        enabled: true,
+        label: "Business Registration",
+        customer: false,
+        vendor: true,
+        driver: false,
+        vehicle: false,
+        mandatory: true
+      },
+
+      companyRegistration: {
+        enabled: true,
+        label: "Company Registration",
+        customer: false,
+        vendor: true,
+        driver: false,
+        vehicle: false,
+        mandatory: false
+      },
+
+      drivingLicense: {
+        enabled: true,
+        label: "Driving License",
+        customer: false,
+        vendor: false,
+        driver: true,
+        vehicle: false,
+        mandatory: true
+      },
+
+      vehicleRegistration: {
+        enabled: true,
+        label: "Vehicle Registration",
+        customer: false,
+        vendor: false,
+        driver: false,
+        vehicle: true,
+        mandatory: true
+      },
+
+      vehicleInsurance: {
+        enabled: true,
+        label: "Vehicle Insurance",
+        customer: false,
+        vendor: false,
+        driver: false,
+        vehicle: true,
+        mandatory: true
+      },
+
+      vehicleFitness: {
+        enabled: true,
+        label: "Vehicle Fitness",
+        customer: false,
+        vendor: false,
+        driver: false,
+        vehicle: true,
+        mandatory: true
+      },
+
+      vehiclePermit: {
+        enabled: true,
+        label: "Vehicle Permit",
+        customer: false,
+        vendor: false,
+        driver: false,
+        vehicle: true,
+        mandatory: true
+      },
+
+      pollutionCertificate: {
+        enabled: true,
+        label: "Pollution Certificate",
+        customer: false,
+        vendor: false,
+        driver: false,
+        vehicle: true,
+        mandatory: true
+      },
+
+      authorizationLetter: {
+        enabled: true,
+        label: "Authorization Letter",
+        customer: false,
+        vendor: true,
+        driver: false,
+        vehicle: false,
+        mandatory: false
+      },
+
+      otherDocument: {
+        enabled: true,
+        label: "Other Document",
+        customer: true,
+        vendor: true,
+        driver: true,
+        vehicle: true,
+        mandatory: false
+      }
+    },
+
+
+    /* ----------------------------------------------------------
+       KYC REQUIREMENTS
+       ---------------------------------------------------------- */
+
+    kyc: {
+
+      enabled: true,
+
+      customerKYCRequired: true,
+
+      vendorKYCRequired: true,
+
+      driverKYCRequired: true,
+
+      vehicleKYCRequired: true,
+
+      manualReviewRequired: true,
+
+      automaticApproval: false,
+
+      automaticVerification: false,
+
+      reVerificationEnabled: true,
+
+      rejectedRequiresResubmission: true,
+
+      pendingBlocksActivation: true,
+
+      rejectedBlocksActivation: true,
+
+      expiredBlocksActivation: true,
+
+      missingDocumentBlocksActivation: true,
+
+      backendApprovalRequired: true,
+
+      backendVerificationRequired: true,
+
+      backendAuthority: true
+    },
+
+
+    /* ----------------------------------------------------------
+       CUSTOMER KYC
+       ---------------------------------------------------------- */
+
+    customerKYC: {
+
+      registrationRequirement: true,
+
+      profileCompletionRequirement: true,
+
+      bookingRequirement: false,
+
+      preTripRequirement: false,
+
+      walletRequirement: false,
+
+      refundRequirement: false,
+
+      documentUploadAllowed: true,
+
+      documentReplaceAllowed: true,
+
+      documentViewAllowed: true,
+
+      documentDownloadAllowed: false,
+
+      submitKYCAllowed: true,
+
+      resubmissionAllowed: true,
+
+      manualReviewRequired: true,
+
+      backendApprovalRequired: true
+    },
+
+
+    /* ----------------------------------------------------------
+       VENDOR KYC
+       ---------------------------------------------------------- */
+
+    vendorKYC: {
+
+      registrationRequirement: true,
+
+      operationsRequirement: true,
+
+      bookingManagementRequirement: true,
+
+      driverAssignmentRequirement: true,
+
+      vehicleAssignmentRequirement: true,
+
+      documentUploadAllowed: true,
+
+      documentReplaceAllowed: true,
+
+      documentViewAllowed: true,
+
+      documentDownloadAllowed: false,
+
+      submitKYCAllowed: true,
+
+      resubmissionAllowed: true,
+
+      manualReviewRequired: true,
+
+      backendApprovalRequired: true
+    },
+
+
+    /* ----------------------------------------------------------
+       DRIVER KYC
+       ---------------------------------------------------------- */
+
+    driverKYC: {
+
+      registrationRequirement: true,
+
+      dutyRequirement: true,
+
+      tripRequirement: true,
+
+      bookingAcceptanceRequirement: true,
+
+      documentUploadAllowed: true,
+
+      documentReplaceAllowed: true,
+
+      documentViewAllowed: true,
+
+      documentDownloadAllowed: false,
+
+      submitKYCAllowed: true,
+
+      resubmissionAllowed: true,
+
+      expiredLicenseBlocksDuty: true,
+
+      manualReviewRequired: true,
+
+      backendApprovalRequired: true
+    },
+
+
+    /* ----------------------------------------------------------
+       VEHICLE KYC
+       ---------------------------------------------------------- */
+
+    vehicleKYC: {
+
+      activationRequirement: true,
+
+      assignmentRequirement: true,
+
+      tripRequirement: true,
+
+      documentUploadAllowed: true,
+
+      documentReplaceAllowed: true,
+
+      documentViewAllowed: true,
+
+      documentDownloadAllowed: false,
+
+      registrationRequired: true,
+
+      insuranceRequired: true,
+
+      fitnessRequired: true,
+
+      permitRequired: true,
+
+      pollutionCertificateRequired: true,
+
+      expiredDocumentBlocksVehicle: true,
+
+      manualReviewRequired: true,
+
+      backendApprovalRequired: true
+    },
+
+
+    /* ----------------------------------------------------------
+       ADMIN DOCUMENT PERMISSIONS
+       ---------------------------------------------------------- */
+
+    adminPermissions: {
+
+      documentManagement: true,
+
+      documentUpload: true,
+
+      documentUploadForCustomer: true,
+
+      documentUploadForVendor: true,
+
+      documentUploadForDriver: true,
+
+      documentUploadForVehicle: true,
+
+      documentView: true,
+
+      documentDownload: true,
+
+      documentReview: true,
+
+      documentVerificationInitiation: true,
+
+      documentApprovalDecision: true,
+
+      documentRejectionDecision: true,
+
+      rejectionReason: true,
+
+      approvalComment: true,
+
+      rejectionComment: true,
+
+      requestResubmission: true,
+
+      requestReplacement: true,
+
+      expiryManagement: true,
+
+      renewalManagement: true,
+
+      KYCReview: true,
+
+      KYCDecisionRecording: true,
+
+      KYCResubmissionManagement: true,
+
+      auditView: true,
+
+      configurationManagement: true,
+
+      permissionManagement: true,
+
+      permanentDeletion: false,
+
+      backendAuthorityOverride: false
+    },
+
+
+    /* ----------------------------------------------------------
+       ROLE-BASED DOCUMENT PERMISSION MATRIX
+       ---------------------------------------------------------- */
+
+    rolePermissions: {
+
+      Admin: {
+
+        upload: true,
+
+        view: true,
+
+        download: true,
+
+        replace: true,
+
+        submitKYC: true,
+
+        review: true,
+
+        verify: true,
+
+        approve: true,
+
+        reject: true,
+
+        requestResubmission: true,
+
+        manageExpiry: true,
+
+        manageReplacement: true,
+
+        viewAudit: true,
+
+        configure: true,
+
+        deletePermanently: false
+      },
+
+
+      Customer: {
+
+        upload: true,
+
+        view: true,
+
+        download: false,
+
+        replace: true,
+
+        submitKYC: true,
+
+        review: false,
+
+        verify: false,
+
+        approve: false,
+
+        reject: false,
+
+        requestResubmission: false,
+
+        manageExpiry: false,
+
+        manageReplacement: true,
+
+        viewAudit: false,
+
+        configure: false,
+
+        deletePermanently: false
+      },
+
+
+      Vendor: {
+
+        upload: true,
+
+        view: true,
+
+        download: false,
+
+        replace: true,
+
+        submitKYC: true,
+
+        review: false,
+
+        verify: false,
+
+        approve: false,
+
+        reject: false,
+
+        requestResubmission: false,
+
+        manageExpiry: false,
+
+        manageReplacement: true,
+
+        viewAudit: false,
+
+        configure: false,
+
+        deletePermanently: false
+      },
+
+
+      Driver: {
+
+        upload: true,
+
+        view: true,
+
+        download: false,
+
+        replace: true,
+
+        submitKYC: true,
+
+        review: false,
+
+        verify: false,
+
+        approve: false,
+
+        reject: false,
+
+        requestResubmission: false,
+
+        manageExpiry: false,
+
+        manageReplacement: true,
+
+        viewAudit: false,
+
+        configure: false,
+
+        deletePermanently: false
+      },
+
+
+      Backend: {
+
+        upload: true,
+
+        view: true,
+
+        download: true,
+
+        replace: true,
+
+        submitKYC: true,
+
+        review: true,
+
+        verify: true,
+
+        approve: true,
+
+        reject: true,
+
+        requestResubmission: true,
+
+        manageExpiry: true,
+
+        manageReplacement: true,
+
+        viewAudit: true,
+
+        configure: true,
+
+        deletePermanently: true
+      }
+    },
+
+
+    /* ----------------------------------------------------------
+       DOCUMENT ACCESS CONTROL
+       ---------------------------------------------------------- */
+
+    documentAccess: {
+
+      ownerAccess: true,
+
+      adminAccess: true,
+
+      backendAccess: true,
+
+      vendorCannotAccessCustomerDocuments: true,
+
+      driverCannotAccessCustomerDocuments: true,
+
+      customerCannotAccessVendorDocuments: true,
+
+      customerCannotAccessDriverDocuments: true,
+
+      customerCannotAccessVehicleDocuments: true,
+
+      driverCannotAccessOtherDriverDocuments: true,
+
+      vendorCannotAccessOtherVendorDocuments: true,
+
+      crossRoleAccessRequiresAdmin: true,
+
+      sensitiveDocumentsRestricted: true,
+
+      publicURL: false,
+
+      publicListing: false,
+
+      unauthorizedAccessBlocked: true
+    },
+
+
+    /* ----------------------------------------------------------
+       UPLOAD CONTROL
+       ---------------------------------------------------------- */
+
     upload: {
 
       enabled: true,
 
-      allowImages: true,
-      allowPDF: true,
+      imageUploadEnabled: true,
 
-      multipleUpload: true,
+      pdfUploadEnabled: true,
+
+      multipleUploadEnabled: true,
+
+      previewEnabled: true,
+
+      uploadProgressEnabled: true,
+
+      maxFileSizeMB: 10,
+
+      minFileSizeKB: 1,
 
       allowedExtensions: [
+
         ".jpg",
         ".jpeg",
         ".png",
@@ -73,35 +773,42 @@ window.GoVara26F = (function () {
       ],
 
       allowedMimeTypes: [
+
         "image/jpeg",
+
         "image/png",
+
         "image/webp",
+
         "application/pdf"
       ],
 
-      maxFileSizeMB: 10,
-      minFileSizeKB: 1,
-
       filenameValidation: true,
+
       extensionValidation: true,
+
       mimeValidation: true,
 
       emptyFileBlocked: true,
+
       corruptFileBlocked: true,
+
       duplicateFileCheck: true,
-
-      uploadProgressEnabled: true,
-
-      previewEnabled: true,
 
       backendFinalValidationRequired: true
     },
+
+
+    /* ----------------------------------------------------------
+       IMAGE COMPRESSION / RESIZE
+       ---------------------------------------------------------- */
 
     imageProcessing: {
 
       enabled: true,
 
       compressionEnabled: true,
+
       resizeEnabled: true,
 
       previewBeforeUpload: true,
@@ -109,214 +816,172 @@ window.GoVara26F = (function () {
       preserveAspectRatio: true,
 
       maxWidth: 2000,
+
       maxHeight: 2000,
 
       targetQuality: 0.82,
 
+      minimumQuality: 0.55,
+
       targetMaxSizeMB: 2,
 
-      minQuality: 0.55,
-
-      outputFormat: "image/jpeg",
-
-      autoReduceLargeImages: true,
+      automaticReduction: true,
 
       doNotCompressSmallImages: true,
 
-      originalFileNeverReplacesAuditHistory: true,
+      outputFormat: "image/jpeg",
 
       browserProcessingOnly: true,
 
       backendFinalProcessingAuthority: true
     },
 
+
+    /* ----------------------------------------------------------
+       PDF CONTROL
+       ---------------------------------------------------------- */
+
     pdfProcessing: {
 
       enabled: true,
 
-      allowPDF: true,
+      accepted: true,
 
-      maxFileSizeMB: 10,
+      maxSizeMB: 10,
 
-      compressionRequested: true,
+      browserCompression: false,
 
-      browserPDFCompression: false,
+      backendCompressionAuthority: true,
 
-      backendPDFProcessingAuthority: true
+      backendValidationRequired: true
     },
 
-    documentTypes: {
 
-      identityProof: true,
-      addressProof: true,
-      profilePhoto: true,
-
-      bankProof: true,
-      taxDocument: true,
-
-      businessRegistration: true,
-      companyRegistration: true,
-
-      drivingLicense: true,
-
-      vehicleRegistration: true,
-      vehicleInsurance: true,
-      vehicleFitness: true,
-      vehiclePermit: true,
-      pollutionCertificate: true,
-
-      authorizationLetter: true,
-
-      otherDocument: true
-    },
-
-    kyc: {
-
-      enabled: true,
-
-      customerKYCRequired: true,
-      vendorKYCRequired: true,
-      driverKYCRequired: true,
-      vehicleKYCRequired: true,
-
-      manualReview: true,
-
-      automaticApproval: false,
-      automaticVerification: false,
-
-      reVerificationEnabled: true,
-
-      pendingBlocksActivation: true,
-      rejectedBlocksActivation: true,
-      expiredBlocksActivation: true,
-
-      backendApprovalRequired: true,
-      backendAuthority: true
-    },
-
-    customerKYC: {
-
-      registrationRequirement: true,
-      bookingRequirement: false,
-      preTripRequirement: false,
-      walletRequirement: false,
-      refundRequirement: false,
-
-      profileCompletionRequired: true,
-
-      documentUpdateAllowed: true,
-      manualReviewRequired: true,
-
-      backendApprovalRequired: true
-    },
-
-    vendorKYC: {
-
-      registrationRequirement: true,
-      operationsRequirement: true,
-      bookingManagementRequirement: true,
-
-      driverAssignmentRequirement: true,
-      vehicleAssignmentRequirement: true,
-
-      documentUpdateAllowed: true,
-      manualReviewRequired: true,
-
-      backendApprovalRequired: true
-    },
-
-    driverKYC: {
-
-      registrationRequirement: true,
-      dutyRequirement: true,
-      tripRequirement: true,
-      bookingAcceptanceRequirement: true,
-
-      documentUpdateAllowed: true,
-      manualReviewRequired: true,
-
-      expiredLicenseBlocksDuty: true,
-
-      backendApprovalRequired: true
-    },
-
-    vehicleDocuments: {
-
-      activationRequirement: true,
-      assignmentRequirement: true,
-      tripRequirement: true,
-
-      registrationRequired: true,
-      insuranceRequired: true,
-      fitnessRequired: true,
-      permitRequired: true,
-      pollutionCertificateRequired: true,
-
-      documentUpdateAllowed: true,
-      manualReviewRequired: true,
-
-      expiredDocumentBlocksVehicle: true,
-
-      backendApprovalRequired: true
-    },
+    /* ----------------------------------------------------------
+       STATUS
+       ---------------------------------------------------------- */
 
     documentStatus: {
 
       pending: true,
+
       submitted: true,
+
       underReview: true,
 
       approved: true,
+
       rejected: true,
 
+      resubmissionRequired: true,
+
       expired: true,
+
+      renewalPending: true,
+
+      replacementPending: true,
+
       replaced: true,
+
       suspended: true,
 
       deleted: false
     },
+
+
+    kycStatus: {
+
+      notStarted: true,
+
+      pending: true,
+
+      submitted: true,
+
+      underReview: true,
+
+      approved: true,
+
+      rejected: true,
+
+      resubmissionRequired: true,
+
+      expired: true,
+
+      suspended: true
+    },
+
+
+    /* ----------------------------------------------------------
+       VERIFICATION
+       ---------------------------------------------------------- */
 
     verification: {
 
       enabled: true,
 
       manualVerification: true,
+
       automaticVerification: false,
+
+      adminVerificationInterface: true,
 
       backendVerificationRequired: true,
 
       verificationTimestamp: true,
+
       verifierIdentity: true,
 
-      rejectionReason: true,
       approvalComment: true,
+
+      rejectionReason: true,
+
       rejectionComment: true,
 
-      reVerification: true,
+      mismatchFlag: true,
+
+      qualityFailureFlag: true,
+
+      expiryFlag: true,
+
+      resubmissionFlag: true,
+
       verificationHistory: true,
 
-      frontendApproval: false,
-      frontendRejection: false,
-      frontendVerification: false
+      frontendCannotOverrideBackend: true
     },
+
+
+    /* ----------------------------------------------------------
+       EXPIRY
+       ---------------------------------------------------------- */
 
     expiry: {
 
       enabled: true,
 
       expiryDateRequired: true,
+
       trackingEnabled: true,
+
       alertsEnabled: true,
 
       primaryAlertDays: 30,
+
       secondAlertDays: 7,
 
       expiredStatusEnabled: true,
 
       operationalBlockOnExpiry: true,
 
+      renewalEnabled: true,
+
       backendExpiryAuthority: true
     },
+
+
+    /* ----------------------------------------------------------
+       REPLACEMENT
+       ---------------------------------------------------------- */
 
     replacement: {
 
@@ -324,37 +989,139 @@ window.GoVara26F = (function () {
 
       replacementAllowed: true,
 
-      newDocumentReviewRequired: true,
-
       oldDocumentHistoryRequired: true,
 
       oldDocumentPermanentDeletion: false,
+
+      newDocumentReviewRequired: true,
+
+      replacementReasonRequired: true,
 
       backendApprovalRequired: true,
 
       backendAuthority: true
     },
 
-    accessControl: {
 
-      customerOwnDocumentView: true,
-      customerOwnDocumentUpload: true,
-      customerOwnDocumentReplace: true,
+    /* ----------------------------------------------------------
+       QUALITY CONTROL
+       ---------------------------------------------------------- */
 
-      vendorOwnDocumentView: true,
-      vendorOwnDocumentUpload: true,
-      vendorOwnDocumentReplace: true,
+    qualityControl: {
 
-      driverOwnDocumentView: true,
-      driverOwnDocumentUpload: true,
-      driverOwnDocumentReplace: true,
+      enabled: true,
 
-      adminDocumentView: true,
-      adminConfiguration: true,
-      adminReview: true,
+      readabilityCheck: true,
 
-      frontendVerificationModification: false
+      imageQualityCheck: true,
+
+      blurCheck: true,
+
+      completenessCheck: true,
+
+      tamperCheck: true,
+
+      mismatchCheck: true,
+
+      failedQualityRequiresResubmission: true,
+
+      backendQualityAuthority: true
     },
+
+
+    /* ----------------------------------------------------------
+       WORKFLOW
+       ---------------------------------------------------------- */
+
+    workflow: {
+
+      registrationToKYC: true,
+
+      uploadToSubmission: true,
+
+      submissionToReview: true,
+
+      reviewToApproval: true,
+
+      reviewToRejection: true,
+
+      rejectionToResubmission: true,
+
+      expiryToRenewal: true,
+
+      replacementToReview: true,
+
+      approvalToActivation: true,
+
+      backendWorkflowAuthority: true
+    },
+
+
+    /* ----------------------------------------------------------
+       OPERATIONAL BLOCKS
+       ---------------------------------------------------------- */
+
+    operationalBlocks: {
+
+      missingDocumentBlock: true,
+
+      pendingKYCBlock: true,
+
+      rejectedKYCBlock: true,
+
+      expiredKYCBlock: true,
+
+      expiredDocumentBlock: true,
+
+      failedVerificationBlock: true,
+
+      failedQualityBlock: true,
+
+      driverDutyBlock: true,
+
+      vehicleOperationBlock: true,
+
+      tripBlock: true,
+
+      vendorOperationBlock: true,
+
+      backendAuthority: true
+    },
+
+
+    /* ----------------------------------------------------------
+       NOTIFICATIONS
+       ---------------------------------------------------------- */
+
+    notifications: {
+
+      upload: true,
+
+      submitted: true,
+
+      underReview: true,
+
+      approved: true,
+
+      rejected: true,
+
+      resubmission: true,
+
+      expiry: true,
+
+      renewal: true,
+
+      replacement: true,
+
+      operationalBlock: true,
+
+      backendNotificationAuthority: true
+    },
+
+
+    /* ----------------------------------------------------------
+       PRIVACY / SECURITY
+       ---------------------------------------------------------- */
 
     privacySecurity: {
 
@@ -368,85 +1135,31 @@ window.GoVara26F = (function () {
 
       unauthorizedAccessBlocked: true,
 
+      publicAccess: false,
+
       publicURL: false,
+
       publicListing: false,
 
       uploadAudit: true,
+
       viewAudit: true,
+
       downloadAudit: true,
+
       replacementAudit: true,
-      deleteAudit: true,
-      verificationAudit: true
+
+      reviewAudit: true,
+
+      verificationAudit: true,
+
+      deletionAudit: true
     },
 
-    fileValidation: {
 
-      enabled: true,
-
-      allowedImageTypes: [
-        "image/jpeg",
-        "image/png",
-        "image/webp"
-      ],
-
-      allowedDocumentTypes: [
-        "application/pdf"
-      ],
-
-      maxImageSizeMB: 10,
-      maxPDFSizeMB: 10,
-
-      minFileSizeKB: 1,
-
-      filenameValidation: true,
-      extensionValidation: true,
-      mimeValidation: true,
-
-      emptyFileBlocked: true,
-      corruptFileBlocked: true,
-
-      duplicateCheck: true,
-
-      backendValidationRequired: true
-    },
-
-    qualityControl: {
-
-      enabled: true,
-
-      imageQualityCheck: true,
-      readabilityCheck: true,
-
-      blurCheck: true,
-      completenessCheck: true,
-
-      tamperCheck: true,
-      mismatchCheck: true,
-
-      failedQualityRequiresResubmission: true,
-
-      backendQualityAuthority: true
-    },
-
-    workflow: {
-
-      registrationToKYC: true,
-
-      uploadToReview: true,
-
-      reviewToApproval: true,
-      reviewToRejection: true,
-
-      rejectionToResubmission: true,
-
-      expiryToRenewal: true,
-
-      replacementToReview: true,
-
-      approvalActivatesEligibleProfile: true,
-
-      backendWorkflowAuthority: true
-    },
+    /* ----------------------------------------------------------
+       RETENTION
+       ---------------------------------------------------------- */
 
     retention: {
 
@@ -455,8 +1168,11 @@ window.GoVara26F = (function () {
       historyEnabled: true,
 
       approvedHistory: true,
+
       rejectedHistory: true,
+
       replacedHistory: true,
+
       deletedHistory: true,
 
       frontendPermanentDeletion: false,
@@ -464,43 +1180,10 @@ window.GoVara26F = (function () {
       backendRetentionAuthority: true
     },
 
-    notifications: {
 
-      uploadNotification: true,
-      reviewNotification: true,
-
-      approvalNotification: true,
-      rejectionNotification: true,
-
-      resubmissionNotification: true,
-
-      expiryNotification: true,
-      renewalNotification: true,
-
-      replacementNotification: true,
-
-      operationalBlockNotification: true,
-
-      backendNotificationAuthority: true
-    },
-
-    operationalBlocks: {
-
-      pendingKYCBlock: true,
-      rejectedKYCBlock: true,
-      expiredKYCBlock: true,
-
-      missingDocumentBlock: true,
-      failedVerificationBlock: true,
-      failedQualityBlock: true,
-
-      vendorOperationBlock: true,
-      driverDutyBlock: true,
-      vehicleOperationBlock: true,
-      tripBlock: true,
-
-      backendAuthority: true
-    },
+    /* ----------------------------------------------------------
+       AUDIT
+       ---------------------------------------------------------- */
 
     audit: {
 
@@ -508,55 +1191,87 @@ window.GoVara26F = (function () {
 
       localHistory: true,
 
-      maxEntries: 200
+      maxEntries: 500
     }
   };
 
 
-  /* ==========================================================
-     Utility
-     ========================================================== */
+  /* ============================================================
+     UTILITIES
+     ============================================================ */
 
-  function clone(obj) {
-    return JSON.parse(JSON.stringify(obj));
+  function clone(value) {
+
+    return JSON.parse(
+      JSON.stringify(value)
+    );
   }
+
 
   function deepMerge(base, incoming) {
 
-    if (!incoming || typeof incoming !== "object") {
+    if (
+      !incoming ||
+      typeof incoming !== "object"
+    ) {
       return clone(base);
     }
 
-    const output = clone(base);
+    const output =
+      clone(base);
 
-    Object.keys(incoming).forEach(function (key) {
+    Object.keys(incoming)
+      .forEach(function (key) {
 
-      if (
-        incoming[key] &&
-        typeof incoming[key] === "object" &&
-        !Array.isArray(incoming[key]) &&
-        output[key] &&
-        typeof output[key] === "object" &&
-        !Array.isArray(output[key])
-      ) {
-        output[key] = deepMerge(output[key], incoming[key]);
-      } else {
-        output[key] = incoming[key];
-      }
+        if (
 
-    });
+          incoming[key] &&
+
+          typeof incoming[key] === "object" &&
+
+          !Array.isArray(incoming[key]) &&
+
+          output[key] &&
+
+          typeof output[key] === "object" &&
+
+          !Array.isArray(output[key])
+
+        ) {
+
+          output[key] =
+            deepMerge(
+              output[key],
+              incoming[key]
+            );
+
+        } else {
+
+          output[key] =
+            incoming[key];
+
+        }
+
+      });
 
     return output;
   }
+
 
   function loadConfig() {
 
     try {
 
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw =
+        localStorage.getItem(
+          STORAGE_KEY
+        );
 
       if (!raw) {
-        return clone(DEFAULT_CONFIG);
+
+        return clone(
+          DEFAULT_CONFIG
+        );
       }
 
       return deepMerge(
@@ -567,13 +1282,16 @@ window.GoVara26F = (function () {
     } catch (error) {
 
       console.warn(
-        "GoVara 26F: configuration load failed.",
+        "26F configuration load failed:",
         error
       );
 
-      return clone(DEFAULT_CONFIG);
+      return clone(
+        DEFAULT_CONFIG
+      );
     }
   }
+
 
   function saveConfig(config) {
 
@@ -583,368 +1301,650 @@ window.GoVara26F = (function () {
     );
   }
 
-  function addAudit(action, details) {
+
+  function addAudit(
+    action,
+    details
+  ) {
+
+    if (
+      !DEFAULT_CONFIG.audit.enabled
+    ) {
+      return;
+    }
 
     try {
 
-      const existing =
+      const history =
         JSON.parse(
-          localStorage.getItem(AUDIT_KEY) || "[]"
+          localStorage.getItem(
+            AUDIT_KEY
+          ) || "[]"
         );
 
-      existing.unshift({
+      history.unshift({
 
-        timestamp: new Date().toISOString(),
-
-        action: action,
-
-        details: details || {},
+        timestamp:
+          new Date().toISOString(),
 
         module: "26F",
 
-        version: VERSION
+        version: VERSION,
+
+        action: action,
+
+        details:
+          details || {}
       });
 
-      const limited =
-        existing.slice(
-          0,
-          DEFAULT_CONFIG.audit.maxEntries
-        );
-
       localStorage.setItem(
+
         AUDIT_KEY,
-        JSON.stringify(limited)
+
+        JSON.stringify(
+          history.slice(
+            0,
+            DEFAULT_CONFIG.audit.maxEntries
+          )
+        )
+
       );
 
     } catch (error) {
 
       console.warn(
-        "GoVara 26F audit error:",
+        "26F audit failed:",
         error
       );
     }
   }
 
 
-  /* ==========================================================
-     Safety Enforcement
-     ========================================================== */
+  /* ============================================================
+     SAFETY
+     ============================================================ */
 
   function enforceSafety(config) {
 
-    config = config || loadConfig();
+    config.environment.mode =
+      "TESTING";
 
-    config.environment.mode = "TESTING";
+    config.environment.frontendOnly =
+      true;
 
-    config.environment.frontendOnly = true;
-    config.environment.backendRequired = true;
-    config.environment.databaseRequired = true;
+    config.environment.backendRequired =
+      true;
 
-    config.authority.frontendAuthority = false;
-    config.authority.backendAuthority = true;
-    config.authority.databaseAuthority = true;
+    config.environment.databaseRequired =
+      true;
 
-    config.authority.frontendCanApproveKYC = false;
-    config.authority.frontendCanVerifyDocument = false;
-    config.authority.frontendCanRejectDocument = false;
 
-    config.authority.automaticApproval = false;
-    config.authority.automaticVerification = false;
+    config.authority.frontendAuthority =
+      false;
 
-    config.documentSystem.publicDocumentAccess = false;
-    config.documentSystem.publicDocumentListing = false;
-    config.documentSystem.permanentDeletionEnabled = false;
+    config.authority.backendAuthority =
+      true;
 
-    config.verification.automaticVerification = false;
-    config.verification.frontendApproval = false;
-    config.verification.frontendRejection = false;
-    config.verification.frontendVerification = false;
+    config.authority.databaseAuthority =
+      true;
 
-    config.replacement.oldDocumentPermanentDeletion = false;
+    config.authority.finalVerificationAuthority =
+      "BACKEND";
 
-    config.accessControl.frontendVerificationModification = false;
+    config.authority.finalKYCAuthority =
+      "BACKEND";
 
-    config.privacySecurity.publicURL = false;
-    config.privacySecurity.publicListing = false;
+    config.authority.automaticApproval =
+      false;
 
-    config.retention.frontendPermanentDeletion = false;
+    config.authority.automaticVerification =
+      false;
 
-    config.workflow.backendWorkflowAuthority = true;
+    config.authority.frontendCannotOverrideBackend =
+      true;
+
+
+    config.documentSystem.publicDocumentAccess =
+      false;
+
+    config.documentSystem.publicDocumentListing =
+      false;
+
+    config.documentSystem.permanentDeletionEnabled =
+      false;
+
+
+    config.kyc.automaticApproval =
+      false;
+
+    config.kyc.automaticVerification =
+      false;
+
+    config.kyc.backendAuthority =
+      true;
+
+
+    config.verification.automaticVerification =
+      false;
+
+    config.verification.frontendCannotOverrideBackend =
+      true;
+
+
+    config.documentAccess.publicURL =
+      false;
+
+    config.documentAccess.publicListing =
+      false;
+
+    config.documentAccess.unauthorizedAccessBlocked =
+      true;
+
+
+    config.replacement.oldDocumentPermanentDeletion =
+      false;
+
+
+    config.privacySecurity.publicAccess =
+      false;
+
+    config.privacySecurity.publicURL =
+      false;
+
+    config.privacySecurity.publicListing =
+      false;
+
+
+    config.retention.frontendPermanentDeletion =
+      false;
+
+
+    config.operationalBlocks.backendAuthority =
+      true;
+
+
+    config.workflow.backendWorkflowAuthority =
+      true;
+
 
     return config;
   }
 
 
-  /* ==========================================================
-     Validation
-     ========================================================== */
+  /* ============================================================
+     CONFIG VALIDATION
+     ============================================================ */
 
   function validateConfig(config) {
 
-    config = enforceSafety(
-      config || loadConfig()
-    );
+    config =
+      enforceSafety(
+        config || loadConfig()
+      );
 
     const errors = [];
+
     const warnings = [];
 
-    if (!config.environment.frontendOnly) {
+
+    if (
+      !config.environment.frontendOnly
+    ) {
+
       errors.push(
         "26F must remain frontend-only."
       );
     }
 
-    if (!config.authority.backendAuthority) {
+
+    if (
+      !config.authority.backendAuthority
+    ) {
+
       errors.push(
         "Backend authority must remain enabled."
       );
     }
 
-    if (!config.authority.databaseAuthority) {
+
+    if (
+      !config.authority.databaseAuthority
+    ) {
+
       errors.push(
         "Database authority must remain enabled."
       );
     }
 
-    if (config.authority.frontendCanApproveKYC) {
+
+    if (
+      config.authority.automaticApproval
+    ) {
+
       errors.push(
-        "Frontend KYC approval must remain disabled."
+        "Automatic approval is prohibited."
       );
     }
 
-    if (config.authority.frontendCanVerifyDocument) {
+
+    if (
+      config.authority.automaticVerification
+    ) {
+
       errors.push(
-        "Frontend document verification must remain disabled."
+        "Automatic verification is prohibited."
       );
     }
 
-    if (config.authority.automaticApproval) {
-      errors.push(
-        "Automatic KYC approval is not allowed."
-      );
-    }
 
-    if (config.authority.automaticVerification) {
-      errors.push(
-        "Automatic document verification is not allowed."
-      );
-    }
+    if (
+      config.documentSystem.publicDocumentAccess
+    ) {
 
-    if (config.documentSystem.publicDocumentAccess) {
       errors.push(
         "Public document access must remain disabled."
       );
     }
 
-    if (config.documentSystem.publicDocumentListing) {
+
+    if (
+      config.documentSystem.publicDocumentListing
+    ) {
+
       errors.push(
         "Public document listing must remain disabled."
       );
     }
 
-    if (config.documentSystem.permanentDeletionEnabled) {
+
+    if (
+      config.documentSystem.permanentDeletionEnabled
+    ) {
+
       errors.push(
-        "Permanent document deletion must remain disabled."
+        "Permanent deletion must remain disabled."
       );
     }
 
-    if (!config.upload.enabled) {
-      warnings.push(
-        "Document upload is disabled."
+
+    if (
+      config.adminPermissions.permanentDeletion
+    ) {
+
+      errors.push(
+        "Admin permanent deletion must remain disabled."
       );
     }
+
 
     if (
       config.upload.maxFileSizeMB <= 0
     ) {
+
       errors.push(
-        "Maximum upload file size must be greater than zero."
+        "Maximum upload size must be greater than zero."
       );
     }
+
 
     if (
       config.upload.minFileSizeKB < 0
     ) {
+
       errors.push(
-        "Minimum upload file size cannot be negative."
+        "Minimum upload size cannot be negative."
       );
     }
+
 
     if (
       config.imageProcessing.maxWidth <= 0 ||
       config.imageProcessing.maxHeight <= 0
     ) {
+
       errors.push(
-        "Image maximum dimensions must be greater than zero."
+        "Image dimensions must be greater than zero."
       );
     }
+
 
     if (
       config.imageProcessing.targetQuality <= 0 ||
       config.imageProcessing.targetQuality > 1
     ) {
+
       errors.push(
-        "Image target quality must be between 0 and 1."
+        "Target image quality must be between 0 and 1."
       );
     }
 
+
     if (
-      config.imageProcessing.minQuality <= 0 ||
-      config.imageProcessing.minQuality > 1
+      config.imageProcessing.minimumQuality <= 0 ||
+      config.imageProcessing.minimumQuality > 1
     ) {
+
       errors.push(
-        "Image minimum quality must be between 0 and 1."
+        "Minimum image quality must be between 0 and 1."
       );
     }
 
+
     if (
-      config.imageProcessing.minQuality >
+      config.imageProcessing.minimumQuality >
       config.imageProcessing.targetQuality
     ) {
+
       errors.push(
-        "Minimum image quality cannot exceed target quality."
+        "Minimum quality cannot exceed target quality."
       );
     }
+
 
     if (
       config.imageProcessing.targetMaxSizeMB <= 0
     ) {
+
       errors.push(
-        "Image target maximum size must be greater than zero."
+        "Target image size must be greater than zero."
       );
     }
+
+
+    if (
+      config.kyc.driverKYCRequired &&
+      !config.documentTypes.drivingLicense.enabled
+    ) {
+
+      errors.push(
+        "Driving License document type must be enabled."
+      );
+    }
+
+
+    if (
+      config.kyc.vehicleKYCRequired &&
+      !config.documentTypes.vehicleRegistration.enabled
+    ) {
+
+      errors.push(
+        "Vehicle Registration document type must be enabled."
+      );
+    }
+
+
+    if (
+      config.vehicleKYC.insuranceRequired &&
+      !config.documentTypes.vehicleInsurance.enabled
+    ) {
+
+      errors.push(
+        "Vehicle Insurance document type must be enabled."
+      );
+    }
+
+
+    if (
+      config.vehicleKYC.fitnessRequired &&
+      !config.documentTypes.vehicleFitness.enabled
+    ) {
+
+      errors.push(
+        "Vehicle Fitness document type must be enabled."
+      );
+    }
+
+
+    if (
+      config.vehicleKYC.permitRequired &&
+      !config.documentTypes.vehiclePermit.enabled
+    ) {
+
+      errors.push(
+        "Vehicle Permit document type must be enabled."
+      );
+    }
+
+
+    if (
+      config.vehicleKYC.pollutionCertificateRequired &&
+      !config.documentTypes.pollutionCertificate.enabled
+    ) {
+
+      errors.push(
+        "Pollution Certificate document type must be enabled."
+      );
+    }
+
 
     if (
       config.expiry.primaryAlertDays < 0 ||
       config.expiry.secondAlertDays < 0
     ) {
+
       errors.push(
         "Expiry alert days cannot be negative."
       );
     }
 
+
     if (
       config.expiry.primaryAlertDays <
       config.expiry.secondAlertDays
     ) {
+
       warnings.push(
-        "Primary expiry alert should normally be earlier than the second alert."
+        "Primary expiry alert is normally expected to be earlier than the second alert."
       );
     }
 
-    if (
-      config.kyc.driverKYCRequired === true &&
-      !config.documentTypes.drivingLicense
-    ) {
-      errors.push(
-        "Driving License document type is required."
-      );
-    }
-
-    if (
-      config.kyc.vehicleKYCRequired === true &&
-      !config.documentTypes.vehicleRegistration
-    ) {
-      errors.push(
-        "Vehicle Registration document type is required."
-      );
-    }
-
-    if (
-      config.vehicleDocuments.insuranceRequired &&
-      !config.documentTypes.vehicleInsurance
-    ) {
-      errors.push(
-        "Vehicle Insurance document type is required."
-      );
-    }
-
-    if (
-      config.vehicleDocuments.fitnessRequired &&
-      !config.documentTypes.vehicleFitness
-    ) {
-      errors.push(
-        "Vehicle Fitness document type is required."
-      );
-    }
-
-    if (
-      config.vehicleDocuments.permitRequired &&
-      !config.documentTypes.vehiclePermit
-    ) {
-      errors.push(
-        "Vehicle Permit document type is required."
-      );
-    }
-
-    if (
-      config.vehicleDocuments.pollutionCertificateRequired &&
-      !config.documentTypes.pollutionCertificate
-    ) {
-      errors.push(
-        "Pollution Certificate document type is required."
-      );
-    }
 
     return {
 
-      valid: errors.length === 0,
+      valid:
+        errors.length === 0,
 
-      errors: errors,
+      errors:
+        errors,
 
-      warnings: warnings,
+      warnings:
+        warnings,
 
-      checkedAt: new Date().toISOString(),
+      checkedAt:
+        new Date().toISOString(),
 
-      version: VERSION
+      version:
+        VERSION
     };
   }
 
 
-  /* ==========================================================
-     File Helpers
-     ========================================================== */
+  /* ============================================================
+     ROLE PERMISSION
+     ============================================================ */
 
-  function bytesToMB(bytes) {
-    return bytes / (1024 * 1024);
+  function hasPermission(
+    role,
+    permission
+  ) {
+
+    const config =
+      loadConfig();
+
+    if (
+      !config.rolePermissions[role]
+    ) {
+      return false;
+    }
+
+    return (
+      config.rolePermissions[role][
+        permission
+      ] === true
+    );
   }
 
-  function bytesToKB(bytes) {
-    return bytes / 1024;
+
+  function getRolePermissions(
+    role
+  ) {
+
+    const config =
+      loadConfig();
+
+    return clone(
+      config.rolePermissions[
+        role
+      ] || {}
+    );
   }
 
-  function formatFileSize(bytes) {
 
-    if (!Number.isFinite(bytes)) {
+  function setRolePermission(
+    role,
+    permission,
+    value
+  ) {
+
+    const config =
+      loadConfig();
+
+    if (
+      !config.rolePermissions[role]
+    ) {
+
+      throw new Error(
+        "Unknown role: " +
+        role
+      );
+    }
+
+    config.rolePermissions[role][
+      permission
+    ] = Boolean(value);
+
+    enforceSafety(config);
+
+    saveConfig(config);
+
+    addAudit(
+      "ROLE_PERMISSION_UPDATED",
+      {
+        role: role,
+        permission: permission,
+        value: Boolean(value)
+      }
+    );
+
+    return config;
+  }
+
+
+  /* ============================================================
+     DOCUMENT TYPE ACCESS
+     ============================================================ */
+
+  function isDocumentAllowedForRole(
+    documentType,
+    role
+  ) {
+
+    const config =
+      loadConfig();
+
+    const type =
+      config.documentTypes[
+        documentType
+      ];
+
+    if (!type) {
+      return false;
+    }
+
+    if (
+      role === "Admin" ||
+      role === "Backend"
+    ) {
+      return true;
+    }
+
+    const map = {
+
+      Customer: "customer",
+
+      Vendor: "vendor",
+
+      Driver: "driver",
+
+      Vehicle: "vehicle"
+    };
+
+    const property =
+      map[role];
+
+    return property
+      ? type[property] === true
+      : false;
+  }
+
+
+  /* ============================================================
+     FILE HELPERS
+     ============================================================ */
+
+  function formatFileSize(
+    bytes
+  ) {
+
+    if (
+      !Number.isFinite(bytes)
+    ) {
       return "0 B";
     }
 
     if (bytes < 1024) {
-      return bytes + " B";
+
+      return (
+        bytes +
+        " B"
+      );
     }
 
-    if (bytes < 1024 * 1024) {
+    if (
+      bytes <
+      1024 * 1024
+    ) {
+
       return (
-        (bytes / 1024).toFixed(1) +
+        (bytes / 1024)
+          .toFixed(1) +
         " KB"
       );
     }
 
     return (
-      (bytes / (1024 * 1024)).toFixed(2) +
+      (bytes /
+        (1024 * 1024))
+        .toFixed(2) +
       " MB"
     );
   }
 
-  function extensionOf(name) {
 
-    if (!name || name.indexOf(".") === -1) {
+  function extensionOf(
+    filename
+  ) {
+
+    if (
+      !filename ||
+      filename.indexOf(".") === -1
+    ) {
       return "";
     }
 
     return (
       "." +
-      name
+      filename
         .split(".")
         .pop()
         .toLowerCase()
@@ -952,186 +1952,236 @@ window.GoVara26F = (function () {
   }
 
 
-  /* ==========================================================
-     File Validation
-     ========================================================== */
+  function isImageFile(
+    file
+  ) {
 
-  function validateFile(file) {
+    return Boolean(
 
-    const config = loadConfig();
+      file &&
+
+      file.type &&
+
+      file.type.indexOf(
+        "image/"
+      ) === 0
+
+    );
+  }
+
+
+  function isPDFFile(
+    file
+  ) {
+
+    return Boolean(
+
+      file &&
+
+      file.type ===
+        "application/pdf"
+
+    );
+  }
+
+
+  /* ============================================================
+     FILE VALIDATION
+     ============================================================ */
+
+  function validateFile(
+    file
+  ) {
+
+    const config =
+      loadConfig();
 
     const errors = [];
 
     if (!file) {
 
       return {
+
         valid: false,
-        errors: ["No file selected."]
+
+        errors: [
+          "No file selected."
+        ]
       };
     }
+
 
     if (
       config.upload.emptyFileBlocked &&
       file.size <= 0
     ) {
+
       errors.push(
-        "Empty files are not allowed."
+        "Empty file is not allowed."
       );
     }
 
-    const maxBytes =
-      file.type === "application/pdf"
-        ? config.fileValidation.maxPDFSizeMB *
-          1024 *
-          1024
-        : config.fileValidation.maxImageSizeMB *
-          1024 *
-          1024;
-
-    if (file.size > maxBytes) {
-
-      errors.push(
-        "File exceeds the maximum allowed size of " +
-        maxBytes / (1024 * 1024) +
-        " MB."
-      );
-    }
 
     if (
       file.size <
-      config.fileValidation.minFileSizeKB *
+      config.upload.minFileSizeKB *
       1024
     ) {
+
       errors.push(
         "File is smaller than the minimum allowed size."
       );
     }
 
-    const allowedMime =
-      config.upload.allowedMimeTypes
-        .map(function (x) {
-          return x.toLowerCase();
-        });
 
     if (
-      config.fileValidation.mimeValidation &&
-      allowedMime.indexOf(
-        String(file.type || "").toLowerCase()
-      ) === -1
+      file.size >
+      config.upload.maxFileSizeMB *
+      1024 *
+      1024
     ) {
+
       errors.push(
-        "File MIME type is not allowed."
+        "File exceeds the " +
+        config.upload.maxFileSizeMB +
+        " MB maximum upload size."
       );
     }
 
+
     const extension =
-      extensionOf(file.name);
+      extensionOf(
+        file.name
+      );
+
 
     if (
-      config.fileValidation.extensionValidation &&
-      config.upload.allowedExtensions.indexOf(
-        extension
-      ) === -1
+      config.upload.extensionValidation &&
+      config.upload.allowedExtensions
+        .indexOf(extension) === -1
     ) {
+
       errors.push(
         "File extension is not allowed."
       );
     }
 
+
     if (
-      config.fileValidation.filenameValidation &&
+      config.upload.mimeValidation &&
+      config.upload.allowedMimeTypes
+        .indexOf(
+          String(file.type)
+            .toLowerCase()
+        ) === -1
+    ) {
+
+      errors.push(
+        "File MIME type is not allowed."
+      );
+    }
+
+
+    if (
+      config.upload.filenameValidation &&
       !/^[a-zA-Z0-9._ -]+$/.test(
         file.name
       )
     ) {
+
       errors.push(
         "Filename contains unsupported characters."
       );
     }
 
+
     return {
 
-      valid: errors.length === 0,
+      valid:
+        errors.length === 0,
 
-      errors: errors,
+      errors:
+        errors,
 
-      name: file.name,
-      type: file.type,
-      size: file.size,
+      name:
+        file.name,
+
+      type:
+        file.type,
+
+      size:
+        file.size,
 
       formattedSize:
-        formatFileSize(file.size)
+        formatFileSize(
+          file.size
+        )
     };
   }
 
 
-  /* ==========================================================
-     Image Detection
-     ========================================================== */
+  /* ============================================================
+     IMAGE LOADER
+     ============================================================ */
 
-  function isImageFile(file) {
+  function loadImage(
+    file
+  ) {
 
-    return !!(
-      file &&
-      file.type &&
-      file.type.indexOf("image/") === 0
-    );
-  }
+    return new Promise(
+      function (
+        resolve,
+        reject
+      ) {
 
-  function isPDFFile(file) {
+        const reader =
+          new FileReader();
 
-    return !!(
-      file &&
-      file.type === "application/pdf"
-    );
-  }
+        reader.onload =
+          function () {
+
+            const image =
+              new Image();
+
+            image.onload =
+              function () {
+
+                resolve(
+                  image
+                );
+              };
+
+            image.onerror =
+              function () {
+
+                reject(
+                  new Error(
+                    "Image could not be decoded."
+                  )
+                );
+              };
+
+            image.src =
+              reader.result;
+          };
 
 
-  /* ==========================================================
-     Image Compression
-     ========================================================== */
+        reader.onerror =
+          function () {
 
-  function loadImage(file) {
+            reject(
+              new Error(
+                "File could not be read."
+              )
+            );
+          };
 
-    return new Promise(function (
-      resolve,
-      reject
-    ) {
 
-      const reader =
-        new FileReader();
-
-      reader.onload = function () {
-
-        const image =
-          new Image();
-
-        image.onload = function () {
-          resolve(image);
-        };
-
-        image.onerror = function () {
-          reject(
-            new Error(
-              "Unable to read image."
-            )
-          );
-        };
-
-        image.src = reader.result;
-      };
-
-      reader.onerror = function () {
-
-        reject(
-          new Error(
-            "Unable to read selected file."
-          )
+        reader.readAsDataURL(
+          file
         );
-      };
-
-      reader.readAsDataURL(file);
-    });
+      }
+    );
   }
 
 
@@ -1142,30 +2192,34 @@ window.GoVara26F = (function () {
     maxHeight
   ) {
 
-    let newWidth = width;
-    let newHeight = height;
-
     const ratio =
       Math.min(
+
         maxWidth / width,
+
         maxHeight / height,
+
         1
-      );
 
-    newWidth =
-      Math.round(
-        width * ratio
-      );
-
-    newHeight =
-      Math.round(
-        height * ratio
       );
 
     return {
 
-      width: newWidth,
-      height: newHeight
+      width:
+        Math.max(
+          1,
+          Math.round(
+            width * ratio
+          )
+        ),
+
+      height:
+        Math.max(
+          1,
+          Math.round(
+            height * ratio
+          )
+        )
     };
   }
 
@@ -1176,82 +2230,95 @@ window.GoVara26F = (function () {
     quality
   ) {
 
-    return new Promise(function (
-      resolve,
-      reject
-    ) {
+    return new Promise(
+      function (
+        resolve,
+        reject
+      ) {
 
-      canvas.toBlob(
-        function (blob) {
+        canvas.toBlob(
+          function (
+            blob
+          ) {
 
-          if (!blob) {
+            if (!blob) {
 
-            reject(
-              new Error(
-                "Image compression failed."
-              )
+              reject(
+                new Error(
+                  "Image compression failed."
+                )
+              );
+
+              return;
+            }
+
+            resolve(
+              blob
             );
 
-            return;
-          }
-
-          resolve(blob);
-
-        },
-        type,
-        quality
-      );
-    });
+          },
+          type,
+          quality
+        );
+      }
+    );
   }
 
 
+  /* ============================================================
+     IMAGE COMPRESSION
+     ============================================================ */
+
   async function compressImage(
-    file,
-    options
+    file
   ) {
 
     const config =
       loadConfig();
 
-    options =
-      options || {};
-
     const validation =
-      validateFile(file);
+      validateFile(
+        file
+      );
 
-    if (!validation.valid) {
+    if (
+      !validation.valid
+    ) {
 
       throw new Error(
-        validation.errors.join(" ")
+        validation.errors.join(
+          " "
+        )
       );
     }
 
-    if (!isImageFile(file)) {
+
+    if (
+      !isImageFile(file)
+    ) {
 
       return {
 
-        originalFile: file,
+        originalFile:
+          file,
 
-        processedFile: file,
+        processedFile:
+          file,
 
-        compressed: false,
+        compressed:
+          false,
 
-        resized: false,
+        resized:
+          false,
 
-        originalSize: file.size,
+        originalSize:
+          file.size,
 
-        processedSize: file.size,
-
-        originalSizeFormatted:
-          formatFileSize(file.size),
-
-        processedSizeFormatted:
-          formatFileSize(file.size),
-
-        message:
-          "Image compression was not required."
+        processedSize:
+          file.size
       };
     }
+
 
     if (
       !config.imageProcessing.enabled ||
@@ -1260,35 +2327,52 @@ window.GoVara26F = (function () {
 
       return {
 
-        originalFile: file,
+        originalFile:
+          file,
 
-        processedFile: file,
+        processedFile:
+          file,
 
-        compressed: false,
+        compressed:
+          false,
 
-        resized: false,
+        resized:
+          false,
 
-        originalSize: file.size,
+        originalSize:
+          file.size,
 
-        processedSize: file.size
+        processedSize:
+          file.size
       };
     }
 
+
     const image =
-      await loadImage(file);
+      await loadImage(
+        file
+      );
+
 
     const dimensions =
       calculateDimensions(
+
         image.naturalWidth,
+
         image.naturalHeight,
+
         config.imageProcessing.maxWidth,
+
         config.imageProcessing.maxHeight
+
       );
+
 
     const canvas =
       document.createElement(
         "canvas"
       );
+
 
     canvas.width =
       dimensions.width;
@@ -1296,121 +2380,209 @@ window.GoVara26F = (function () {
     canvas.height =
       dimensions.height;
 
+
     const context =
-      canvas.getContext("2d");
+      canvas.getContext(
+        "2d"
+      );
+
 
     context.drawImage(
+
       image,
+
       0,
+
       0,
+
       dimensions.width,
+
       dimensions.height
+
     );
+
 
     let quality =
       config.imageProcessing.targetQuality;
 
+
     let blob =
       await canvasToBlob(
+
         canvas,
+
         config.imageProcessing.outputFormat,
+
         quality
+
       );
+
 
     const targetBytes =
       config.imageProcessing.targetMaxSizeMB *
       1024 *
       1024;
 
+
     while (
-      blob.size > targetBytes &&
+
+      blob.size >
+      targetBytes &&
+
       quality >
-      config.imageProcessing.minQuality
+      config.imageProcessing.minimumQuality
+
     ) {
 
       quality -= 0.05;
 
       blob =
         await canvasToBlob(
+
           canvas,
+
           config.imageProcessing.outputFormat,
+
           quality
+
         );
     }
 
-    const outputName =
-      file.name.replace(
-        /\.[^/.]+$/,
-        ""
-      ) + ".jpg";
 
-    const processedFile =
-      new File(
-        [blob],
-        outputName,
-        {
-          type:
-            config.imageProcessing.outputFormat,
-          lastModified:
-            Date.now()
-        }
-      );
+    let processedFile =
+      file;
 
-    const resized =
-      dimensions.width !==
-        image.naturalWidth ||
-      dimensions.height !==
-        image.naturalHeight;
+
+    const shouldReplace =
+      !config.imageProcessing.doNotCompressSmallImages ||
+      blob.size < file.size;
+
+
+    if (shouldReplace) {
+
+      processedFile =
+        new File(
+
+          [blob],
+
+          file.name.replace(
+            /\.[^/.]+$/,
+            ""
+          ) + ".jpg",
+
+          {
+            type:
+              config.imageProcessing
+                .outputFormat,
+
+            lastModified:
+              Date.now()
+          }
+
+        );
+    }
+
 
     const compressed =
       processedFile.size <
       file.size;
 
-    addAudit(
-      "IMAGE_PROCESSED",
-      {
-        originalName: file.name,
 
-        originalSize: file.size,
+    const resized =
+
+      dimensions.width !==
+        image.naturalWidth ||
+
+      dimensions.height !==
+        image.naturalHeight;
+
+
+    const reductionPercent =
+
+      file.size > 0
+
+        ? Math.max(
+
+            0,
+
+            (
+              1 -
+              processedFile.size /
+                file.size
+            ) * 100
+
+          )
+
+        : 0;
+
+
+    addAudit(
+
+      "IMAGE_COMPRESSED",
+
+      {
+
+        originalName:
+          file.name,
+
+        originalSize:
+          file.size,
 
         processedSize:
           processedFile.size,
 
-        originalDimensions: {
-          width: image.naturalWidth,
-          height: image.naturalHeight
-        },
+        originalWidth:
+          image.naturalWidth,
 
-        processedDimensions: {
-          width: dimensions.width,
-          height: dimensions.height
-        },
+        originalHeight:
+          image.naturalHeight,
 
-        quality: quality,
+        processedWidth:
+          dimensions.width,
 
-        compressed: compressed,
+        processedHeight:
+          dimensions.height,
 
-        resized: resized
+        quality:
+          quality,
+
+        compressed:
+          compressed,
+
+        resized:
+          resized,
+
+        reductionPercent:
+          reductionPercent
       }
+
     );
+
 
     return {
 
-      originalFile: file,
+      originalFile:
+        file,
 
-      processedFile: processedFile,
+      processedFile:
+        processedFile,
 
-      compressed: compressed,
+      compressed:
+        compressed,
 
-      resized: resized,
+      resized:
+        resized,
 
-      originalSize: file.size,
+      originalSize:
+        file.size,
 
       processedSize:
         processedFile.size,
 
       originalSizeFormatted:
-        formatFileSize(file.size),
+        formatFileSize(
+          file.size
+        ),
 
       processedSizeFormatted:
         formatFileSize(
@@ -1418,65 +2590,79 @@ window.GoVara26F = (function () {
         ),
 
       originalDimensions: {
-        width: image.naturalWidth,
-        height: image.naturalHeight
+
+        width:
+          image.naturalWidth,
+
+        height:
+          image.naturalHeight
       },
 
       processedDimensions: {
-        width: dimensions.width,
-        height: dimensions.height
-      },
 
-      quality: quality,
+        width:
+          dimensions.width,
+
+        height:
+          dimensions.height
+      },
 
       reductionBytes:
         Math.max(
           0,
           file.size -
-          processedFile.size
+            processedFile.size
         ),
 
       reductionPercent:
-        file.size > 0
-          ? Math.max(
-              0,
-              (
-                1 -
-                processedFile.size /
-                  file.size
-              ) * 100
-            )
-          : 0
+        reductionPercent,
+
+      quality:
+        quality
     };
   }
 
 
-  /* ==========================================================
-     Document Processing
-     ========================================================== */
+  /* ============================================================
+     FILE PROCESSING
+     ============================================================ */
 
-  async function processFile(file) {
+  async function processFile(
+    file
+  ) {
 
     const validation =
-      validateFile(file);
+      validateFile(
+        file
+      );
 
-    if (!validation.valid) {
+
+    if (
+      !validation.valid
+    ) {
 
       return {
 
-        success: false,
+        success:
+          false,
 
-        validation: validation,
+        validation:
+          validation,
 
-        originalFile: file,
+        originalFile:
+          file,
 
-        processedFile: null
+        processedFile:
+          null
       };
     }
 
+
     try {
 
-      if (isImageFile(file)) {
+      if (
+        isImageFile(file)
+      ) {
 
         const result =
           await compressImage(
@@ -1485,45 +2671,68 @@ window.GoVara26F = (function () {
 
         return {
 
-          success: true,
+          success:
+            true,
 
-          validation: validation,
+          type:
+            "IMAGE",
 
-          type: "IMAGE",
+          validation:
+            validation,
 
           ...result
         };
       }
 
-      if (isPDFFile(file)) {
+
+      if (
+        isPDFFile(file)
+      ) {
 
         addAudit(
-          "PDF_SELECTED",
+
+          "PDF_ACCEPTED",
+
           {
-            name: file.name,
-            size: file.size
+
+            name:
+              file.name,
+
+            size:
+              file.size
           }
+
         );
+
 
         return {
 
-          success: true,
+          success:
+            true,
 
-          validation: validation,
+          type:
+            "PDF",
 
-          type: "PDF",
+          validation:
+            validation,
 
-          originalFile: file,
+          originalFile:
+            file,
 
-          processedFile: file,
+          processedFile:
+            file,
 
-          compressed: false,
+          compressed:
+            false,
 
-          resized: false,
+          resized:
+            false,
 
-          originalSize: file.size,
+          originalSize:
+            file.size,
 
-          processedSize: file.size,
+          processedSize:
+            file.size,
 
           originalSizeFormatted:
             formatFileSize(
@@ -1533,45 +2742,49 @@ window.GoVara26F = (function () {
           processedSizeFormatted:
             formatFileSize(
               file.size
-            ),
-
-          message:
-            "PDF accepted. Final PDF compression/validation remains backend-authoritative."
+            )
         };
       }
 
+
       return {
 
-        success: false,
+        success:
+          false,
 
         validation: {
 
-          valid: false,
+          valid:
+            false,
 
           errors: [
+
             "Unsupported document type."
+
           ]
         }
       };
 
-    } catch (error) {
 
-      console.error(
-        "GoVara 26F file processing error:",
-        error
-      );
+    } catch (
+      error
+    ) {
 
       return {
 
-        success: false,
+        success:
+          false,
 
         validation: {
 
-          valid: false,
+          valid:
+            false,
 
           errors: [
+
             error.message ||
             "File processing failed."
+
           ]
         }
       };
@@ -1579,18 +2792,17 @@ window.GoVara26F = (function () {
   }
 
 
-  /* ==========================================================
-     Upload Queue
-     ========================================================== */
-
   async function processFiles(
     files
   ) {
 
     const list =
-      Array.from(files || []);
+      Array.from(
+        files || []
+      );
 
     const results = [];
+
 
     for (
       let i = 0;
@@ -1598,107 +2810,148 @@ window.GoVara26F = (function () {
       i++
     ) {
 
-      const result =
+      results.push(
+
         await processFile(
           list[i]
-        );
+        )
 
-      results.push(result);
+      );
     }
+
 
     return results;
   }
 
 
-  /* ==========================================================
-     Document Record Builder
-     ========================================================== */
+  /* ============================================================
+     DOCUMENT RECORD
+     ============================================================ */
 
   function createDocumentRecord(
     processed,
     ownerType,
     ownerId,
-    documentType
+    documentType,
+    uploadedBy
   ) {
 
     if (
       !processed ||
       !processed.success
     ) {
+
       return null;
     }
+
 
     const file =
       processed.processedFile;
 
+
     return {
 
       localId:
+
         "DOC-" +
+
         Date.now() +
+
         "-" +
+
         Math.random()
           .toString(36)
           .slice(2, 8),
 
+
       ownerType:
         ownerType || "",
+
 
       ownerId:
         ownerId || "",
 
+
       documentType:
-        documentType || "otherDocument",
+        documentType ||
+        "otherDocument",
+
 
       filename:
         file.name,
 
+
       mimeType:
         file.type,
 
+
       originalFilename:
+
         processed.originalFile
           ? processed.originalFile.name
           : file.name,
 
+
       originalSize:
         processed.originalSize,
+
 
       processedSize:
         processed.processedSize,
 
-      originalSizeFormatted:
-        processed.originalSizeFormatted,
-
-      processedSizeFormatted:
-        processed.processedSizeFormatted,
 
       compressed:
-        !!processed.compressed,
+        Boolean(
+          processed.compressed
+        ),
+
 
       resized:
-        !!processed.resized,
+        Boolean(
+          processed.resized
+        ),
+
+
+      uploadedBy:
+        uploadedBy ||
+        "ADMIN",
+
 
       status:
-        "pending",
+        "SUBMITTED",
+
 
       verificationStatus:
         "PENDING_BACKEND_VERIFICATION",
 
+
       uploadedAt:
         new Date().toISOString(),
+
 
       expiryDate:
         null,
 
+
       replacementOf:
         null,
+
+
+      rejectionReason:
+        "",
+
+
+      approvalComment:
+        "",
+
 
       backendAuthoritative:
         true,
 
+
       frontendCanApprove:
         false,
+
 
       frontendCanVerify:
         false
@@ -1706,9 +2959,68 @@ window.GoVara26F = (function () {
   }
 
 
-  /* ==========================================================
-     UI
-     ========================================================== */
+  /* ============================================================
+     ADMIN WORKFLOW ACTIONS
+     ============================================================ */
+
+  function adminAction(
+    action,
+    documentId,
+    details
+  ) {
+
+    if (
+      !hasPermission(
+        "Admin",
+        action
+      )
+    ) {
+
+      throw new Error(
+        "Admin does not have permission for: " +
+        action
+      );
+    }
+
+
+    addAudit(
+
+      "ADMIN_" +
+      String(action)
+        .toUpperCase(),
+
+      {
+
+        documentId:
+          documentId,
+
+        details:
+          details || {}
+      }
+
+    );
+
+
+    return {
+
+      success:
+        true,
+
+      action:
+        action,
+
+      documentId:
+        documentId,
+
+      authoritative:
+        "BACKEND"
+    };
+  }
+
+
+  /* ============================================================
+     RENDER
+     ============================================================ */
 
   function render() {
 
@@ -1717,72 +3029,266 @@ window.GoVara26F = (function () {
         "module-26F"
       );
 
+
     if (!mount) {
       return;
     }
+
 
     const config =
       enforceSafety(
         loadConfig()
       );
 
+
     const validation =
       validateConfig(
         config
       );
+
+
+    const roles = [
+      "Admin",
+      "Customer",
+      "Vendor",
+      "Driver",
+      "Backend"
+    ];
+
+
+    const permissionNames = [
+
+      "upload",
+      "view",
+      "download",
+      "replace",
+      "submitKYC",
+      "review",
+      "verify",
+      "approve",
+      "reject",
+      "requestResubmission",
+      "manageExpiry",
+      "manageReplacement",
+      "viewAudit",
+      "configure",
+      "deletePermanently"
+
+    ];
+
+
+    const permissionRows =
+      roles.map(
+        function (role) {
+
+          return `
+
+            <tr>
+
+              <td>
+                <b>
+                  ${role}
+                </b>
+              </td>
+
+              ${permissionNames
+                .map(
+                  function (permission) {
+
+                    const checked =
+                      hasPermission(
+                        role,
+                        permission
+                      );
+
+                    return `
+
+                      <td
+                        style="
+                          text-align:center;
+                        "
+                      >
+
+                        <input
+                          type="checkbox"
+                          data-26f-role="${role}"
+                          data-26f-permission="${permission}"
+                          ${checked ? "checked" : ""}
+                          ${
+                            role === "Backend"
+                              ? "disabled"
+                              : ""
+                          }
+                        >
+
+                      </td>
+
+                    `;
+                  }
+                )
+                .join("")}
+
+            </tr>
+
+          `;
+        }
+      ).join("");
+
+
+    const documentTypeRows =
+      Object.keys(
+        config.documentTypes
+      )
+      .map(
+        function (key) {
+
+          const type =
+            config.documentTypes[key];
+
+
+          return `
+
+            <tr>
+
+              <td>
+                <b>
+                  ${type.label}
+                </b>
+              </td>
+
+              <td>
+                ${
+                  type.customer
+                    ? "YES"
+                    : "NO"
+                }
+              </td>
+
+              <td>
+                ${
+                  type.vendor
+                    ? "YES"
+                    : "NO"
+                }
+              </td>
+
+              <td>
+                ${
+                  type.driver
+                    ? "YES"
+                    : "NO"
+                }
+              </td>
+
+              <td>
+                ${
+                  type.vehicle
+                    ? "YES"
+                    : "NO"
+                }
+              </td>
+
+              <td>
+                ${
+                  type.mandatory
+                    ? "MANDATORY"
+                    : "OPTIONAL"
+                }
+              </td>
+
+            </tr>
+
+          `;
+        }
+      ).join("");
+
 
     mount.innerHTML = `
 
       <div class="page-head">
 
         <h1>
-          26F — Documents & KYC Control
+          26F — Documents & KYC
+          Administrator Control Center
         </h1>
 
         <div class="muted">
-          Document upload, image compression,
-          KYC workflow, expiry and security control.
+
+          Complete document upload,
+          KYC management,
+          administrator permissions,
+          verification workflow,
+          image processing,
+          expiry and audit control.
+
         </div>
 
       </div>
 
 
+      <!-- STATUS -->
+
       <section class="card">
 
-        <h2>26F Status</h2>
+        <h2>
+          26F System Status
+        </h2>
 
         <div class="grid four">
 
           <div>
-            <b>${VERSION}</b>
+
+            <b>
+              ${VERSION}
+            </b>
+
             <div class="muted">
-              Module Version
+              Version
             </div>
+
           </div>
 
+
           <div>
-            <b>TESTING</b>
+
+            <b>
+              TESTING
+            </b>
+
             <div class="muted">
               Environment
             </div>
+
           </div>
 
+
           <div>
+
             <b>
-              ${validation.valid
-                ? "VALID"
-                : "ERROR"}
+              ${
+                validation.valid
+                  ? "VALID"
+                  : "ERROR"
+              }
             </b>
+
             <div class="muted">
               Configuration
             </div>
+
           </div>
 
+
           <div>
-            <b>BACKEND</b>
+
+            <b>
+              BACKEND
+            </b>
+
             <div class="muted">
-              Authority
+              Final Authority
             </div>
+
           </div>
 
         </div>
@@ -1790,10 +3296,40 @@ window.GoVara26F = (function () {
       </section>
 
 
+      <!-- ADMIN ROLE -->
+
       <section class="card">
 
         <h2>
-          Document Upload
+          Administrator Document Control
+        </h2>
+
+        <div class="notice success">
+
+          Administrator can manage documents,
+          upload documents on behalf of users,
+          review submissions,
+          initiate verification,
+          record approval/rejection decisions,
+          request resubmission,
+          manage replacement and expiry.
+
+          <br><br>
+
+          Final authoritative verification and
+          KYC authority remain Backend controlled.
+
+        </div>
+
+      </section>
+
+
+      <!-- UPLOAD -->
+
+      <section class="card">
+
+        <h2>
+          Document Upload & Processing
         </h2>
 
         <div class="grid two">
@@ -1801,20 +3337,36 @@ window.GoVara26F = (function () {
           <div>
 
             <label>
-              Select Documents
+              Select Document(s)
             </label>
 
             <input
               id="govara26f-file-input"
               type="file"
               multiple
-              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
-            />
+              accept="
+                .jpg,
+                .jpeg,
+                .png,
+                .webp,
+                .pdf,
+                image/jpeg,
+                image/png,
+                image/webp,
+                application/pdf
+              "
+            >
 
             <div class="muted">
-              JPG, JPEG, PNG, WebP and PDF.
-              Maximum ${config.upload.maxFileSizeMB} MB
-              before processing.
+
+              Supported:
+              JPG, JPEG, PNG, WebP, PDF
+
+              <br>
+
+              Maximum original file:
+              ${config.upload.maxFileSizeMB} MB
+
             </div>
 
           </div>
@@ -1828,18 +3380,39 @@ window.GoVara26F = (function () {
 
             <div class="muted">
 
-              Images can be automatically resized
-              and compressed before upload.
-
-              Maximum dimensions:
-              ${config.imageProcessing.maxWidth}
-              ×
-              ${config.imageProcessing.maxHeight}
+              Resize:
+              ${
+                config.imageProcessing.resizeEnabled
+                  ? "ON"
+                  : "OFF"
+              }
 
               <br>
 
-              Target image size:
-              ${config.imageProcessing.targetMaxSizeMB}
+              Compression:
+              ${
+                config.imageProcessing.compressionEnabled
+                  ? "ON"
+                  : "OFF"
+              }
+
+              <br>
+
+              Maximum dimensions:
+              ${
+                config.imageProcessing.maxWidth
+              }
+              ×
+              ${
+                config.imageProcessing.maxHeight
+              }
+
+              <br>
+
+              Target size:
+              ${
+                config.imageProcessing.targetMaxSizeMB
+              }
               MB
 
             </div>
@@ -1851,115 +3424,293 @@ window.GoVara26F = (function () {
 
         <div
           id="govara26f-upload-results"
-          class="govara26f-upload-results"
           style="margin-top:16px;"
-        >
-        </div>
+        ></div>
 
       </section>
 
 
+      <!-- ROLE PERMISSIONS -->
+
       <section class="card">
 
         <h2>
-          KYC Authority
+          Role-wise Document & KYC Permissions
         </h2>
 
-        <div class="notice warn">
+        <div
+          style="
+            overflow-x:auto;
+          "
+        >
 
-          Frontend केवल document selection,
-          validation, preview और image processing करेगा.
+          <table>
 
-          <br><br>
+            <thead>
 
-          KYC approval, verification,
-          rejection और final document authority
-          Backend के पास रहेगी.
+              <tr>
+
+                <th>
+                  Role
+                </th>
+
+                ${permissionNames
+                  .map(
+                    function (permission) {
+
+                      return `
+                        <th>
+                          ${permission}
+                        </th>
+                      `;
+                    }
+                  )
+                  .join("")}
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${permissionRows}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <div class="muted"
+             style="margin-top:12px;">
+
+          Backend permissions are locked.
+          Permanent deletion remains disabled
+          for frontend administration.
 
         </div>
 
       </section>
 
 
+      <!-- DOCUMENT TYPE MATRIX -->
+
       <section class="card">
 
         <h2>
-          File Controls
+          Document Type Matrix
+        </h2>
+
+        <div
+          style="
+            overflow-x:auto;
+          "
+        >
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Document
+                </th>
+
+                <th>
+                  Customer
+                </th>
+
+                <th>
+                  Vendor
+                </th>
+
+                <th>
+                  Driver
+                </th>
+
+                <th>
+                  Vehicle
+                </th>
+
+                <th>
+                  Requirement
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${documentTypeRows}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- KYC -->
+
+      <section class="card">
+
+        <h2>
+          KYC Control
+        </h2>
+
+        <div class="grid four">
+
+          <div>
+
+            <b>
+              CUSTOMER
+            </b>
+
+            <div class="muted">
+
+              ${
+                config.kyc.customerKYCRequired
+                  ? "KYC REQUIRED"
+                  : "OPTIONAL"
+              }
+
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              VENDOR
+            </b>
+
+            <div class="muted">
+
+              ${
+                config.kyc.vendorKYCRequired
+                  ? "KYC REQUIRED"
+                  : "OPTIONAL"
+              }
+
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              DRIVER
+            </b>
+
+            <div class="muted">
+
+              ${
+                config.kyc.driverKYCRequired
+                  ? "KYC REQUIRED"
+                  : "OPTIONAL"
+              }
+
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              VEHICLE
+            </b>
+
+            <div class="muted">
+
+              ${
+                config.kyc.vehicleKYCRequired
+                  ? "KYC REQUIRED"
+                  : "OPTIONAL"
+              }
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- WORKFLOW -->
+
+      <section class="card">
+
+        <h2>
+          Administrator KYC Workflow
+        </h2>
+
+        <div class="notice">
+
+          Registration
+
+          →
+          
+          Document Upload
+
+          →
+
+          Submission
+
+          →
+
+          Admin Review
+
+          →
+
+          Verification
+
+          →
+
+          Administrative Decision
+
+          →
+
+          Backend Final Authority
+
+          →
+
+          Approved / Rejected
+
+          →
+
+          Resubmission if required
+
+          →
+
+          Renewal / Replacement on expiry
+
+        </div>
+
+      </section>
+
+
+      <!-- SECURITY -->
+
+      <section class="card">
+
+        <h2>
+          Security & Access
         </h2>
 
         <div class="grid three">
 
           <div>
-            <b>
-              ${config.upload.maxFileSizeMB} MB
-            </b>
-            <div class="muted">
-              Max Upload Size
-            </div>
-          </div>
-
-          <div>
-            <b>
-              ${config.imageProcessing.compressionEnabled
-                ? "ON"
-                : "OFF"}
-            </b>
-            <div class="muted">
-              Image Compression
-            </div>
-          </div>
-
-          <div>
-            <b>
-              ${config.imageProcessing.resizeEnabled
-                ? "ON"
-                : "OFF"}
-            </b>
-            <div class="muted">
-              Image Resize
-            </div>
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <section class="card">
-
-        <h2>
-          Document Lifecycle
-        </h2>
-
-        <div class="notice">
-
-          Upload →
-          Validation →
-          Image Processing →
-          Submission →
-          Backend Review →
-          Approval / Rejection →
-          Active / Resubmission →
-          Expiry →
-          Renewal / Replacement
-
-        </div>
-
-      </section>
-
-
-      <section class="card">
-
-        <h2>
-          Security
-        </h2>
-
-        <div class="grid two">
-
-          <div>
 
             <b>
-              Public Access
+              Public Documents
             </b>
 
             <div class="muted">
@@ -1967,6 +3718,7 @@ window.GoVara26F = (function () {
             </div>
 
           </div>
+
 
           <div>
 
@@ -1980,10 +3732,11 @@ window.GoVara26F = (function () {
 
           </div>
 
+
           <div>
 
             <b>
-              Automatic KYC Approval
+              Automatic Approval
             </b>
 
             <div class="muted">
@@ -1992,14 +3745,41 @@ window.GoVara26F = (function () {
 
           </div>
 
+
           <div>
 
             <b>
-              Frontend Verification
+              Automatic Verification
             </b>
 
             <div class="muted">
               BLOCKED
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              Cross-role Access
+            </b>
+
+            <div class="muted">
+              ADMIN CONTROLLED
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              Backend Authority
+            </b>
+
+            <div class="muted">
+              ENABLED
             </div>
 
           </div>
@@ -2009,45 +3789,143 @@ window.GoVara26F = (function () {
       </section>
 
 
+      <!-- EXPIRY -->
+
       <section class="card">
 
         <h2>
-          Configuration
+          Expiry & Renewal
+        </h2>
+
+        <div class="grid three">
+
+          <div>
+
+            <b>
+              ${
+                config.expiry.primaryAlertDays
+              } Days
+            </b>
+
+            <div class="muted">
+              Primary Alert
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              ${
+                config.expiry.secondAlertDays
+              } Days
+            </b>
+
+            <div class="muted">
+              Second Alert
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              ENABLED
+            </b>
+
+            <div class="muted">
+              Expiry Tracking
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- VALIDATION -->
+
+      <section class="card">
+
+        <h2>
+          Configuration Validation
         </h2>
 
         ${
-          validation.errors.length
+          validation.valid
+
             ? `
-              <div class="notice danger">
-                ${validation.errors
-                  .map(function (x) {
-                    return "• " + x;
-                  })
-                  .join("<br>")}
-              </div>
-            `
-            : `
+
               <div class="notice success">
+
                 26F configuration is valid.
+
               </div>
+
+            `
+
+            : `
+
+              <div class="notice danger">
+
+                ${
+                  validation.errors
+                    .map(
+                      function (error) {
+
+                        return (
+                          "• " +
+                          error
+                        );
+                      }
+                    )
+                    .join("<br>")
+                }
+
+              </div>
+
             `
         }
+
 
         ${
           validation.warnings.length
+
             ? `
-              <div class="notice warn">
-                ${validation.warnings
-                  .map(function (x) {
-                    return "• " + x;
-                  })
-                  .join("<br>")}
+
+              <div class="notice warn"
+                   style="margin-top:10px;">
+
+                ${
+                  validation.warnings
+                    .map(
+                      function (warning) {
+
+                        return (
+                          "• " +
+                          warning
+                        );
+                      }
+                    )
+                    .join("<br>")
+                }
+
               </div>
+
             `
+
             : ""
         }
 
-        <div style="margin-top:16px;">
+
+        <div
+          style="
+            margin-top:16px;
+          "
+        >
 
           <button
             type="button"
@@ -2056,6 +3934,7 @@ window.GoVara26F = (function () {
             Save
           </button>
 
+
           <button
             type="button"
             data-26f-action="reload"
@@ -2063,12 +3942,14 @@ window.GoVara26F = (function () {
             Reload
           </button>
 
+
           <button
             type="button"
             data-26f-action="validate"
           >
             Validate
           </button>
+
 
           <button
             type="button"
@@ -2083,13 +3964,14 @@ window.GoVara26F = (function () {
 
     `;
 
+
     bind();
   }
 
 
-  /* ==========================================================
-     Bind
-     ========================================================== */
+  /* ============================================================
+     BIND
+     ============================================================ */
 
   function bind() {
 
@@ -2098,207 +3980,344 @@ window.GoVara26F = (function () {
         "govara26f-file-input"
       );
 
-    const resultBox =
+
+    const resultsBox =
       document.getElementById(
         "govara26f-upload-results"
       );
 
+
     if (input) {
 
       input.addEventListener(
+
         "change",
+
         async function () {
 
-          if (!resultBox) {
+          if (!resultsBox) {
             return;
           }
 
-          resultBox.innerHTML =
-            "<div class='notice'>Processing files...</div>";
+
+          resultsBox.innerHTML =
+
+            `<div class="notice">
+              Processing selected documents...
+            </div>`;
+
 
           const results =
             await processFiles(
               input.files
             );
 
-          resultBox.innerHTML =
-            results.map(
-              function (result) {
 
-                if (!result.success) {
+          resultsBox.innerHTML =
+
+            results
+              .map(
+                function (result) {
+
+                  if (
+                    !result.success
+                  ) {
+
+                    return `
+
+                      <div
+                        class="notice danger"
+                        style="
+                          margin-top:8px;
+                        "
+                      >
+
+                        ❌
+                        ${
+                          result.validation &&
+                          result.validation.errors
+
+                            ? result.validation.errors.join(
+                                " "
+                              )
+
+                            : "File processing failed."
+                        }
+
+                      </div>
+
+                    `;
+                  }
+
 
                   return `
-                    <div class="notice danger"
-                         style="margin-top:8px;">
-                      ❌ File rejected:
+
+                    <div
+                      class="notice"
+                      style="
+                        margin-top:8px;
+                      "
+                    >
+
+                      <b>
+
+                        ${
+                          result.originalFile
+                            ? result.originalFile.name
+                            : "Document"
+                        }
+
+                      </b>
+
+                      <br>
+
+                      Type:
                       ${
-                        result.validation &&
-                        result.validation.errors
-                          ? result.validation.errors.join(
-                              " "
-                            )
-                          : "Processing failed."
+                        result.type
                       }
+
+                      <br>
+
+                      Original:
+                      ${
+                        result.originalSizeFormatted
+                      }
+
+                      <br>
+
+                      Processed:
+                      ${
+                        result.processedSizeFormatted
+                      }
+
+                      ${
+                        result.reductionPercent !==
+                        undefined
+
+                          ? `
+                            <br>
+                            Reduction:
+                            ${
+                              result.reductionPercent.toFixed(
+                                1
+                              )
+                            }%
+                          `
+
+                          : ""
+                      }
+
+                      ${
+                        result.originalDimensions
+
+                          ? `
+                            <br>
+                            Dimensions:
+                            ${
+                              result.originalDimensions.width
+                            }
+                            ×
+                            ${
+                              result.originalDimensions.height
+                            }
+
+                            →
+
+                            ${
+                              result.processedDimensions.width
+                            }
+                            ×
+                            ${
+                              result.processedDimensions.height
+                            }
+                          `
+
+                          : ""
+                      }
+
+                      <br>
+
+                      <b>
+                        READY FOR ADMIN SUBMISSION
+                      </b>
+
+                      <br>
+
+                      Final verification:
+                      BACKEND AUTHORITY
+
                     </div>
+
                   `;
                 }
-
-                return `
-
-                  <div
-                    class="notice"
-                    style="margin-top:8px;"
-                  >
-
-                    <b>
-                      ${
-                        result.originalFile
-                          ? result.originalFile.name
-                          : "Document"
-                      }
-                    </b>
-
-                    <br>
-
-                    Type:
-                    ${result.type || "DOCUMENT"}
-
-                    <br>
-
-                    Original:
-                    ${
-                      result.originalSizeFormatted ||
-                      formatFileSize(
-                        result.originalSize
-                      )
-                    }
-
-                    <br>
-
-                    Processed:
-                    ${
-                      result.processedSizeFormatted ||
-                      formatFileSize(
-                        result.processedSize
-                      )
-                    }
-
-                    ${
-                      result.reductionPercent
-                        ? `
-                          <br>
-                          Reduced by:
-                          ${result.reductionPercent.toFixed(
-                            1
-                          )}%
-                        `
-                        : ""
-                    }
-
-                    ${
-                      result.originalDimensions
-                        ? `
-                          <br>
-                          Dimensions:
-                          ${
-                            result.originalDimensions.width
-                          }
-                          ×
-                          ${
-                            result.originalDimensions.height
-                          }
-                          →
-                          ${
-                            result.processedDimensions.width
-                          }
-                          ×
-                          ${
-                            result.processedDimensions.height
-                          }
-                        `
-                        : ""
-                    }
-
-                    <br>
-
-                    Status:
-                    READY FOR BACKEND SUBMISSION
-
-                  </div>
-
-                `;
-              }
-            ).join("");
+              )
+              .join("");
 
         }
+
       );
     }
 
 
     document
       .querySelectorAll(
+        "[data-26f-role]"
+      )
+      .forEach(
+        function (checkbox) {
+
+          checkbox.addEventListener(
+
+            "change",
+
+            function () {
+
+              const role =
+                checkbox.getAttribute(
+                  "data-26f-role"
+                );
+
+              const permission =
+                checkbox.getAttribute(
+                  "data-26f-permission"
+                );
+
+
+              if (
+                role === "Backend"
+              ) {
+
+                checkbox.checked =
+                  true;
+
+                return;
+              }
+
+
+              try {
+
+                setRolePermission(
+
+                  role,
+
+                  permission,
+
+                  checkbox.checked
+
+                );
+
+              } catch (error) {
+
+                console.error(
+                  "26F permission update failed:",
+                  error
+                );
+
+                checkbox.checked =
+                  !checkbox.checked;
+              }
+
+            }
+
+          );
+        }
+      );
+
+
+    document
+      .querySelectorAll(
         "[data-26f-action]"
       )
-      .forEach(function (button) {
+      .forEach(
+        function (button) {
 
-        button.addEventListener(
-          "click",
-          function () {
+          button.addEventListener(
 
-            const action =
-              button.getAttribute(
-                "data-26f-action"
-              );
+            "click",
 
-            if (action === "save") {
+            function () {
 
-              save();
+              const action =
+                button.getAttribute(
+                  "data-26f-action"
+                );
 
-              alert(
-                "26F configuration saved."
-              );
 
-              render();
+              if (
+                action === "save"
+              ) {
+
+                save();
+
+                alert(
+                  "26F configuration saved."
+                );
+
+                render();
+
+                return;
+              }
+
+
+              if (
+                action === "reload"
+              ) {
+
+                render();
+
+                return;
+              }
+
+
+              if (
+                action === "validate"
+              ) {
+
+                const result =
+                  validate();
+
+
+                alert(
+
+                  result.valid
+
+                    ? "26F configuration is valid."
+
+                    : result.errors.join(
+                        "\n"
+                      )
+
+                );
+
+                return;
+              }
+
+
+              if (
+                action === "reset"
+              ) {
+
+                reset();
+
+                alert(
+                  "26F configuration reset."
+                );
+
+                render();
+
+              }
 
             }
 
-            if (action === "reload") {
-
-              render();
-
-            }
-
-            if (action === "validate") {
-
-              const result =
-                validate();
-
-              alert(
-                result.valid
-                  ? "26F configuration is valid."
-                  : result.errors.join("\n")
-              );
-
-            }
-
-            if (action === "reset") {
-
-              reset();
-
-              render();
-
-            }
-
-          }
-        );
-
-      });
+          );
+        }
+      );
   }
 
 
-  /* ==========================================================
-     Public Configuration Methods
-     ========================================================== */
+  /* ============================================================
+     PUBLIC CONFIG API
+     ============================================================ */
 
   function getConfig() {
 
@@ -2306,6 +4325,7 @@ window.GoVara26F = (function () {
       loadConfig()
     );
   }
+
 
   function getStatus() {
 
@@ -2317,9 +4337,11 @@ window.GoVara26F = (function () {
         config
       );
 
+
     return {
 
-      version: VERSION,
+      version:
+        VERSION,
 
       environment:
         config.environment.mode,
@@ -2336,16 +4358,23 @@ window.GoVara26F = (function () {
       uploadEnabled:
         config.upload.enabled,
 
-      imageCompressionEnabled:
-        config.imageProcessing
-          .compressionEnabled,
+      imageCompression:
+        config.imageProcessing.compressionEnabled,
 
-      imageResizeEnabled:
-        config.imageProcessing
-          .resizeEnabled,
+      imageResize:
+        config.imageProcessing.resizeEnabled,
 
       maxFileSizeMB:
         config.upload.maxFileSizeMB,
+
+      adminDocumentManagement:
+        config.adminPermissions.documentManagement,
+
+      adminReview:
+        config.adminPermissions.documentReview,
+
+      adminVerification:
+        config.adminPermissions.documentVerificationInitiation,
 
       backendAuthority:
         config.authority.backendAuthority,
@@ -2355,62 +4384,93 @@ window.GoVara26F = (function () {
     };
   }
 
-  function save(config) {
+
+  function save(
+    config
+  ) {
 
     config =
       enforceSafety(
         config || loadConfig()
       );
 
+
     const validation =
       validateConfig(
         config
       );
 
-    if (!validation.valid) {
+
+    if (
+      !validation.valid
+    ) {
 
       throw new Error(
-        validation.errors.join(" ")
+        validation.errors.join(
+          " "
+        )
       );
     }
 
-    saveConfig(config);
+
+    saveConfig(
+      config
+    );
+
 
     addAudit(
       "CONFIG_SAVED",
       {
-        version: VERSION
+        version:
+          VERSION
       }
     );
 
+
     return {
-      success: true,
-      validation: validation
+
+      success:
+        true,
+
+      validation:
+        validation
     };
   }
+
 
   function reset() {
 
     const config =
       enforceSafety(
-        clone(DEFAULT_CONFIG)
+        clone(
+          DEFAULT_CONFIG
+        )
       );
 
-    saveConfig(config);
+
+    saveConfig(
+      config
+    );
+
 
     addAudit(
       "CONFIG_RESET",
       {
-        version: VERSION
+        version:
+          VERSION
       }
     );
+
 
     return config;
   }
 
+
   function reload() {
+
     return loadConfig();
   }
+
 
   function validate() {
 
@@ -2418,6 +4478,7 @@ window.GoVara26F = (function () {
       loadConfig()
     );
   }
+
 
   function setPolicy(
     path,
@@ -2427,56 +4488,85 @@ window.GoVara26F = (function () {
     const config =
       loadConfig();
 
+
     const parts =
-      String(path).split(".");
+      String(path).split(
+        "."
+      );
+
 
     let target =
       config;
 
+
     for (
       let i = 0;
-      i < parts.length - 1;
+      i <
+      parts.length - 1;
       i++
     ) {
 
       if (
         !target[parts[i]] ||
-        typeof target[parts[i]] !== "object"
+        typeof target[parts[i]] !==
+          "object"
       ) {
-        target[parts[i]] = {};
+
+        target[parts[i]] =
+          {};
       }
 
+
       target =
-        target[parts[i]];
+        target[
+          parts[i]
+        ];
     }
 
+
     target[
-      parts[parts.length - 1]
+      parts[
+        parts.length - 1
+      ]
     ] = value;
 
-    enforceSafety(config);
 
-    saveConfig(config);
+    enforceSafety(
+      config
+    );
+
+
+    saveConfig(
+      config
+    );
+
 
     addAudit(
       "POLICY_UPDATED",
       {
-        path: path,
-        value: value
+        path:
+          path,
+
+        value:
+          value
       }
     );
 
+
     return config;
   }
+
 
   function getAudit() {
 
     try {
 
       return JSON.parse(
+
         localStorage.getItem(
           AUDIT_KEY
         ) || "[]"
+
       );
 
     } catch (error) {
@@ -2486,9 +4576,9 @@ window.GoVara26F = (function () {
   }
 
 
-  /* ==========================================================
-     Initialization
-     ========================================================== */
+  /* ============================================================
+     INITIALIZATION
+     ============================================================ */
 
   function renderAndBind() {
 
@@ -2497,7 +4587,9 @@ window.GoVara26F = (function () {
 
 
   document.addEventListener(
+
     "DOMContentLoaded",
+
     function () {
 
       try {
@@ -2507,68 +4599,109 @@ window.GoVara26F = (function () {
             "module-26F"
           );
 
+
         if (mount) {
+
           renderAndBind();
+
         }
 
       } catch (error) {
 
         console.error(
+
           "GoVara 26F initialization error:",
+
           error
+
         );
       }
 
     }
+
   );
 
 
-  /* ==========================================================
-     Public API
-     ========================================================== */
+  /* ============================================================
+     PUBLIC API
+     ============================================================ */
 
   return {
 
-    VERSION: VERSION,
+    VERSION:
+      VERSION,
 
-    STORAGE_KEY: STORAGE_KEY,
+    STORAGE_KEY:
+      STORAGE_KEY,
 
-    AUDIT_KEY: AUDIT_KEY,
+    AUDIT_KEY:
+      AUDIT_KEY,
 
-    render: render,
+    render:
+      render,
 
-    bind: bind,
+    bind:
+      bind,
 
-    renderAndBind: renderAndBind,
+    renderAndBind:
+      renderAndBind,
 
-    getConfig: getConfig,
+    getConfig:
+      getConfig,
 
-    getStatus: getStatus,
+    getStatus:
+      getStatus,
 
-    save: save,
+    save:
+      save,
 
-    reset: reset,
+    reset:
+      reset,
 
-    reload: reload,
+    reload:
+      reload,
 
-    validate: validate,
+    validate:
+      validate,
 
-    setPolicy: setPolicy,
+    setPolicy:
+      setPolicy,
 
-    getAudit: getAudit,
+    getAudit:
+      getAudit,
 
-    enforceSafety: enforceSafety,
+    enforceSafety:
+      enforceSafety,
 
-    validateFile: validateFile,
+    hasPermission:
+      hasPermission,
 
-    processFile: processFile,
+    getRolePermissions:
+      getRolePermissions,
 
-    processFiles: processFiles,
+    setRolePermission:
+      setRolePermission,
 
-    compressImage: compressImage,
+    isDocumentAllowedForRole:
+      isDocumentAllowedForRole,
+
+    validateFile:
+      validateFile,
+
+    processFile:
+      processFile,
+
+    processFiles:
+      processFiles,
+
+    compressImage:
+      compressImage,
 
     createDocumentRecord:
       createDocumentRecord,
+
+    adminAction:
+      adminAction,
 
     formatFileSize:
       formatFileSize

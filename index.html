@@ -1,27 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <meta
-    name="description"
-    content="GoVara Administrator Control Center"
-  />
-  <meta
-    name="theme-color"
-    content="#111827"
-  />
-  <title>GoVara — Administrator Control Center</title>
-
-  <style>
-    /* =========================================================
-       GOVARA MASTER FRONTEND
-       Clean Dark / High Contrast Theme
-       ========================================================= */
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GoVara Administrator Control Center" />
+  <meta name="theme-color" content="#111827" />
+  <title>GoVara — Administrator Control Center</title>  <style>
     :root {
       --bg: #0f172a;
       --bg-deep: #0b1120;
@@ -42,8 +25,7 @@
       --sidebar-width: 285px;
       --topbar-height: 72px;
       --radius: 14px;
-      --shadow:
-        0 12px 35px rgba(0, 0, 0, 0.30);
+      --shadow: 0 12px 35px rgba(0, 0, 0, 0.30);
     }
 
     * {
@@ -110,8 +92,7 @@
           #141e30 100%
         );
       border-bottom: 1px solid var(--border);
-      box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.28);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.28);
     }
 
     .brand {
@@ -425,10 +406,7 @@
     .dashboard-grid {
       display: grid;
       grid-template-columns:
-        repeat(
-          4,
-          minmax(0, 1fr)
-        );
+        repeat(4, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 18px;
     }
@@ -512,10 +490,7 @@
     .overview-list {
       display: grid;
       grid-template-columns:
-        repeat(
-          2,
-          minmax(0, 1fr)
-        );
+        repeat(2, minmax(0, 1fr));
       gap: 10px;
       margin-top: 16px;
     }
@@ -575,12 +550,12 @@
     }
 
     /* =========================================================
-       CUSTOMER MODULE SUPPORT
+       CUSTOMER MODULE
        ========================================================= */
 
     .govara-customer-module {
       width: 100%;
-      padding: 22px;
+      padding: 24px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background:
@@ -597,12 +572,12 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 18px;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
     .govara-module-header h2 {
       margin: 0;
-      font-size: 24px;
+      font-size: 25px;
       font-weight: 850;
     }
 
@@ -614,7 +589,7 @@
     }
 
     .govara-status-badge {
-      flex: 0 0 auto;
+      flex-shrink: 0;
       padding: 7px 10px;
       border: 1px solid #256579;
       border-radius: 999px;
@@ -622,16 +597,13 @@
       color: #bae6fd;
       font-size: 10px;
       font-weight: 900;
-      white-space: nowrap;
+      letter-spacing: 0.5px;
     }
 
     .govara-form-grid {
       display: grid;
       grid-template-columns:
-        repeat(
-          2,
-          minmax(0, 1fr)
-        );
+        repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
 
@@ -642,19 +614,14 @@
     }
 
     .govara-form-group label {
-      color: #e5edf8;
+      color: #e2e8f0;
       font-size: 12px;
       font-weight: 800;
     }
 
     .govara-form-group small {
-      color: #91a0b5;
+      color: #94a3b8;
       font-size: 10px;
-    }
-
-    .govara-form-group textarea {
-      min-height: 105px;
-      resize: vertical;
     }
 
     .govara-form-group:nth-child(4) {
@@ -664,18 +631,22 @@
     .govara-id-note {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       margin-top: 18px;
       padding: 12px 14px;
       border: 1px solid #34445b;
       border-radius: 10px;
-      background: #182538;
-      color: #aebcd0;
-      font-size: 11px;
+      background: #111b2b;
     }
 
     .govara-id-note strong {
-      color: #dbeafe;
+      color: #93c5fd;
+      font-size: 11px;
+    }
+
+    .govara-id-note span {
+      color: #aebbd0;
+      font-size: 11px;
     }
 
     .govara-form-actions {
@@ -685,30 +656,27 @@
     }
 
     .govara-form-actions button {
-      border: 1px solid #45617e;
+      border: 1px solid #3973b8;
       border-radius: 9px;
       padding: 10px 16px;
-      background: #20314a;
+      background: #1d4f91;
       color: #ffffff;
       font-weight: 800;
     }
 
     .govara-form-actions button:hover {
-      background: #294263;
-    }
-
-    .govara-form-actions button:first-child {
-      border-color: #3973b8;
-      background: #1d4f91;
-    }
-
-    .govara-form-actions button:first-child:hover {
-      background: #2563a6;
+      background: #2563a8;
     }
 
     .govara-form-actions button:disabled {
-      opacity: 0.55;
+      opacity: 0.65;
       cursor: not-allowed;
+    }
+
+    .govara-form-actions button:last-child {
+      border-color: #45566f;
+      background: #202d42;
+      color: #d9e2ef;
     }
 
     .govara-message {
@@ -719,20 +687,20 @@
       line-height: 1.5;
     }
 
-    .govara-message-success {
-      border: 1px solid #347a4b;
-      background: #153321;
-      color: #bbf7d0;
-    }
-
     .govara-message-error {
       border: 1px solid #7f3040;
       background: #351923;
       color: #fecdd3;
     }
 
+    .govara-message-success {
+      border: 1px solid #347a4b;
+      background: #153321;
+      color: #bbf7d0;
+    }
+
     .govara-message-info {
-      border: 1px solid #256579;
+      border: 1px solid #2c6070;
       background: #102c38;
       color: #bae6fd;
     }
@@ -742,7 +710,7 @@
       padding: 18px;
       border: 1px solid #347a4b;
       border-radius: 12px;
-      background: #153321;
+      background: #13291c;
     }
 
     .govara-success-card h3 {
@@ -753,11 +721,10 @@
 
     .govara-id-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 15px;
       padding: 9px 0;
-      border-bottom: 1px solid rgba(187, 247, 208, 0.12);
+      border-bottom: 1px solid #284b35;
       font-size: 12px;
     }
 
@@ -766,13 +733,13 @@
     }
 
     .govara-id-row span {
-      color: #a7c9b0;
+      color: #a7bcae;
     }
 
     .govara-id-row strong {
-      color: #ecfdf5;
+      color: #f0fff4;
       text-align: right;
-      word-break: break-word;
+      word-break: break-all;
     }
 
     /* =========================================================
@@ -811,7 +778,7 @@
     }
 
     /* =========================================================
-       ACCESSIBILITY / READABILITY
+       ACCESSIBILITY
        ========================================================= */
 
     .muted {
@@ -846,10 +813,7 @@
     @media (max-width: 1150px) {
       .dashboard-grid {
         grid-template-columns:
-          repeat(
-            2,
-            minmax(0, 1fr)
-          );
+          repeat(2, minmax(0, 1fr));
       }
 
       .status-badges {
@@ -923,10 +887,7 @@
       .nav-list {
         display: grid;
         grid-template-columns:
-          repeat(
-            2,
-            minmax(0, 1fr)
-          );
+          repeat(2, minmax(0, 1fr));
       }
 
       .dashboard-grid {
@@ -948,6 +909,10 @@
       .govara-module-header {
         flex-direction: column;
       }
+
+      .govara-status-badge {
+        align-self: flex-start;
+      }
     }
 
     @media (max-width: 450px) {
@@ -966,921 +931,773 @@
       .govara-customer-module {
         padding: 16px;
       }
-
-      .govara-form-actions {
-        flex-direction: column;
-      }
-
-      .govara-id-row {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .govara-id-row strong {
-        text-align: left;
-      }
     }
-  </style>
-</head>
-
-<body>
-
-  <!-- =======================================================
+  </style></head><body>  <!-- =======================================================
        TOPBAR
-       ======================================================= -->
+       ======================================================= -->  <header class="topbar"><div class="brand">
+  <div class="brand-mark">G</div>
 
-  <header class="topbar">
-
-    <div class="brand">
-
-      <div class="brand-mark">
-        G
-      </div>
-
-      <div class="brand-text">
-
-        <div class="brand-title">
-          GoVara Administrator Control Center
-        </div>
-
-        <div class="brand-subtitle">
-          New Transport & Mobility Platform
-        </div>
-
-      </div>
-
+  <div class="brand-text">
+    <div class="brand-title">
+      GoVara Administrator Control Center
     </div>
 
-    <div class="status-badges">
-
-      <div
-        id="status-frontend"
-        class="status-badge ready"
-      >
-        ● FRONTEND READY
-      </div>
-
-      <div
-        id="status-api"
-        class="status-badge api"
-      >
-        ● API NOT CONFIGURED
-      </div>
-
-      <div
-        id="status-testing"
-        class="status-badge testing"
-      >
-        ● TESTING MODE
-      </div>
-
-      <div
-        id="status-money"
-        class="status-badge blocked"
-      >
-        ● REAL MONEY BLOCKED
-      </div>
-
+    <div class="brand-subtitle">
+      New Transport & Mobility Platform
     </div>
+  </div>
+</div>
 
-  </header>
+<div class="status-badges">
 
+  <div
+    id="status-frontend"
+    class="status-badge ready"
+  >
+    ● FRONTEND READY
+  </div>
 
-  <!-- =======================================================
+  <div
+    id="status-api"
+    class="status-badge api"
+  >
+    ● API NOT CONFIGURED
+  </div>
+
+  <div
+    id="status-testing"
+    class="status-badge testing"
+  >
+    ● TESTING MODE
+  </div>
+
+  <div
+    id="status-money"
+    class="status-badge blocked"
+  >
+    ● REAL MONEY BLOCKED
+  </div>
+
+</div>
+
+  </header>  <!-- =======================================================
        APP SHELL
-       ======================================================= -->
+       ======================================================= -->  <div class="app-shell"><!-- =====================================================
+     SIDEBAR
+     ===================================================== -->
 
-  <div class="app-shell">
+<aside class="sidebar">
 
-    <!-- =====================================================
-         SIDEBAR
-         ===================================================== -->
+  <div class="sidebar-section-title">
+    Main
+  </div>
 
-    <aside class="sidebar">
+  <nav
+    id="govara-sidebar"
+    class="nav-list"
+    aria-label="GoVara Navigation"
+  >
 
-      <div class="sidebar-section-title">
-        Main
-      </div>
+    <button
+      type="button"
+      class="nav-btn active"
+      data-page="dashboard"
+    >
+      <span class="nav-code">HOME</span>
 
-      <nav
-        id="govara-sidebar"
-        class="nav-list"
-        aria-label="GoVara Navigation"
-      >
-
-        <!-- DASHBOARD -->
-
-        <button
-          type="button"
-          class="nav-btn active"
-          data-page="dashboard"
-        >
-          <span class="nav-code">
-            HOME
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Dashboard
-            </span>
-
-            <span class="nav-description">
-              Platform overview
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26A -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26A"
-        >
-          <span class="nav-code">
-            26A
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              System Configuration
-            </span>
-
-            <span class="nav-description">
-              Platform identity & system controls
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26B -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26B"
-        >
-          <span class="nav-code">
-            26B
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              User & Role Control
-            </span>
-
-            <span class="nav-description">
-              Roles, users & permissions
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26C -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26C"
-        >
-          <span class="nav-code">
-            26C
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Business Policies
-            </span>
-
-            <span class="nav-description">
-              Fare, charges & business rules
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26D -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26D"
-        >
-          <span class="nav-code">
-            26D
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Operations Control
-            </span>
-
-            <span class="nav-description">
-              Booking, duty & operations
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26E -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26E"
-        >
-          <span class="nav-code">
-            26E
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Financial Control
-            </span>
-
-            <span class="nav-description">
-              Financial safety & controls
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26F -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26F"
-        >
-          <span class="nav-code">
-            26F
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Documents & KYC
-            </span>
-
-            <span class="nav-description">
-              Documents, KYC & verification
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 26G -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26G"
-        >
-          <span class="nav-code">
-            26G
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Audit & Monitoring
-            </span>
-
-            <span class="nav-description">
-              Audit events & system monitoring
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 27 -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="27"
-        >
-          <span class="nav-code">
-            27
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Consolidated API
-            </span>
-
-            <span class="nav-description">
-              Single API boundary
-            </span>
-          </span>
-        </button>
-
-
-        <!-- 28 CUSTOMER -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="28"
-        >
-          <span class="nav-code">
-            28
-          </span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Customer
-            </span>
-
-            <span class="nav-description">
-              Customer registration & profile
-            </span>
-          </span>
-        </button>
-
-      </nav>
-
-
-      <div class="future-card">
-
-        <span class="future-badge">
-          NEXT
+      <span class="nav-text">
+        <span class="nav-title">
+          Dashboard
         </span>
 
-        <div class="future-title">
-          Modular Expansion
-        </div>
+        <span class="nav-description">
+          Platform overview
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26A"
+    >
+      <span class="nav-code">26A</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          System Configuration
+        </span>
+
+        <span class="nav-description">
+          Platform identity & system controls
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26B"
+    >
+      <span class="nav-code">26B</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          User & Role Control
+        </span>
+
+        <span class="nav-description">
+          Roles, users & permissions
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26C"
+    >
+      <span class="nav-code">26C</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Business Policies
+        </span>
+
+        <span class="nav-description">
+          Fare, charges & business rules
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26D"
+    >
+      <span class="nav-code">26D</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Operations Control
+        </span>
+
+        <span class="nav-description">
+          Booking, duty & operations
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26E"
+    >
+      <span class="nav-code">26E</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Financial Control
+        </span>
+
+        <span class="nav-description">
+          Financial safety & controls
+        </span>
+      </span>
+    </button>
+
 
-        <div class="future-text">
-          New modules can be added without
-          rebuilding the entire frontend.
-        </div>
-
-      </div>
-
-    </aside>
-
-
-    <!-- =====================================================
-         MAIN CONTENT
-         ===================================================== -->
-
-    <main class="main">
-
-
-      <!-- ===================================================
-           DASHBOARD
-           =================================================== -->
-
-      <section
-        id="page-dashboard"
-        class="page active"
-      >
-
-        <div class="page-header">
-
-          <div class="page-kicker">
-            GoVara Platform
-          </div>
-
-          <h1 class="page-title">
-            Administrator Control Center
-          </h1>
-
-          <div class="page-description">
-            Central frontend control surface for
-            GoVara system configuration, roles,
-            business policies, operations,
-            financial safety, documents, audit
-            and the consolidated API boundary.
-          </div>
-
-        </div>
-
-
-        <div class="dashboard-grid">
-
-          <div class="dashboard-card success">
-
-            <div class="dashboard-card-label">
-              Frontend
-            </div>
-
-            <div class="dashboard-card-value">
-              READY
-            </div>
-
-            <div class="dashboard-card-note">
-              Master frontend loaded successfully.
-            </div>
-
-          </div>
-
-
-          <div
-            id="dashboard-api-card"
-            class="dashboard-card warning"
-          >
-
-            <div class="dashboard-card-label">
-              Backend API
-            </div>
-
-            <div
-              id="dashboard-api-status"
-              class="dashboard-card-value"
-            >
-              NOT CONFIGURED
-            </div>
-
-            <div
-              id="dashboard-api-note"
-              class="dashboard-card-note"
-            >
-              API boundary is not configured.
-            </div>
-
-          </div>
-
-
-          <div class="dashboard-card danger">
-
-            <div class="dashboard-card-label">
-              Financial Safety
-            </div>
-
-            <div class="dashboard-card-value">
-              BLOCKED
-            </div>
-
-            <div class="dashboard-card-note">
-              Real money, real payment and
-              bank transfer remain blocked.
-            </div>
-
-          </div>
-
-
-          <div class="dashboard-card info">
-
-            <div class="dashboard-card-label">
-              Environment
-            </div>
-
-            <div class="dashboard-card-value">
-              TESTING
-            </div>
-
-            <div class="dashboard-card-note">
-              Frontend remains in controlled
-              testing mode.
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="overview-card">
-
-          <div class="overview-title">
-            Platform Overview
-          </div>
-
-          <div class="overview-text">
-            The current frontend architecture uses
-            modular control sections while keeping
-            Backend and Database authority separate.
-            STEP 27 provides the single consolidated
-            API boundary and does not automatically
-            connect until an API endpoint is explicitly
-            configured.
-          </div>
-
-
-          <div class="overview-list">
-
-            <div class="overview-item">
-              <strong>
-                26A — System Configuration
-              </strong>
-
-              <span>
-                Platform identity and system-level
-                configuration controls.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                26B — User & Role Control
-              </strong>
-
-              <span>
-                Roles, permissions and access
-                control configuration.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                26C — Business Policies
-              </strong>
-
-              <span>
-                Fare, charges, discounts,
-                KYC and business policies.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                26D — Operations Control
-              </strong>
-
-              <span>
-                Booking lifecycle, duty,
-                dispatch and operational controls.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                26E — Financial Control
-              </strong>
-
-              <span>
-                Financial safety boundary and
-                controlled financial configuration.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                26F — Documents & KYC
-              </strong>
-
-              <span>
-                Document handling, KYC workflow,
-                validation and verification controls.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                26G — Audit & Monitoring
-              </strong>
-
-              <span>
-                Audit events, monitoring,
-                security and integrity controls.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                27 — Consolidated API
-              </strong>
-
-              <span>
-                One API boundary for communication
-                with the authoritative backend.
-              </span>
-            </div>
-
-
-            <div class="overview-item">
-              <strong>
-                28 — Customer
-              </strong>
-
-              <span>
-                Customer registration and
-                backend-generated identity flow.
-              </span>
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26A
-           =================================================== -->
-
-      <section
-        id="page-26A"
-        class="page"
-      >
-
-        <div
-          id="module-26A"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26A — System Configuration
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26B
-           =================================================== -->
-
-      <section
-        id="page-26B"
-        class="page"
-      >
-
-        <div
-          id="module-26B"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26B — User & Role Control
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26C
-           =================================================== -->
-
-      <section
-        id="page-26C"
-        class="page"
-      >
-
-        <div
-          id="module-26C"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26C — Business Policies
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26D
-           =================================================== -->
-
-      <section
-        id="page-26D"
-        class="page"
-      >
-
-        <div
-          id="module-26D"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26D — Operations Control
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26E
-           =================================================== -->
-
-      <section
-        id="page-26E"
-        class="page"
-      >
-
-        <div
-          id="module-26E"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26E — Financial Control
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26F
-           =================================================== -->
-
-      <section
-        id="page-26F"
-        class="page"
-      >
-
-        <div
-          id="module-26F"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26F — Documents & KYC
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           26G
-           =================================================== -->
-
-      <section
-        id="page-26G"
-        class="page"
-      >
-
-        <div
-          id="module-26G"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 26G — Audit & Monitoring
-            </h2>
-
-            <div class="muted">
-              Loading module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           STEP 27
-           =================================================== -->
-
-      <section
-        id="page-27"
-        class="page"
-      >
-
-        <div
-          id="module-27"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 27 — Consolidated API
-            </h2>
-
-            <div class="muted">
-              API boundary is currently not configured.
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           STEP 28 — CUSTOMER
-           =================================================== -->
-
-      <section
-        id="page-28"
-        class="page"
-      >
-
-        <div
-          id="customer-page"
-          class="module-container"
-        >
-
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 28 — Customer
-            </h2>
-
-            <div class="muted">
-              Loading Customer module...
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26F"
+    >
+      <span class="nav-code">26F</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Documents & KYC
+        </span>
+
+        <span class="nav-description">
+          Documents, KYC & verification
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26G"
+    >
+      <span class="nav-code">26G</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Audit & Monitoring
+        </span>
+
+        <span class="nav-description">
+          Audit events & system monitoring
+        </span>
+      </span>
+    </button>
+
+
+    <!-- =================================================
+         NEW CUSTOMER MODULE
+         ================================================= -->
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="28"
+    >
+      <span class="nav-code">28</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Customer
+        </span>
+
+        <span class="nav-description">
+          Customer registration & profile
+        </span>
+      </span>
+    </button>
+
+
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="27"
+    >
+      <span class="nav-code">27</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Consolidated API
+        </span>
+
+        <span class="nav-description">
+          Single API boundary
+        </span>
+      </span>
+    </button>
+
+  </nav>
+
+
+  <div class="future-card">
+
+    <span class="future-badge">
+      NEXT
+    </span>
+
+    <div class="future-title">
+      Modular Expansion
+    </div>
+
+    <div class="future-text">
+      New modules can be added without
+      rebuilding the entire frontend.
+    </div>
 
   </div>
 
+</aside>
 
-  <!-- =======================================================
+
+<!-- =====================================================
+     MAIN CONTENT
+     ===================================================== -->
+
+<main class="main">
+
+  <!-- ===================================================
+       DASHBOARD
+       =================================================== -->
+
+  <section
+    id="page-dashboard"
+    class="page active"
+  >
+
+    <div class="page-header">
+
+      <div class="page-kicker">
+        GoVara Platform
+      </div>
+
+      <h1 class="page-title">
+        Administrator Control Center
+      </h1>
+
+      <div class="page-description">
+        Central frontend control surface for
+        GoVara system configuration, roles,
+        business policies, operations,
+        financial safety, documents, audit,
+        customer management and the consolidated
+        API boundary.
+      </div>
+
+    </div>
+
+
+    <div class="dashboard-grid">
+
+      <div class="dashboard-card success">
+        <div class="dashboard-card-label">
+          Frontend
+        </div>
+
+        <div class="dashboard-card-value">
+          READY
+        </div>
+
+        <div class="dashboard-card-note">
+          Master frontend loaded successfully.
+        </div>
+      </div>
+
+
+      <div
+        id="dashboard-api-card"
+        class="dashboard-card warning"
+      >
+        <div class="dashboard-card-label">
+          Backend API
+        </div>
+
+        <div
+          id="dashboard-api-status"
+          class="dashboard-card-value"
+        >
+          NOT CONFIGURED
+        </div>
+
+        <div
+          id="dashboard-api-note"
+          class="dashboard-card-note"
+        >
+          API boundary is not configured.
+        </div>
+      </div>
+
+
+      <div class="dashboard-card danger">
+        <div class="dashboard-card-label">
+          Financial Safety
+        </div>
+
+        <div class="dashboard-card-value">
+          BLOCKED
+        </div>
+
+        <div class="dashboard-card-note">
+          Real money, real payment and
+          bank transfer remain blocked.
+        </div>
+      </div>
+
+
+      <div class="dashboard-card info">
+        <div class="dashboard-card-label">
+          Environment
+        </div>
+
+        <div class="dashboard-card-value">
+          TESTING
+        </div>
+
+        <div class="dashboard-card-note">
+          Frontend remains in controlled
+          testing mode.
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="overview-card">
+
+      <div class="overview-title">
+        Platform Overview
+      </div>
+
+      <div class="overview-text">
+        The current frontend architecture uses
+        modular control sections while keeping
+        Backend and Database authority separate.
+        STEP 27 provides the single consolidated
+        API boundary. Customer registration is
+        exposed through STEP 28 and communicates
+        only through the consolidated API.
+      </div>
+
+
+      <div class="overview-list">
+
+        <div class="overview-item">
+          <strong>
+            26A — System Configuration
+          </strong>
+
+          <span>
+            Platform identity and system-level
+            configuration controls.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            26B — User & Role Control
+          </strong>
+
+          <span>
+            Roles, permissions and access
+            control configuration.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            26C — Business Policies
+          </strong>
+
+          <span>
+            Fare, charges, discounts,
+            KYC and business policies.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            26D — Operations Control
+          </strong>
+
+          <span>
+            Booking lifecycle, duty,
+            dispatch and operational controls.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            26E — Financial Control
+          </strong>
+
+          <span>
+            Financial safety boundary and
+            controlled financial configuration.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            26F — Documents & KYC
+          </strong>
+
+          <span>
+            Document handling, KYC workflow,
+            validation and verification controls.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            26G — Audit & Monitoring
+          </strong>
+
+          <span>
+            Audit events, monitoring,
+            security and integrity controls.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            28 — Customer
+          </strong>
+
+          <span>
+            Customer registration using
+            backend-generated identity.
+          </span>
+        </div>
+
+
+        <div class="overview-item">
+          <strong>
+            27 — Consolidated API
+          </strong>
+
+          <span>
+            One API boundary for communication
+            with the authoritative backend.
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ===================================================
+       26A
+       =================================================== -->
+
+  <section
+    id="page-26A"
+    class="page"
+  >
+    <div
+      id="module-26A"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26A — System Configuration
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       26B
+       =================================================== -->
+
+  <section
+    id="page-26B"
+    class="page"
+  >
+    <div
+      id="module-26B"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26B — User & Role Control
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       26C
+       =================================================== -->
+
+  <section
+    id="page-26C"
+    class="page"
+  >
+    <div
+      id="module-26C"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26C — Business Policies
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       26D
+       =================================================== -->
+
+  <section
+    id="page-26D"
+    class="page"
+  >
+    <div
+      id="module-26D"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26D — Operations Control
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       26E
+       =================================================== -->
+
+  <section
+    id="page-26E"
+    class="page"
+  >
+    <div
+      id="module-26E"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26E — Financial Control
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       26F
+       =================================================== -->
+
+  <section
+    id="page-26F"
+    class="page"
+  >
+    <div
+      id="module-26F"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26F — Documents & KYC
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       26G
+       =================================================== -->
+
+  <section
+    id="page-26G"
+    class="page"
+  >
+    <div
+      id="module-26G"
+      class="module-container"
+    >
+      <div class="module-placeholder">
+        <h2>
+          STEP 26G — Audit & Monitoring
+        </h2>
+
+        <div class="muted">
+          Loading module...
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================================================
+       STEP 28 — CUSTOMER
+       =================================================== -->
+
+  <section
+    id="page-28"
+    class="page"
+  >
+
+    <div
+      id="module-28"
+      class="module-container"
+    >
+
+      <!--
+        IMPORTANT:
+        28-Customer.js looks for #customer-page
+        or #main-content.
+      -->
+
+      <div id="customer-page"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ===================================================
+       STEP 27
+       =================================================== -->
+
+  <section
+    id="page-27"
+    class="page"
+  >
+
+    <div
+      id="module-27"
+      class="module-container"
+    >
+
+      <div class="module-placeholder">
+
+        <h2>
+          STEP 27 — Consolidated API
+        </h2>
+
+        <div class="muted">
+          API boundary is currently not configured.
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+  </div>  <!-- =======================================================
        GOVARA MODULES
-       ======================================================= -->
-
-  <script src="assets/js/modules/26A-System.js"></script>
-  <script src="assets/js/modules/26B-Roles.js"></script>
-  <script src="assets/js/modules/26C-policies.js"></script>
-  <script src="assets/js/modules/26D-operations.js"></script>
-  <script src="assets/js/modules/26E-financial.js"></script>
-  <script src="assets/js/modules/26F-documents.js"></script>
-  <script src="assets/js/modules/26G-audit.js"></script>
-
-  <!-- STEP 27 — Consolidated API -->
-  <script src="assets/js/modules/27-api.js"></script>
-
-  <!-- STEP 28 — Customer -->
-  <script src="assets/js/modules/28-Customer.js"></script>
-
-
-  <!-- =======================================================
+       ======================================================= -->  <script src="assets/js/modules/26A-System.js"></script>  <script src="assets/js/modules/26B-Roles.js"></script>  <script src="assets/js/modules/26C-policies.js"></script>  <script src="assets/js/modules/26D-operations.js"></script>  <script src="assets/js/modules/26E-financial.js"></script>  <script src="assets/js/modules/26F-documents.js"></script>  <script src="assets/js/modules/26G-audit.js"></script>  <!-- STEP 27 -->  <script src="assets/js/modules/27-api.js"></script>  <!-- STEP 28 CUSTOMER -->  <script src="assets/js/modules/28-Customer.js"></script>  <!-- =======================================================
        MASTER ROUTER
-       ======================================================= -->
-
-  <script>
+       ======================================================= -->  <script>
     (function () {
 
       "use strict";
@@ -1924,9 +1741,7 @@
       ) {
 
         const mount =
-          document.getElementById(
-            mountId
-          );
+          document.getElementById(mountId);
 
         if (!mount) {
 
@@ -1965,10 +1780,6 @@
 
         try {
 
-          /*
-           * Preferred module interface.
-           */
-
           if (
             typeof moduleObject.renderAndBind ===
             "function"
@@ -1979,10 +1790,6 @@
             return;
           }
 
-
-          /*
-           * Fallback interface.
-           */
 
           if (
             typeof moduleObject.render ===
@@ -2023,6 +1830,7 @@
 
           mount.innerHTML = `
             <div class="module-placeholder">
+
               <h2>
                 Module Error
               </h2>
@@ -2035,6 +1843,91 @@
                     : error
                 )}
               </div>
+
+            </div>
+          `;
+        }
+
+      }
+
+
+      /* ======================================================
+         Customer Module Renderer
+         ====================================================== */
+
+      function renderCustomerModule() {
+
+        const mount =
+          document.getElementById(
+            "module-28"
+          );
+
+        if (!mount) {
+
+          console.error(
+            "Customer module mount not found."
+          );
+
+          return;
+        }
+
+
+        if (
+          !window.GoVaraCustomer ||
+          typeof window.GoVaraCustomer.init !==
+          "function"
+        ) {
+
+          mount.innerHTML = `
+            <div class="module-placeholder">
+
+              <h2>
+                Customer Module Not Loaded
+              </h2>
+
+              <div class="muted">
+                28-Customer.js could not be loaded.
+                Check the module file path and deployment.
+              </div>
+
+            </div>
+          `;
+
+          console.error(
+            "GoVaraCustomer is unavailable."
+          );
+
+          return;
+        }
+
+
+        try {
+
+          window.GoVaraCustomer.init();
+
+        } catch (error) {
+
+          console.error(
+            "Customer module initialization error:",
+            error
+          );
+
+          mount.innerHTML = `
+            <div class="module-placeholder">
+
+              <h2>
+                Customer Module Error
+              </h2>
+
+              <div class="muted">
+                ${safeText(
+                  error &&
+                  error.message
+                    ? error.message
+                    : error
+                )}
+              </div>
+
             </div>
           `;
 
@@ -2047,9 +1940,7 @@
          Page Router
          ====================================================== */
 
-      function showGoVaraPage(
-        page
-      ) {
+      function showGoVaraPage(page) {
 
         const requestedPage =
           page || "dashboard";
@@ -2059,14 +1950,10 @@
           requestedPage;
 
 
-        /*
-         * Hide every page.
-         */
+        /* Hide every page */
 
         document
-          .querySelectorAll(
-            ".page"
-          )
+          .querySelectorAll(".page")
           .forEach(
             function (pageElement) {
 
@@ -2078,9 +1965,7 @@
           );
 
 
-        /*
-         * Show requested page.
-         */
+        /* Show requested page */
 
         const targetPage =
           document.getElementById(
@@ -2104,9 +1989,7 @@
         );
 
 
-        /*
-         * Update sidebar active state.
-         */
+        /* Update sidebar active state */
 
         document
           .querySelectorAll(
@@ -2128,11 +2011,9 @@
           );
 
 
-        /*
-         * ====================================================
+        /* ====================================================
            Module Routing
-           ====================================================
-         */
+           ==================================================== */
 
         switch (requestedPage) {
 
@@ -2213,79 +2094,28 @@
             break;
 
 
-          case "27":
+          /* ==================================================
+             STEP 28 — CUSTOMER
+             ================================================== */
 
-            /*
-             * STEP 27 is primarily exposed as
-             * window.GoVaraAPI.
-             *
-             * The module also supports
-             * window.GoVara27.
-             *
-             * The fallback below prevents the
-             * "Module Not Loaded" issue if only
-             * GoVaraAPI exists.
-             */
+          case "28":
+
+            renderCustomerModule();
+
+            break;
+
+
+          /* ==================================================
+             STEP 27 — CONSOLIDATED API
+             ================================================== */
+
+          case "27":
 
             renderGoVaraModule(
               window.GoVara27 ||
               window.GoVaraAPI,
               "module-27"
             );
-
-            break;
-
-
-          case "28":
-
-            /*
-             * STEP 28 — Customer
-             *
-             * Customer module renders directly
-             * into #customer-page.
-             */
-
-            if (
-              window.GoVaraCustomer &&
-              typeof window.GoVaraCustomer.init ===
-              "function"
-            ) {
-
-              window.GoVaraCustomer.init();
-
-            } else {
-
-              const customerMount =
-                document.getElementById(
-                  "customer-page"
-                );
-
-
-              if (customerMount) {
-
-                customerMount.innerHTML = `
-                  <div class="module-placeholder">
-
-                    <h2>
-                      Customer Module Not Loaded
-                    </h2>
-
-                    <div class="muted">
-                      28-Customer.js could not
-                      be loaded.
-                    </div>
-
-                  </div>
-                `;
-
-              }
-
-
-              console.error(
-                "GoVara Customer module unavailable."
-              );
-
-            }
 
             break;
 
@@ -2313,12 +2143,10 @@
             "dashboard-api-status"
           );
 
-
         const apiNote =
           document.getElementById(
             "dashboard-api-note"
           );
-
 
         const topApi =
           document.getElementById(
@@ -2326,9 +2154,7 @@
           );
 
 
-        /*
-         * Always keep financial safety visible.
-         */
+        /* Financial safety always visible */
 
         const moneyStatus =
           document.getElementById(
@@ -2344,9 +2170,7 @@
         }
 
 
-        /*
-         * API state.
-         */
+        /* API state */
 
         if (
           window.GoVaraAPI &&
@@ -2381,14 +2205,11 @@
 
           }
 
-
           return;
         }
 
 
-        /*
-         * Default safe state.
-         */
+        /* Default safe state */
 
         if (apiStatus) {
 
@@ -2441,9 +2262,7 @@
                 const page =
                   button.dataset.page;
 
-                showGoVaraPage(
-                  page
-                );
+                showGoVaraPage(page);
 
               }
             );
@@ -2455,7 +2274,7 @@
 
 
       /* ======================================================
-         Global GoVara Router
+         Global Router
          ====================================================== */
 
       window.GoVaraRouter = {
@@ -2504,9 +2323,8 @@
 
 
           /*
-           * Safe API status message.
-           *
-           * No automatic connection test.
+           * IMPORTANT:
+           * No automatic API connection test.
            */
 
           if (
@@ -2526,22 +2344,19 @@
 
 
           console.log(
-            "Real Money remains BLOCKED."
+            "Customer module STEP 28 registered."
           );
 
 
           console.log(
-            "STEP 28 Customer module available:",
-            !!window.GoVaraCustomer
+            "Real Money remains BLOCKED."
           );
 
         }
       );
 
     })();
-  </script>
-
-</body>
+  </script></body>
 </html>
 
 

@@ -1,817 +1,659 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>GoVara — Administrator Control Center</title>
-
-<style>
-*{
-  box-sizing:border-box;
-}
-
-html,body{
-  margin:0;
-  padding:0;
-  min-height:100%;
-  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-
-body{
-  background:
-    radial-gradient(circle at top left,rgba(37,99,235,.16),transparent 32%),
-    radial-gradient(circle at bottom right,rgba(124,58,237,.12),transparent 30%),
-    #080d17;
-  color:#e8edf7;
-}
-
-button,input,select{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
-.app{
-  min-height:100vh;
-  display:flex;
-}
-
-
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
-
-.sidebar{
-  width:255px;
-  min-height:100vh;
-  position:fixed;
-  left:0;
-  top:0;
-  bottom:0;
-  padding:20px 14px;
-  background:rgba(8,13,23,.92);
-  border-right:1px solid rgba(255,255,255,.07);
-  backdrop-filter:blur(18px);
-  z-index:20;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:7px 9px 22px;
-}
-
-.brand-logo{
-  width:40px;
-  height:40px;
-  display:grid;
-  place-items:center;
-  border-radius:12px;
-  background:linear-gradient(135deg,#2563eb,#7c3aed);
-  font-weight:900;
-  box-shadow:0 8px 25px rgba(37,99,235,.25);
-}
-
-.brand-title{
-  font-size:15px;
-  font-weight:850;
-}
-
-.brand-sub{
-  margin-top:2px;
-  font-size:9px;
-  opacity:.48;
-  letter-spacing:.5px;
-}
-
-.nav-label{
-  padding:12px 10px 7px;
-  font-size:9px;
-  font-weight:850;
-  letter-spacing:1.3px;
-  opacity:.35;
-}
-
-.nav{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.nav button{
-  width:100%;
-  border:1px solid transparent;
-  background:transparent;
-  color:#b8c1d3;
-  text-align:left;
-  padding:10px 11px;
-  border-radius:10px;
-  font-size:11px;
-  font-weight:700;
-  transition:.18s ease;
-}
-
-.nav button:hover{
-  background:rgba(255,255,255,.045);
-  color:#fff;
-}
-
-.nav button.active{
-  color:#fff;
-  background:linear-gradient(
-    90deg,
-    rgba(37,99,235,.22),
-    rgba(124,58,237,.10)
-  );
-  border-color:rgba(96,165,250,.18);
-  box-shadow:inset 3px 0 0 #3b82f6;
-}
-
-.nav .step27{
-  margin-top:8px;
-  border-top:1px solid rgba(255,255,255,.06);
-  padding-top:13px;
-}
-
-
-/* =========================================================
-   MAIN
-   ========================================================= */
-
-.main{
-  margin-left:255px;
-  width:calc(100% - 255px);
-  min-height:100vh;
-}
-
-.topbar{
-  height:68px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 28px;
-  position:sticky;
-  top:0;
-  z-index:15;
-  background:rgba(8,13,23,.78);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  backdrop-filter:blur(18px);
-}
-
-.top-title{
-  font-size:12px;
-  font-weight:800;
-  opacity:.75;
-}
-
-.statuses{
-  display:flex;
-  align-items:center;
-  gap:7px;
-}
-
-.status{
-  padding:6px 9px;
-  border-radius:7px;
-  font-size:8px;
-  font-weight:900;
-  letter-spacing:.7px;
-}
-
-.ready{
-  color:#86efac;
-  background:rgba(34,197,94,.09);
-  border:1px solid rgba(34,197,94,.13);
-}
-
-.api{
-  color:#fbbf24;
-  background:rgba(245,158,11,.08);
-  border:1px solid rgba(245,158,11,.12);
-}
-
-.testing{
-  color:#93c5fd;
-  background:rgba(59,130,246,.08);
-  border:1px solid rgba(59,130,246,.12);
-}
-
-.blocked{
-  color:#fca5a5;
-  background:rgba(239,68,68,.08);
-  border:1px solid rgba(239,68,68,.12);
-}
-
-.content{
-  padding:28px;
-  max-width:1450px;
-}
-
-
-/* =========================================================
-   DASHBOARD
-   ========================================================= */
-
-.hero{
-  padding:28px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:20px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(37,99,235,.11),
-      rgba(124,58,237,.06)
-    ),
-    rgba(255,255,255,.02);
-  margin-bottom:18px;
-}
-
-.hero-kicker{
-  font-size:9px;
-  font-weight:900;
-  letter-spacing:1.5px;
-  opacity:.4;
-  margin-bottom:7px;
-}
-
-.hero h1{
-  margin:0;
-  font-size:30px;
-  letter-spacing:-.8px;
-}
-
-.hero p{
-  margin:9px 0 0;
-  opacity:.55;
-  font-size:12px;
-  line-height:1.55;
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:13px;
-  margin-bottom:18px;
-}
-
-.card{
-  padding:19px;
-  border-radius:15px;
-  border:1px solid rgba(255,255,255,.07);
-  background:rgba(255,255,255,.025);
-}
-
-.card-title{
-  font-size:9px;
-  font-weight:850;
-  letter-spacing:.8px;
-  opacity:.45;
-}
-
-.card-value{
-  margin-top:9px;
-  font-size:17px;
-  font-weight:900;
-}
-
-.card-note{
-  margin-top:5px;
-  font-size:9px;
-  opacity:.4;
-}
-
-.dashboard-panel{
-  padding:22px;
-  border-radius:17px;
-  border:1px solid rgba(255,255,255,.07);
-  background:rgba(255,255,255,.02);
-}
-
-.dashboard-panel h2{
-  margin:0 0 8px;
-  font-size:16px;
-}
-
-.dashboard-panel p{
-  margin:0;
-  font-size:11px;
-  opacity:.55;
-  line-height:1.6;
-}
-
-
-/* =========================================================
-   26A
-   ========================================================= */
-
-.gv26a{
-  max-width:1250px;
-  margin:0 auto;
-  padding:5px 0 50px;
-}
-
-.gv26a-header{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:24px;
-  margin-bottom:22px;
-}
-
-.gv26a-kicker{
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:1.5px;
-  opacity:.42;
-  margin-bottom:7px;
-}
-
-.gv26a-header h1{
-  margin:0 0 7px;
-  font-size:28px;
-  letter-spacing:-.6px;
-}
-
-.gv26a-header p{
-  margin:0;
-  opacity:.58;
-  line-height:1.5;
-  font-size:12px;
-}
-
-.gv26a-status{
-  white-space:nowrap;
-  padding:10px 14px;
-  border:1px solid rgba(34,197,94,.25);
-  border-radius:999px;
-  font-size:9px;
-  font-weight:900;
-  letter-spacing:.7px;
-  background:rgba(34,197,94,.07);
-}
-
-.gv26a-dot{
-  display:inline-block;
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  background:#22c55e;
-  margin-right:7px;
-}
-
-.gv26a-card{
-  background:rgba(255,255,255,.025);
-  border:1px solid rgba(255,255,255,.075);
-  border-radius:17px;
-  padding:21px;
-  margin-bottom:15px;
-  box-shadow:0 12px 35px rgba(0,0,0,.08);
-}
-
-.gv26a-card-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-  margin-bottom:19px;
-}
-
-.gv26a-card-title>div{
-  display:flex;
-  align-items:center;
-  gap:11px;
-}
-
-.gv26a-card h2{
-  margin:0;
-  font-size:16px;
-}
-
-.gv26a-number{
-  width:31px;
-  height:31px;
-  display:grid;
-  place-items:center;
-  border-radius:9px;
-  background:rgba(255,255,255,.065);
-  font-size:10px;
-  font-weight:900;
-}
-
-.gv26a-badge{
-  padding:6px 9px;
-  border-radius:7px;
-  font-size:8px;
-  font-weight:900;
-  letter-spacing:.7px;
-  background:rgba(59,130,246,.11);
-  color:#93c5fd;
-}
-
-.gv26a-badge-warning{
-  background:rgba(245,158,11,.11);
-  color:#fbbf24;
-}
-
-.gv26a-badge-danger{
-  background:rgba(239,68,68,.11);
-  color:#f87171;
-}
-
-.gv26a-badge-muted{
-  opacity:.65;
-}
-
-.gv26a-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:15px;
-}
-
-.gv26a-field{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.gv26a-field label{
-  font-size:11px;
-  font-weight:750;
-  opacity:.7;
-}
-
-.gv26a-field input,
-.gv26a-field select{
-  width:100%;
-  padding:11px 12px;
-  border-radius:9px;
-  border:1px solid rgba(255,255,255,.09);
-  background:rgba(0,0,0,.17);
-  color:#e8edf7;
-  outline:none;
-  font-size:11px;
-}
-
-.gv26a-field select option{
-  background:#101827;
-  color:#fff;
-}
-
-.gv26a-field input:focus,
-.gv26a-field select:focus{
-  border-color:rgba(96,165,250,.6);
-  box-shadow:0 0 0 3px rgba(96,165,250,.08);
-}
-
-.gv26a-help{
-  font-size:9px;
-  opacity:.43;
-  line-height:1.4;
-}
-
-.gv26a-toggle-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:9px;
-}
-
-.gv26a-toggle-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  padding:14px;
-  border-radius:11px;
-  border:1px solid rgba(255,255,255,.065);
-  background:rgba(0,0,0,.1);
-  cursor:pointer;
-}
-
-.gv26a-toggle-row span{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.gv26a-toggle-row strong{
-  font-size:11px;
-}
-
-.gv26a-toggle-row small{
-  font-size:9px;
-  opacity:.43;
-  line-height:1.35;
-}
-
-.gv26a-toggle-row input{
-  width:18px;
-  height:18px;
-  accent-color:#3b82f6;
-  flex:0 0 auto;
-}
-
-.gv26a-warning{
-  margin-top:16px;
-  padding:14px 16px;
-  border-radius:11px;
-  background:rgba(245,158,11,.06);
-  border:1px solid rgba(245,158,11,.16);
-}
-
-.gv26a-warning strong{
-  font-size:11px;
-}
-
-.gv26a-warning p{
-  margin:5px 0 0;
-  font-size:9px;
-  opacity:.52;
-  line-height:1.5;
-}
-
-.gv26a-financial{
-  border-color:rgba(239,68,68,.13);
-}
-
-.gv26a-financial-grid{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:9px;
-}
-
-.gv26a-financial-item{
-  padding:14px;
-  border-radius:11px;
-  background:rgba(239,68,68,.04);
-  border:1px solid rgba(239,68,68,.08);
-}
-
-.gv26a-financial-item strong{
-  display:block;
-  font-size:8px;
-  opacity:.55;
-  margin-bottom:6px;
-}
-
-.gv26a-financial-item span{
-  font-size:11px;
-  font-weight:900;
-}
-
-.gv26a-actions{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:20px;
-  padding:17px 19px;
-  border-radius:15px;
-  border:1px solid rgba(255,255,255,.09);
-  background:rgba(255,255,255,.025);
-}
-
-.gv26a-actions strong{
-  display:block;
-  font-size:12px;
-}
-
-.gv26a-actions small{
-  display:block;
-  margin-top:4px;
-  font-size:9px;
-  opacity:.45;
-}
-
-.gv26a-action-buttons{
-  display:flex;
-  gap:8px;
-}
-
-.gv26a-btn{
-  border:0;
-  border-radius:9px;
-  padding:10px 15px;
-  font-size:10px;
-  font-weight:850;
-}
-
-.gv26a-btn-primary{
-  background:#2563eb;
-  color:#fff;
-}
-
-.gv26a-btn-secondary{
-  background:rgba(255,255,255,.08);
-  color:#e8edf7;
-}
-
-.gv26a-btn:hover{
-  transform:translateY(-1px);
-}
-
-
-/* =========================================================
-   PLACEHOLDER
-   ========================================================= */
-
-.placeholder{
-  padding:35px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,.07);
-  background:rgba(255,255,255,.02);
-}
-
-.placeholder h1{
-  margin:0 0 8px;
-  font-size:24px;
-}
-
-.placeholder p{
-  margin:0;
-  font-size:11px;
-  opacity:.5;
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media(max-width:950px){
-
-  .sidebar{
-    width:215px;
-  }
-
-  .main{
-    margin-left:215px;
-    width:calc(100% - 215px);
-  }
-
-  .cards{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .gv26a-financial-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-}
-
-@media(max-width:700px){
-
-  .sidebar{
-    position:relative;
-    width:100%;
-    min-height:auto;
-  }
-
-  .app{
-    display:block;
-  }
-
-  .main{
-    margin-left:0;
-    width:100%;
-  }
-
-  .topbar{
-    height:auto;
-    padding:14px;
-    gap:10px;
-    align-items:flex-start;
-    flex-direction:column;
-  }
-
-  .statuses{
-    flex-wrap:wrap;
-  }
-
-  .content{
-    padding:15px;
-  }
-
-  .cards,
-  .gv26a-grid,
-  .gv26a-toggle-grid{
-    grid-template-columns:1fr;
-  }
-
-  .gv26a-financial-grid{
-    grid-template-columns:1fr;
-  }
-
-  .gv26a-header,
-  .gv26a-actions{
-    flex-direction:column;
-    align-items:stretch;
-  }
-
-  .gv26a-action-buttons{
-    width:100%;
-  }
-
-  .gv26a-btn{
-    flex:1;
-  }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+  />
+
+  <title>GoVara — Administrator Control Center</title>
+
+  <meta
+    name="description"
+    content="GoVara Administrator Control Center — Modular Frontend"
+  />
+
+  <style>
+    /* =========================================================
+       GOVARA MASTER FRONTEND
+       ========================================================= */
+
+    :root {
+      --bg: #0b1020;
+      --panel: #11182b;
+      --panel-2: #151e34;
+      --panel-3: #1b2741;
+
+      --border: #293754;
+
+      --text: #eef3ff;
+      --muted: #9ca9c7;
+
+      --primary: #5b8cff;
+      --primary-2: #7aa2ff;
+
+      --success: #35c98a;
+      --warning: #f4b740;
+      --danger: #ef5b67;
+
+      --shadow: 0 12px 35px rgba(0, 0, 0, 0.28);
+
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       APP SHELL
+       ========================================================= */
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 22px;
+
+      background: #0e1527;
+      border-bottom: 1px solid var(--border);
+
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 10px;
+
+      background: linear-gradient(
+        135deg,
+        var(--primary),
+        #6c5ce7
+      );
+
+      font-weight: 800;
+      color: white;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .top-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+
+      padding: 7px 10px;
+      border-radius: 999px;
+
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .badge.success {
+      color: var(--success);
+      border-color: rgba(53, 201, 138, 0.35);
+    }
+
+    .badge.warning {
+      color: var(--warning);
+      border-color: rgba(244, 183, 64, 0.35);
+    }
+
+    .badge.danger {
+      color: var(--danger);
+      border-color: rgba(239, 91, 103, 0.35);
+    }
+
+    /* =========================================================
+       BODY
+       ========================================================= */
+
+    .body-layout {
+      display: flex;
+      min-height: calc(100vh - 68px);
+    }
+
+    /* =========================================================
+       SIDEBAR
+       ========================================================= */
+
+    .sidebar {
+      width: 270px;
+      flex: 0 0 270px;
+
+      background: #0d1425;
+      border-right: 1px solid var(--border);
+
+      padding: 18px 14px;
+
+      overflow-y: auto;
+
+      position: sticky;
+      top: 68px;
+      height: calc(100vh - 68px);
+    }
+
+    .sidebar-section-title {
+      color: #71809e;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      padding: 12px 10px 8px;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nav-btn {
+      width: 100%;
+
+      border: 1px solid transparent;
+      background: transparent;
+
+      color: #b9c5dd;
+
+      padding: 11px 12px;
+
+      border-radius: 10px;
+
+      text-align: left;
+
+      transition:
+        background 0.15s ease,
+        border 0.15s ease,
+        color 0.15s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--panel);
+      color: white;
+    }
+
+    .nav-btn.active {
+      background: rgba(91, 140, 255, 0.14);
+      border-color: rgba(91, 140, 255, 0.32);
+      color: white;
+    }
+
+    .nav-code {
+      display: inline-block;
+      min-width: 54px;
+
+      color: var(--primary-2);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .nav-description {
+      display: block;
+      margin-top: 3px;
+
+      color: #7e8baa;
+      font-size: 10px;
+    }
+
+    .nav-btn.active .nav-description {
+      color: #aab9d8;
+    }
+
+    /* =========================================================
+       MAIN
+       ========================================================= */
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .page {
+      display: none;
+      animation: pageIn 0.16s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes pageIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================================================
+       COMMON UI
+       ========================================================= */
+
+    .page-head {
+      margin-bottom: 20px;
+    }
+
+    .page-head h1 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.2;
+    }
+
+    .page-head .muted {
+      margin-top: 7px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+
+      border-radius: var(--radius);
+
+      padding: 18px;
+
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin: 0 0 7px;
+      font-size: 17px;
+    }
+
+    .card h3 {
+      margin: 0 0 7px;
+      font-size: 14px;
+    }
+
+    .card + .card {
+      margin-top: 16px;
+    }
+
+    .stat {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .stat-label {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .notice {
+      padding: 12px 14px;
+
+      border-radius: 10px;
+
+      border: 1px solid var(--border);
+
+      background: var(--panel-2);
+
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .notice.info {
+      border-color: rgba(91, 140, 255, 0.3);
+    }
+
+    .notice.warn {
+      border-color: rgba(244, 183, 64, 0.35);
+    }
+
+    .notice.success {
+      border-color: rgba(53, 201, 138, 0.35);
+    }
+
+    .notice.danger {
+      border-color: rgba(239, 91, 103, 0.35);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+
+      background: var(--panel-2);
+      color: var(--text);
+
+      padding: 9px 13px;
+
+      border-radius: 9px;
+
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .btn:hover {
+      background: var(--panel-3);
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .btn.success {
+      border-color: rgba(53, 201, 138, 0.4);
+      color: var(--success);
+    }
+
+    .btn.warning {
+      border-color: rgba(244, 183, 64, 0.4);
+      color: var(--warning);
+    }
+
+    .btn.danger {
+      border-color: rgba(239, 91, 103, 0.4);
+      color: var(--danger);
+    }
+
+    /* =========================================================
+       DASHBOARD
+       ========================================================= */
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .dashboard-card {
+      min-height: 130px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .dashboard-value {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .dashboard-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* =========================================================
+       MODULE MOUNTS
+       ========================================================= */
+
+    .module-container {
+      width: 100%;
+      min-height: 200px;
+    }
+
+    .module-placeholder {
+      padding: 30px;
+
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+
+      background: var(--panel);
+
+      text-align: center;
+    }
+
+    .module-placeholder h2 {
+      margin-top: 0;
+    }
+
+    /* =========================================================
+       FUTURE MODULE
+       ========================================================= */
+
+    .future-module {
+      opacity: 0.8;
+    }
+
+    .future-module .module-code {
+      color: var(--primary-2);
+      font-weight: 800;
+    }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
+
+    .app-footer {
+      margin-top: 30px;
+      padding: 16px 0;
+
+      color: #697692;
+
+      border-top: 1px solid var(--border);
+
+      font-size: 11px;
+    }
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @media (max-width: 1100px) {
+      .dashboard-grid,
+      .grid.four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sidebar {
+        width: 230px;
+        flex-basis: 230px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        height: auto;
+        min-height: 68px;
+
+        padding: 12px 14px;
+
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .top-status {
+        display: none;
+      }
+
+      .body-layout {
+        display: block;
+      }
+
+      .sidebar {
+        position: static;
+
+        width: 100%;
+        height: auto;
+
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+
+        padding: 10px;
+
+        overflow-x: auto;
+      }
+
+      .nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+      }
+
+      .nav-btn {
+        min-width: 190px;
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      .dashboard-grid,
+      .grid.two,
+      .grid.three,
+      .grid.four {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-
 
 <body>
 
-<div class="app">
+  <!-- =========================================================
+       GOVARA APPLICATION SHELL
+       ========================================================= -->
 
-  <!-- =====================================================
-       SIDEBAR
-       ===================================================== -->
+  <div class="app-shell">
 
-  <aside class="sidebar">
-
-    <div class="brand">
-      <div class="brand-logo">G</div>
-
-      <div>
-        <div class="brand-title">GoVara</div>
-        <div class="brand-sub">ADMINISTRATOR CONTROL CENTER</div>
-      </div>
-    </div>
-
-    <div class="nav-label">CONTROL CENTER</div>
-
-    <nav class="nav">
-
-      <button class="nav-btn active" data-page="dashboard">
-        Dashboard
-      </button>
-
-      <button class="nav-btn" data-page="26A">
-        26A — System Configuration
-      </button>
-
-      <button class="nav-btn" data-page="26B">
-        26B — User & Role Control
-      </button>
-
-      <button class="nav-btn" data-page="26C">
-        26C — Business Policies
-      </button>
-
-      <button class="nav-btn" data-page="26D">
-        26D — Operations Control
-      </button>
-
-      <button class="nav-btn" data-page="26E">
-        26E — Financial Control
-      </button>
-
-      <button class="nav-btn" data-page="26F">
-        26F — Documents & KYC
-      </button>
-
-      <button class="nav-btn" data-page="26G">
-        26G — Audit & Monitoring
-      </button>
-
-      <button class="nav-btn step27" data-page="27">
-        STEP 27 — Consolidated API
-      </button>
-
-    </nav>
-
-  </aside>
-
-
-  <!-- =====================================================
-       MAIN
-       ===================================================== -->
-
-  <main class="main">
+    <!-- =======================================================
+         TOPBAR
+         ======================================================= -->
 
     <header class="topbar">
 
-      <div class="top-title">
-        GoVara Administrator Control Center
+      <div class="brand">
+
+        <div class="brand-logo">
+          GV
+        </div>
+
+        <div>
+          <div class="brand-title">
+            GoVara
+          </div>
+
+          <div class="brand-subtitle">
+            Administrator Control Center
+          </div>
+        </div>
+
       </div>
 
-      <div class="statuses">
 
-        <span class="status ready">
+      <div class="top-status">
+
+        <span class="badge success">
           FRONTEND READY
         </span>
 
-        <span class="status api">
+        <span
+          class="badge warning"
+          id="api-status-badge"
+        >
           API NOT CONFIGURED
         </span>
 
-        <span class="status testing">
+        <span class="badge warning">
           TESTING MODE
         </span>
 
-        <span class="status blocked">
+        <span class="badge danger">
           REAL MONEY BLOCKED
         </span>
 
@@ -820,293 +662,1285 @@ button{
     </header>
 
 
-    <section class="content">
+    <!-- =======================================================
+         BODY
+         ======================================================= -->
 
-      <div id="page-dashboard">
+    <div class="body-layout">
 
-        <div class="hero">
 
-          <div class="hero-kicker">
-            GOVARA ADMINISTRATOR CONTROL CENTER
-          </div>
+      <!-- =====================================================
+           SIDEBAR
+           ===================================================== -->
 
-          <h1>System Administration</h1>
+      <aside class="sidebar">
 
-          <p>
-            Central frontend control surface for GoVara.
-            Backend and database remain separate and authoritative.
-          </p>
+        <div class="sidebar-section-title">
+          Main
+        </div>
+
+        <div class="nav-list">
+
+
+          <!-- DASHBOARD -->
+
+          <button
+            class="nav-btn active"
+            data-page="dashboard"
+          >
+            <span class="nav-code">
+              HOME
+            </span>
+
+            Dashboard
+
+            <span class="nav-description">
+              Platform overview
+            </span>
+          </button>
+
+
+          <!-- 26A -->
+
+          <button
+            class="nav-btn"
+            data-page="26A"
+          >
+            <span class="nav-code">
+              26A
+            </span>
+
+            System Configuration
+
+            <span class="nav-description">
+              Platform identity & system controls
+            </span>
+          </button>
+
+
+          <!-- 26B -->
+
+          <button
+            class="nav-btn"
+            data-page="26B"
+          >
+            <span class="nav-code">
+              26B
+            </span>
+
+            User & Role Control
+
+            <span class="nav-description">
+              Roles, users & permissions
+            </span>
+          </button>
+
+
+          <!-- 26C -->
+
+          <button
+            class="nav-btn"
+            data-page="26C"
+          >
+            <span class="nav-code">
+              26C
+            </span>
+
+            Business Policies
+
+            <span class="nav-description">
+              Fare, charges & business rules
+            </span>
+          </button>
+
+
+          <!-- 26D -->
+
+          <button
+            class="nav-btn"
+            data-page="26D"
+          >
+            <span class="nav-code">
+              26D
+            </span>
+
+            Operations Control
+
+            <span class="nav-description">
+              Booking, duty & operations
+            </span>
+          </button>
+
+
+          <!-- 26E -->
+
+          <button
+            class="nav-btn"
+            data-page="26E"
+          >
+            <span class="nav-code">
+              26E
+            </span>
+
+            Financial Control
+
+            <span class="nav-description">
+              Financial safety & controls
+            </span>
+          </button>
+
+
+          <!-- 26F -->
+
+          <button
+            class="nav-btn"
+            data-page="26F"
+          >
+            <span class="nav-code">
+              26F
+            </span>
+
+            Documents & KYC
+
+            <span class="nav-description">
+              Documents, KYC & verification
+            </span>
+          </button>
+
+
+          <!-- 26G -->
+
+          <button
+            class="nav-btn"
+            data-page="26G"
+          >
+            <span class="nav-code">
+              26G
+            </span>
+
+            Audit & Monitoring
+
+            <span class="nav-description">
+              Audit events & system monitoring
+            </span>
+          </button>
+
+
+          <!-- STEP 27 -->
+
+          <button
+            class="nav-btn"
+            data-page="27"
+          >
+            <span class="nav-code">
+              27
+            </span>
+
+            Consolidated API
+
+            <span class="nav-description">
+              Single API boundary
+            </span>
+          </button>
 
         </div>
 
 
-        <div class="cards">
+        <div class="sidebar-section-title">
+          Future Modules
+        </div>
 
-          <div class="card">
-            <div class="card-title">APPLICATION</div>
-            <div class="card-value">READY</div>
-            <div class="card-note">
-              Modular frontend loaded
-            </div>
+
+        <div class="card future-module">
+
+          <div class="module-code">
+            NEXT
           </div>
 
-          <div class="card">
-            <div class="card-title">API</div>
-            <div class="card-value">NOT CONFIGURED</div>
-            <div class="card-note">
-              No connection executed
-            </div>
-          </div>
+          <h3>
+            Modular Expansion
+          </h3>
 
-          <div class="card">
-            <div class="card-title">ENVIRONMENT</div>
-            <div class="card-value">TESTING</div>
-            <div class="card-note">
-              Controlled testing mode
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">REAL MONEY</div>
-            <div class="card-value">BLOCKED</div>
-            <div class="card-note">
-              Financial authority remains backend
-            </div>
+          <div class="muted">
+            New modules can be added without rebuilding the entire frontend.
           </div>
 
         </div>
 
-
-        <div class="dashboard-panel">
-
-          <h2>Administrator Modules</h2>
-
-          <p>
-            Select a module from the left navigation.
-            STEP 26A is currently implemented and wired directly
-            into this frontend. Other modules will be integrated
-            one by one after verification.
-          </p>
-
-        </div>
-
-      </div>
+      </aside>
 
 
-      <!-- 26A MOUNT -->
+      <!-- =====================================================
+           MAIN CONTENT
+           ===================================================== -->
 
-      <div id="page-26A" style="display:none;">
-        <div id="module-26A"></div>
-      </div>
-
-
-      <!-- OTHER PAGES -->
-
-      <div id="page-26B" style="display:none;"></div>
-      <div id="page-26C" style="display:none;"></div>
-      <div id="page-26D" style="display:none;"></div>
-      <div id="page-26E" style="display:none;"></div>
-      <div id="page-26F" style="display:none;"></div>
-      <div id="page-26G" style="display:none;"></div>
-      <div id="page-27" style="display:none;"></div>
-
-    </section>
-
-  </main>
-
-</div>
+      <main class="main">
 
 
-<!-- =========================================================
-     26A MODULE
-     ========================================================= -->
+        <!-- ===================================================
+             DASHBOARD PAGE
+             =================================================== -->
 
-<script src="assets/js/modules/26A-System.js"></script>
+        <section
+          id="page-dashboard"
+          class="page active"
+        >
 
+          <div class="page-head">
 
-<script>
+            <h1>
+              Administrator Dashboard
+            </h1>
 
-/* =========================================================
-   GoVara Frontend Router
-   Current verified module: 26A
-   ========================================================= */
+            <div class="muted">
+              GoVara modular frontend control center.
+            </div>
 
-(function(){
-
-  const pages = [
-    "dashboard",
-    "26A",
-    "26B",
-    "26C",
-    "26D",
-    "26E",
-    "26F",
-    "26G",
-    "27"
-  ];
+          </div>
 
 
-  function hideAll(){
+          <div class="dashboard-grid">
 
-    pages.forEach(function(page){
 
-      const element =
-        document.getElementById("page-" + page);
+            <div class="card dashboard-card">
 
-      if(element){
-        element.style.display = "none";
+              <div>
+                <div class="dashboard-value">
+                  READY
+                </div>
+
+                <div class="dashboard-label">
+                  Frontend Status
+                </div>
+              </div>
+
+              <div class="muted">
+                Modular frontend loaded.
+              </div>
+
+            </div>
+
+
+            <div class="card dashboard-card">
+
+              <div>
+                <div
+                  class="dashboard-value"
+                  id="dashboard-api-status"
+                >
+                  NOT CONFIGURED
+                </div>
+
+                <div class="dashboard-label">
+                  API Status
+                </div>
+              </div>
+
+              <div class="muted">
+                Backend connection intentionally disabled.
+              </div>
+
+            </div>
+
+
+            <div class="card dashboard-card">
+
+              <div>
+                <div class="dashboard-value">
+                  TESTING
+                </div>
+
+                <div class="dashboard-label">
+                  Environment
+                </div>
+              </div>
+
+              <div class="muted">
+                Testing mode only.
+              </div>
+
+            </div>
+
+
+            <div class="card dashboard-card">
+
+              <div>
+                <div class="dashboard-value">
+                  BLOCKED
+                </div>
+
+                <div class="dashboard-label">
+                  Real Money
+                </div>
+              </div>
+
+              <div class="muted">
+                Real payment and bank transfer blocked.
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div style="height:16px;"></div>
+
+
+          <div class="grid two">
+
+
+            <section class="card">
+
+              <h2>
+                Frontend Architecture
+              </h2>
+
+              <div class="muted">
+                GoVara uses a modular frontend architecture.
+                Each Administrator Control Center module is kept
+                in its own JavaScript file.
+              </div>
+
+              <div style="height:14px;"></div>
+
+              <div class="notice info">
+
+                <strong>
+                  Current structure
+                </strong>
+
+                <br />
+
+                index.html = master shell
+
+                <br />
+
+                assets/js/modules/ = individual modules
+
+              </div>
+
+            </section>
+
+
+            <section class="card">
+
+              <h2>
+                Safety Boundary
+              </h2>
+
+              <div class="notice warn">
+
+                Frontend is NOT the financial authority.
+
+                <br /><br />
+
+                Backend remains authoritative.
+
+                <br /><br />
+
+                Real Money = BLOCKED
+
+                <br />
+
+                Real Payment = BLOCKED
+
+                <br />
+
+                Bank Transfer = BLOCKED
+
+              </div>
+
+            </section>
+
+          </div>
+
+
+          <div style="height:16px;"></div>
+
+
+          <section class="card">
+
+            <h2>
+              Module Progress
+            </h2>
+
+            <div class="muted">
+              Modules are built and verified one at a time.
+            </div>
+
+            <div style="height:14px;"></div>
+
+
+            <div class="grid four">
+
+              <div class="notice success">
+                <strong>26A</strong><br />
+                System Configuration
+              </div>
+
+              <div class="notice info">
+                <strong>26B</strong><br />
+                User & Role Control
+              </div>
+
+              <div class="notice">
+                <strong>26C</strong><br />
+                Business Policies
+              </div>
+
+              <div class="notice">
+                <strong>26D</strong><br />
+                Operations Control
+              </div>
+
+              <div class="notice">
+                <strong>26E</strong><br />
+                Financial Control
+              </div>
+
+              <div class="notice">
+                <strong>26F</strong><br />
+                Documents & KYC
+              </div>
+
+              <div class="notice">
+                <strong>26G</strong><br />
+                Audit & Monitoring
+              </div>
+
+              <div class="notice">
+                <strong>STEP 27</strong><br />
+                Consolidated API
+              </div>
+
+            </div>
+
+          </section>
+
+
+          <div class="app-footer">
+            GoVara Frontend — Modular Administrator Control Center
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26A PAGE
+             =================================================== -->
+
+        <section
+          id="page-26A"
+          class="page"
+        >
+
+          <div
+            id="module-26A"
+            class="module-container"
+          ></div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26B PAGE
+             =================================================== -->
+
+        <section
+          id="page-26B"
+          class="page"
+        >
+
+          <div
+            id="module-26B"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                26B — User & Role Control
+              </h2>
+
+              <div class="muted">
+                Loading module...
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26C PAGE
+             =================================================== -->
+
+        <section
+          id="page-26C"
+          class="page"
+        >
+
+          <div
+            id="module-26C"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                26C — Business Policies
+              </h2>
+
+              <div class="muted">
+                Module will be loaded here.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26D PAGE
+             =================================================== -->
+
+        <section
+          id="page-26D"
+          class="page"
+        >
+
+          <div
+            id="module-26D"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                26D — Operations Control
+              </h2>
+
+              <div class="muted">
+                Module will be loaded here.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26E PAGE
+             =================================================== -->
+
+        <section
+          id="page-26E"
+          class="page"
+        >
+
+          <div
+            id="module-26E"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                26E — Financial Control
+              </h2>
+
+              <div class="muted">
+                Module will be loaded here.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26F PAGE
+             =================================================== -->
+
+        <section
+          id="page-26F"
+          class="page"
+        >
+
+          <div
+            id="module-26F"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                26F — Documents & KYC
+              </h2>
+
+              <div class="muted">
+                Module will be loaded here.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             26G PAGE
+             =================================================== -->
+
+        <section
+          id="page-26G"
+          class="page"
+        >
+
+          <div
+            id="module-26G"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                26G — Audit & Monitoring
+              </h2>
+
+              <div class="muted">
+                Module will be loaded here.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             STEP 27 PAGE
+             =================================================== -->
+
+        <section
+          id="page-27"
+          class="page"
+        >
+
+          <div
+            id="module-27"
+            class="module-container"
+          >
+
+            <div class="module-placeholder">
+
+              <h2>
+                STEP 27 — Consolidated API
+              </h2>
+
+              <div class="muted">
+                API boundary is currently not configured.
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+      </main>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       MODULE JAVASCRIPT FILES
+       =========================================================
+
+       IMPORTANT:
+       Keep module files separate.
+
+       Do NOT put module logic inside index.html.
+
+       Future modules can be added here.
+       ========================================================= -->
+
+
+  <!-- 26A — VERIFIED / FROZEN -->
+
+  <script src="assets/js/modules/26A-System.js"></script>
+
+
+  <!-- 26B — USER & ROLE CONTROL -->
+
+  <script src="assets/js/modules/26B-Roles.js"></script>
+
+
+  <!-- 26C — BUSINESS POLICIES -->
+
+  <script src="assets/js/modules/26C-policies.js"></script>
+
+
+  <!-- 26D — OPERATIONS CONTROL -->
+
+  <script src="assets/js/modules/26D-operations.js"></script>
+
+
+  <!-- 26E — FINANCIAL CONTROL -->
+
+  <script src="assets/js/modules/26E-financial.js"></script>
+
+
+  <!-- 26F — DOCUMENTS & KYC -->
+
+  <script src="assets/js/modules/26F-documents.js"></script>
+
+
+  <!-- 26G — AUDIT & MONITORING -->
+
+  <script src="assets/js/modules/26G-audit.js"></script>
+
+
+  <!-- STEP 27 — CONSOLIDATED API -->
+
+  <script src="assets/js/modules/27-api.js"></script>
+
+
+  <!-- =========================================================
+       MASTER ROUTER
+       ========================================================= -->
+
+  <script>
+
+    /* =========================================================
+       GOVARA MASTER APPLICATION STATE
+       ========================================================= */
+
+    window.GoVaraAppState = {
+
+      currentPage: "dashboard",
+
+      frontendReady: true,
+
+      apiConfigured: false,
+
+      testingMode: true,
+
+      realMoney: false,
+
+      realPayment: false,
+
+      bankTransfer: false
+
+    };
+
+
+    /* =========================================================
+       PAGE LIST
+       ========================================================= */
+
+    const GOVARA_PAGES = [
+      "dashboard",
+      "26A",
+      "26B",
+      "26C",
+      "26D",
+      "26E",
+      "26F",
+      "26G",
+      "27"
+    ];
+
+
+    /* =========================================================
+       MODULE RENDER HELPER
+       ========================================================= */
+
+    function renderGoVaraModule(moduleObject, mountId) {
+
+      const mount = document.getElementById(mountId);
+
+      if (!mount) {
+        console.error(
+          "GoVara mount element not found:",
+          mountId
+        );
+
+        return;
       }
 
-    });
 
-  }
+      if (!moduleObject) {
+
+        mount.innerHTML = `
+          <div class="module-placeholder">
+
+            <h2>
+              Module Not Loaded
+            </h2>
+
+            <div class="muted">
+              The requested module JavaScript is not available.
+            </div>
+
+          </div>
+        `;
+
+        return;
+      }
 
 
-  function clearActive(){
+      try {
+
+        if (
+          typeof moduleObject.renderAndBind ===
+          "function"
+        ) {
+
+          moduleObject.renderAndBind();
+
+          return;
+        }
+
+
+        if (
+          typeof moduleObject.render ===
+          "function"
+        ) {
+
+          mount.innerHTML =
+            moduleObject.render();
+
+        }
+
+
+        if (
+          typeof moduleObject.bind ===
+          "function"
+        ) {
+
+          moduleObject.bind();
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "GoVara module render error:",
+          error
+        );
+
+        mount.innerHTML = `
+          <div class="module-placeholder">
+
+            <h2>
+              Module Error
+            </h2>
+
+            <div class="muted">
+              ${error.message || error}
+            </div>
+
+          </div>
+        `;
+
+      }
+
+    }
+
+
+    /* =========================================================
+       MASTER ROUTER
+       ========================================================= */
+
+    function showGoVaraPage(page) {
+
+      if (!GOVARA_PAGES.includes(page)) {
+
+        console.warn(
+          "Unknown GoVara page:",
+          page
+        );
+
+        page = "dashboard";
+
+      }
+
+
+      /* -----------------------------------------------
+         Hide all pages
+         ----------------------------------------------- */
+
+      document
+        .querySelectorAll(".page")
+        .forEach(function (element) {
+
+          element.classList.remove("active");
+
+        });
+
+
+      /* -----------------------------------------------
+         Remove active navigation
+         ----------------------------------------------- */
+
+      document
+        .querySelectorAll(".nav-btn")
+        .forEach(function (button) {
+
+          button.classList.remove("active");
+
+        });
+
+
+      /* -----------------------------------------------
+         Show selected page
+         ----------------------------------------------- */
+
+      const pageElement =
+        document.getElementById(
+          "page-" + page
+        );
+
+
+      if (pageElement) {
+
+        pageElement.classList.add("active");
+
+      }
+
+
+      /* -----------------------------------------------
+         Activate selected nav
+         ----------------------------------------------- */
+
+      const navButton =
+        document.querySelector(
+          '.nav-btn[data-page="' +
+          page +
+          '"]'
+        );
+
+
+      if (navButton) {
+
+        navButton.classList.add("active");
+
+      }
+
+
+      /* -----------------------------------------------
+         Save current page
+         ----------------------------------------------- */
+
+      GoVaraAppState.currentPage = page;
+
+
+      /* -----------------------------------------------
+         Module loading
+         ----------------------------------------------- */
+
+      switch (page) {
+
+
+        /* =============================================
+           DASHBOARD
+           ============================================= */
+
+        case "dashboard":
+
+          updateDashboardStatus();
+
+          break;
+
+
+        /* =============================================
+           26A
+           ============================================= */
+
+        case "26A":
+
+          renderGoVaraModule(
+            window.GoVara26A,
+            "module-26A"
+          );
+
+          break;
+
+
+        /* =============================================
+           26B
+           ============================================= */
+
+        case "26B":
+
+          renderGoVaraModule(
+            window.GoVara26B,
+            "module-26B"
+          );
+
+          break;
+
+
+        /* =============================================
+           26C
+           ============================================= */
+
+        case "26C":
+
+          renderGoVaraModule(
+            window.GoVara26C,
+            "module-26C"
+          );
+
+          break;
+
+
+        /* =============================================
+           26D
+           ============================================= */
+
+        case "26D":
+
+          renderGoVaraModule(
+            window.GoVara26D,
+            "module-26D"
+          );
+
+          break;
+
+
+        /* =============================================
+           26E
+           ============================================= */
+
+        case "26E":
+
+          renderGoVaraModule(
+            window.GoVara26E,
+            "module-26E"
+          );
+
+          break;
+
+
+        /* =============================================
+           26F
+           ============================================= */
+
+        case "26F":
+
+          renderGoVaraModule(
+            window.GoVara26F,
+            "module-26F"
+          );
+
+          break;
+
+
+        /* =============================================
+           26G
+           ============================================= */
+
+        case "26G":
+
+          renderGoVaraModule(
+            window.GoVara26G,
+            "module-26G"
+          );
+
+          break;
+
+
+        /* =============================================
+           STEP 27
+           ============================================= */
+
+        case "27":
+
+          renderGoVaraModule(
+            window.GoVara27,
+            "module-27"
+          );
+
+          break;
+
+      }
+
+    }
+
+
+    /* =========================================================
+       DASHBOARD STATUS
+       ========================================================= */
+
+    function updateDashboardStatus() {
+
+      const apiStatus =
+        document.getElementById(
+          "dashboard-api-status"
+        );
+
+
+      const apiBadge =
+        document.getElementById(
+          "api-status-badge"
+        );
+
+
+      if (
+        window.GoVaraAPI &&
+        typeof window.GoVaraAPI.getAPIUrl ===
+        "function" &&
+        window.GoVaraAPI.getAPIUrl()
+      ) {
+
+        if (apiStatus) {
+
+          apiStatus.textContent =
+            "CONFIGURED";
+
+        }
+
+
+        if (apiBadge) {
+
+          apiBadge.textContent =
+            "API CONFIGURED";
+
+          apiBadge.className =
+            "badge warning";
+
+        }
+
+      } else {
+
+        if (apiStatus) {
+
+          apiStatus.textContent =
+            "NOT CONFIGURED";
+
+        }
+
+
+        if (apiBadge) {
+
+          apiBadge.textContent =
+            "API NOT CONFIGURED";
+
+          apiBadge.className =
+            "badge warning";
+
+        }
+
+      }
+
+    }
+
+
+    /* =========================================================
+       NAVIGATION EVENTS
+       ========================================================= */
 
     document
       .querySelectorAll(".nav-btn")
-      .forEach(function(button){
+      .forEach(function (button) {
 
-        button.classList.remove("active");
+        button.addEventListener(
+          "click",
+          function () {
+
+            const page =
+              this.dataset.page;
+
+            showGoVaraPage(page);
+
+          }
+        );
 
       });
 
-  }
 
+    /* =========================================================
+       INITIALIZATION
+       ========================================================= */
 
-  function showPage(page){
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
 
-    hideAll();
-    clearActive();
+        updateDashboardStatus();
 
+        showGoVaraPage("dashboard");
 
-    const pageElement =
-      document.getElementById("page-" + page);
-
-    if(pageElement){
-      pageElement.style.display = "block";
-    }
-
-
-    const navButton =
-      document.querySelector(
-        '.nav-btn[data-page="' + page + '"]'
-      );
-
-    if(navButton){
-      navButton.classList.add("active");
-    }
-
-
-    /* -------------------------------------------------------
-       26A — REAL MODULE RENDER
-       ------------------------------------------------------- */
-
-    if(page === "26A"){
-
-      const mount =
-        document.getElementById("module-26A");
-
-      if(!mount){
-        console.error(
-          "GoVara 26A: module-26A container missing."
-        );
-        return;
       }
+    );
 
 
-      if(!window.GoVara26A){
+    /* =========================================================
+       GLOBAL ROUTER ACCESS
+       ========================================================= */
 
-        mount.innerHTML = `
-          <div class="placeholder">
-            <h1>26A — System Configuration</h1>
-            <p>
-              26A-System.js could not be loaded.
-              Please check the file path.
-            </p>
-          </div>
-        `;
+    window.GoVaraRouter = {
 
-        console.error(
-          "GoVara26A is not available."
-        );
+      show: showGoVaraPage,
 
-        return;
-      }
+      current: function () {
 
-
-      mount.innerHTML =
-        window.GoVara26A.render();
-
-
-      if(
-        typeof window.GoVara26A.bind === "function"
-      ){
-
-        window.GoVara26A.bind();
+        return GoVaraAppState.currentPage;
 
       }
 
-    }
+    };
 
 
-    /* -------------------------------------------------------
-       Future modules — intentionally not implemented yet
-       ------------------------------------------------------- */
+    /* =========================================================
+       FUTURE MODULE REGISTRATION
+       =========================================================
 
-    if(
-      page !== "dashboard" &&
-      page !== "26A"
-    ){
+       Future में अगर नया module आए, उदाहरण:
 
-      if(pageElement){
+       28 — Call Center
 
-        pageElement.innerHTML = `
-          <div class="placeholder">
-            <h1>${page === "27"
-              ? "STEP 27 — Consolidated API"
-              : page + " — Administrator Module"
-            }</h1>
+       तो केवल:
 
-            <p>
-              This module will be connected after 26A
-              is verified. No backend or database operation
-              is being executed at this stage.
-            </p>
-          </div>
-        `;
+       1. sidebar button
+       2. page section
+       3. JS script
+       4. switch case
 
-      }
+       add करना होगा.
 
-    }
-
-  }
+       Existing modules को rebuild करने की जरूरत नहीं होगी.
+       ========================================================= */
 
 
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach(function(button){
+    console.log(
+      "GoVara Master Frontend loaded successfully."
+    );
 
-      button.addEventListener("click",function(){
+    console.log(
+      "API remains NOT CONFIGURED."
+    );
 
-        const page =
-          this.getAttribute("data-page");
+    console.log(
+      "Real Money remains BLOCKED."
+    );
 
-        showPage(page);
-
-      });
-
-    });
-
-
-  /* Initial page */
-
-  showPage("dashboard");
-
-})();
-
-</script>
+  </script>
 
 </body>
 </html>

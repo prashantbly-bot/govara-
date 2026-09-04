@@ -2425,6 +2425,380 @@ document.addEventListener(
     );
 
   }
+  /* =========================================================
+   STEP 27 — CONSOLIDATED API INTEGRATION
+   ========================================================= */
+
+const GoVaraAPIIntegration = {
+
+  ready: false,
+
+  getAPI() {
+
+    if (
+      typeof window !== "undefined" &&
+      window.GoVaraAPI
+    ) {
+      return window.GoVaraAPI;
+    }
+
+    return null;
+  },
+
+
+  async testConnection() {
+
+    const api = this.getAPI();
+
+    if (!api) {
+
+      GoVaraAdminState.api.status = "NOT_AVAILABLE";
+
+      updateAPIStatus("NOT_AVAILABLE");
+
+      addLocalAudit(
+        "API_CONNECTION_TEST",
+        "API",
+        "NOT_AVAILABLE"
+      );
+
+      return {
+        success: false,
+        status: "NOT_AVAILABLE"
+      };
+    }
+
+
+    try {
+
+      if (
+        typeof api.testConnection !== "function"
+      ) {
+
+        GoVaraAdminState.api.status =
+          "TEST_METHOD_MISSING";
+
+        updateAPIStatus(
+          "TEST_METHOD_MISSING"
+        );
+
+        return {
+          success: false,
+          status: "TEST_METHOD_MISSING"
+        };
+      }
+
+
+      const result =
+        await api.testConnection();
+
+
+      if (
+        result &&
+        (
+          result.success === true ||
+          result.verified === true
+        )
+      ) {
+
+        this.ready = true;
+
+        GoVaraAdminState.api.status =
+          "CONNECTED";
+
+        updateAPIStatus(
+          "CONNECTED"
+        );
+
+        addLocalAudit(
+          "API_CONNECTION_TEST",
+          "API",
+          "PASS"
+        );
+
+        return {
+          success: true,
+          result
+        };
+      }
+
+
+      GoVaraAdminState.api.status =
+        "FAILED";
+
+      updateAPIStatus(
+        "FAILED"
+      );
+
+      addLocalAudit(
+        "API_CONNECTION_TEST",
+        "API",
+        "FAILED"
+      );
+
+      return {
+        success: false,
+        result
+      };
+
+    } catch (error) {
+
+      GoVaraAdminState.api.status =
+        "ERROR";
+
+      updateAPIStatus(
+        "ERROR"
+      );
+
+      addLocalAudit(
+        "API_CONNECTION_TEST",
+        "API",
+        "ERROR"
+      );
+
+      console.error(
+        "GoVara API connection error:",
+        error
+      );
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+};
+
+
+/* =========================================================
+   API STATUS UI
+   ========================================================= */
+
+function updateAPIStatus(status) {
+
+  const apiStatus =
+    document.getElementById(
+      "apiStatus"
+    );
+
+  if (apiStatus) {
+    apiStatus.value = status;
+  }
+
+
+  const auditHealth =
+    document.getElementById(
+      "auditApiHealth"
+    );
+
+  if (auditHealth) {
+    auditHealth.textContent =
+      status;
+  }
+}
+
+
+/* =========================================================
+   ADMIN API ACTIONS
+   ========================================================= */
+
+async function connectGoVaraAPI() {
+
+  return await
+    GoVaraAPIIntegration
+      .testConnection();
+}
+
+
+/* =========================================================
+   SAFE ADMIN DATA ACCESS
+   ========================================================= */
+
+async function adminGet(module) {
+
+  const api =
+    GoVaraAPIIntegration.getAPI();
+
+  if (!api) {
+
+    addLocalAudit(
+      "ADMIN_GET",
+      module,
+      "API_NOT_AVAILABLE"
+    );
+
+    return {
+      success: false,
+      status: "API_NOT_AVAILABLE"
+    };
+  }
+
+
+  if (
+    typeof api.list === "function"
+  ) {
+
+    try {
+
+      const result =
+        await api.list(module);
+
+      addLocalAudit(
+        "ADMIN_GET",
+        module,
+        "API_RESPONSE"
+      );
+
+      return result;
+
+    } catch (error) {
+
+      addLocalAudit(
+        "ADMIN_GET",
+        module,
+        "ERROR"
+      );
+
+      console.error(
+        "Admin GET error:",
+        error
+      );
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+
+  return {
+    success: false,
+    status: "API_METHOD_MISSING"
+  };
+}
+
+
+/* =========================================================
+   SAFE ADMIN DATA SAVE
+   ========================================================= */
+
+async function adminSave(
+  module,
+  data
+) {
+
+  const api =
+    GoVaraAPIIntegration.getAPI();
+
+  if (!api) {
+
+    addLocalAudit(
+      "ADMIN_SAVE",
+      module,
+      "API_NOT_AVAILABLE"
+    );
+
+    return {
+      success: false,
+      status: "API_NOT_AVAILABLE"
+    };
+  }
+
+
+  if (
+    typeof api.save === "function"
+  ) {
+
+    try {
+
+      const result =
+        await api.save(
+          module,
+          data
+        );
+
+      addLocalAudit(
+        "ADMIN_SAVE",
+        module,
+        "API_RESPONSE"
+      );
+
+      return result;
+
+    } catch (error) {
+
+      addLocalAudit(
+        "ADMIN_SAVE",
+        module,
+        "ERROR"
+      );
+
+      console.error(
+        "Admin SAVE error:",
+        error
+      );
+
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+
+  return {
+    success: false,
+    status: "API_METHOD_MISSING"
+  };
+}
+
+
+/* =========================================================
+   AUTOMATIC API DETECTION
+   ========================================================= */
+
+function initializeGoVaraAPIIntegration() {
+
+  const api =
+    GoVaraAPIIntegration.getAPI();
+
+
+  if (api) {
+
+    console.log(
+      "GoVaraAPI detected."
+    );
+
+    console.log(
+      "Consolidated API integration ready."
+    );
+
+  } else {
+
+    console.log(
+      "GoVaraAPI not detected."
+    );
+
+    console.log(
+      "Frontend remains operational in standalone/testing mode."
+    );
+  }
+}
+
+
+/* =========================================================
+   START STEP 27
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+
+    initializeGoVaraAPIIntegration();
+
+  }
+);
 );
 
 </script>

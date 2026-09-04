@@ -2019,7 +2019,7 @@
             break;
 
 
-          case "26A":
+ case "26A":
 
             renderGoVaraModule(
               window.GoVara26A,
@@ -2087,9 +2087,47 @@
             );
 
             break;
-case "27":
-  
 
+
+          case "27":
+
+            if (
+              window.GoVara27 &&
+              typeof window.GoVara27.render === "function"
+            ) {
+
+              const step27Container =
+                document.getElementById("module-27");
+
+              if (step27Container) {
+
+                window.GoVara27.render(
+                  step27Container
+                );
+
+              }
+
+            } else {
+
+              renderGoVaraModule(
+                window.GoVara27 ||
+                window.GoVaraAPI,
+                "module-27"
+              );
+
+            }
+
+            break;
+
+
+          default:
+
+            console.warn(
+              "Unknown GoVara page:",
+              requestedPage
+            );
+
+        }
           /* ==================================================
              STEP 28 — CUSTOMER
              ================================================== */

@@ -3153,14 +3153,17 @@
     }
 
     /* ========================================================
-     * CUSTOMER LIST
-     *
-     * IMPORTANT:
-     * This was the missing/no-op area.
-     *
-     * The button is explicitly connected
-     * to customerList().
-     * ======================================================== */
+ * CUSTOMER LIST
+ *
+ * STEP 27 CUSTOMER LIST UI FIX
+ *
+ * IMPORTANT:
+ * - Backend unchanged.
+ * - Database unchanged.
+ * - Existing customerList() API unchanged.
+ * - Button uses direct onclick binding.
+ * - Immediate click feedback is shown.
+ * ======================================================== */
 
     var customerLoadButton =
       container.querySelector(
@@ -3169,9 +3172,18 @@
 
     if (customerLoadButton) {
 
-      customerLoadButton.addEventListener(
-        'click',
+      /*
+       * Remove any previously assigned onclick
+       * before assigning the current handler.
+       */
+
+      customerLoadButton.onclick = null;
+
+      customerLoadButton.onclick =
         async function () {
+
+          var button =
+            this;
 
           var customerStatus =
             container.querySelector(
@@ -3187,6 +3199,17 @@
             container.querySelector(
               '#govara-step27-customer-result'
             );
+
+          /*
+           * IMPORTANT:
+           * This message appears BEFORE the API call.
+           * Therefore, if you see this message,
+           * the button itself is definitely working.
+           */
+
+          console.log(
+            '[GoVara STEP 27] CUSTOMER LIST BUTTON CLICKED'
+          );
 
           /*
            * Clear previous error.
@@ -3206,47 +3229,60 @@
            */
 
           if (customerStatus) {
+
             customerStatus.textContent =
-              'Loading customers...';
+              'BUTTON CLICKED — Requesting Customer List...';
+
           }
 
           if (customerListBox) {
+
             customerListBox.innerHTML =
-              '<div class="muted" style="padding:12px 0;">' +
-              'Loading customer records...' +
+              '<div style="padding:12px 0;">' +
+              '<strong>REQUESTING...</strong>' +
+              '<div class="muted" style="margin-top:6px;">' +
+              'Calling LIST / CUSTOMER through Consolidated API...' +
+              '</div>' +
               '</div>';
+
           }
 
           if (customerResultBox) {
+
             customerResultBox.textContent =
-              'REQUEST STARTED...\n\n' +
+              'REQUEST STARTED\n\n' +
               'Action: LIST\n' +
               'Module: CUSTOMER\n' +
+              'Status: REQUESTING\n' +
               'Time: ' +
               nowISO();
+
           }
 
           /*
            * Prevent duplicate clicks.
            */
 
-          customerLoadButton.disabled =
+          button.disabled =
             true;
 
           var originalButtonText =
-            customerLoadButton.textContent;
+            button.textContent;
 
-          customerLoadButton.textContent =
+          button.textContent =
             'Loading...';
 
           try {
 
             console.log(
-              '[GoVara STEP 27] Loading customer list...'
+              '[GoVara STEP 27] CUSTOMER LIST REQUEST STARTED'
             );
 
             /*
-             * Actual API call.
+             * Actual existing API call.
+             *
+             * This function is already proven
+             * working from browser console.
              */
 
             var response =
@@ -3268,35 +3304,52 @@
                 response
               );
 
-            /*
-             * Render customer table
-             * and raw response.
-             */
-
-            renderCustomerList(
-              container,
+            console.log(
+              '[GoVara STEP 27] CUSTOMER LIST RESPONSE:',
               response
             );
 
             /*
-             * Explicit TRUE/FALSE status.
+             * Render customer table.
+             */
+
+            if (success) {
+
+              renderCustomerList(
+                container,
+                response
+              );
+
+            }
+
+            /*
+             * TRUE / FALSE result.
              */
 
             if (customerStatus) {
 
               if (success) {
 
+                var loadedRows =
+                  extractCustomerRows(
+                    response
+                  );
+
                 customerStatus.textContent =
-                  'TRUE — Customer list loaded successfully.';
+                  'TRUE — ' +
+                  loadedRows.length +
+                  ' customer records loaded successfully.';
 
               } else {
 
                 customerStatus.textContent =
-                  'FALSE — API returned an unsuccessful response: ' +
+                  'FALSE — Customer List API returned an error: ' +
                   extractError(
                     response
                   );
+
               }
+
             }
 
             /*
@@ -3317,10 +3370,53 @@
                 extractError(
                   response
                 );
+
             }
 
             /*
-             * Raw response display.
+             * Always show complete API response.
+             */
+
+            if (customerResultBox) {
+
+              customerResultBox.textContent =
+                JSON.stringify(
+                  response,
+                  null,
+                  2
+                );
+
+            }
+
+            /*
+             * If API itself returned FALSE,
+             * show a visible error in the list area.
+             */
+
+            if (!success &&
+                customerListBox) {
+
+              customerListBox.innerHTML =
+                '<div style="padding:12px 0;">' +
+
+                '<strong>FALSE — Customer List Failed</strong>' +
+
+                '<div class="muted" style="margin-top:6px;">' +
+
+                escapeHTML(
+                  extractError(
+                    response
+                  )
+                ) +
+
+                '</div>' +
+
+                '</div>';
+
+            }
+
+            /*
+             * Update activity information.
              */
 
             updateCustomerActivityDisplay(
@@ -3328,44 +3424,25 @@
               response
             );
 
-            /*
-             * Re-render actual customer
-             * status after helper call.
-             */
-
-            if (customerStatus) {
-
-              if (success) {
-
-                var loadedRows =
-                  extractCustomerRows(
-                    response
-                  );
-
-                customerStatus.textContent =
-                  'TRUE — ' +
-                  loadedRows.length +
-                  ' customer records loaded.';
-
-              } else {
-
-                customerStatus.textContent =
-                  'FALSE — ' +
-                  extractError(
-                    response
-                  );
-              }
-            }
-
             console.log(
-              '[GoVara STEP 27] Customer list loaded.',
-              response
+              '[GoVara STEP 27] CUSTOMER LIST REQUEST FINISHED',
+              {
+                success:
+                  success,
+
+                count:
+                  success
+                    ? extractCustomerRows(
+                        response
+                      ).length
+                    : 0
+              }
             );
 
           } catch (error) {
 
             /*
-             * Actual JavaScript/network error.
+             * JavaScript / network / API exception.
              */
 
             APIState.lastError =
@@ -3376,11 +3453,26 @@
                     error
                   );
 
+            console.error(
+              '[GoVara STEP 27] CUSTOMER LIST ERROR:',
+              error
+            );
+
+            /*
+             * Visible error status.
+             */
+
             if (customerStatus) {
+
               customerStatus.textContent =
                 'ERROR — ' +
                 APIState.lastError;
+
             }
+
+            /*
+             * Visible list error.
+             */
 
             if (customerListBox) {
 
@@ -3398,7 +3490,12 @@
                 '</div>' +
 
                 '</div>';
+
             }
+
+            /*
+             * Visible raw error response.
+             */
 
             if (customerResultBox) {
 
@@ -3419,16 +3516,13 @@
 
                     timestamp:
                       nowISO()
+
                   },
                   null,
                   2
                 );
-            }
 
-            console.error(
-              '[GoVara STEP 27] Customer list failed:',
-              error
-            );
+            }
 
           } finally {
 
@@ -3436,10 +3530,10 @@
              * Restore button.
              */
 
-            customerLoadButton.disabled =
+            button.disabled =
               false;
 
-            customerLoadButton.textContent =
+            button.textContent =
               originalButtonText;
 
             /*
@@ -3449,22 +3543,36 @@
             refreshStep27Status(
               container
             );
+
+            console.log(
+              '[GoVara STEP 27] CUSTOMER LIST BUTTON READY AGAIN'
+            );
+
           }
-        }
+
+        };
+
+      /*
+       * Confirm binding in Console.
+       */
+
+      console.log(
+        '[GoVara STEP 27] Customer List button successfully bound.',
+        customerLoadButton
       );
 
     } else {
 
       /*
-       * This should never happen if the
-       * STEP 27 render HTML is correct.
+       * Button missing from rendered HTML.
        */
 
       console.error(
-        '[GoVara STEP 27] Customer List button not found.'
+        '[GoVara STEP 27] Customer List button NOT FOUND:',
+        '#govara-step27-load-customers'
       );
-    }
 
+    }
     /* ========================================================
      * TEST CONNECTION
      * ======================================================== */

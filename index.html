@@ -1584,29 +1584,587 @@
   </section>
 
 
-  <!-- ===================================================
-       26F
-       =================================================== -->
-
-  <section
-    id="page-26F"
-    class="page"
+ <!-- ===================================================
+     26F — CENTRAL DOCUMENTS & KYC ENGINE
+     =================================================== -->
+<section
+  id="page-26F"
+  class="page"
+>
+  <div
+    id="module-26F"
+    class="module-container"
   >
-    <div
-      id="module-26F"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26F — Documents & KYC
-        </h2>
 
-        <div class="muted">
-          Loading module...
+    <div class="govara-customer-module">
+
+      <!-- =================================================
+           HEADER
+           ================================================= -->
+      <div class="govara-module-header">
+
+        <div>
+          <h2>
+            Central Documents & KYC Engine
+          </h2>
+
+          <p>
+            One centralized KYC engine for Customer,
+            Vendor and Driver with role-based
+            document distribution.
+          </p>
         </div>
+
+        <div class="govara-status-badge">
+          CENTRAL KYC ENGINE
+        </div>
+
       </div>
+
+
+      <!-- =================================================
+           ENGINE STATUS
+           ================================================= -->
+      <div
+        style="
+          margin-bottom:18px;
+          padding:14px;
+          border:1px solid #2c6070;
+          border-radius:12px;
+          background:#102c38;
+        "
+      >
+
+        <strong
+          style="
+            display:block;
+            color:#a5f3fc;
+            font-size:13px;
+          "
+        >
+          KYC ENGINE STATUS
+        </strong>
+
+        <div
+          style="
+            margin-top:7px;
+            color:#bae6fd;
+            font-size:12px;
+            line-height:1.6;
+          "
+        >
+          Central engine is designed to serve
+          Customer, Vendor and Driver using the
+          same document and verification pipeline.
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           ROLE DISTRIBUTION
+           ================================================= -->
+      <div
+        style="
+          display:grid;
+          grid-template-columns:
+            repeat(3,minmax(0,1fr));
+          gap:12px;
+          margin-bottom:20px;
+        "
+      >
+
+        <!-- CUSTOMER -->
+
+        <div
+          style="
+            padding:16px;
+            border:1px solid #34445b;
+            border-radius:12px;
+            background:#1d2a3d;
+          "
+        >
+
+          <div
+            style="
+              color:#93c5fd;
+              font-size:11px;
+              font-weight:900;
+            "
+          >
+            CUSTOMER
+          </div>
+
+          <div
+            style="
+              margin-top:7px;
+              font-size:15px;
+              font-weight:800;
+            "
+          >
+            Customer KYC
+          </div>
+
+          <div
+            class="muted"
+            style="
+              margin-top:5px;
+              font-size:11px;
+            "
+          >
+            Individual identity and
+            supporting documents.
+          </div>
+
+        </div>
+
+
+        <!-- VENDOR -->
+
+        <div
+          style="
+            padding:16px;
+            border:1px solid #34445b;
+            border-radius:12px;
+            background:#1d2a3d;
+          "
+        >
+
+          <div
+            style="
+              color:#93c5fd;
+              font-size:11px;
+              font-weight:900;
+            "
+          >
+            VENDOR
+          </div>
+
+          <div
+            style="
+              margin-top:7px;
+              font-size:15px;
+              font-weight:800;
+            "
+          >
+            Vendor KYC
+          </div>
+
+          <div
+            class="muted"
+            style="
+              margin-top:5px;
+              font-size:11px;
+            "
+          >
+            Business, ownership and
+            supporting documents.
+          </div>
+
+        </div>
+
+
+        <!-- DRIVER -->
+
+        <div
+          style="
+            padding:16px;
+            border:1px solid #34445b;
+            border-radius:12px;
+            background:#1d2a3d;
+          "
+        >
+
+          <div
+            style="
+              color:#93c5fd;
+              font-size:11px;
+              font-weight:900;
+            "
+          >
+            DRIVER
+          </div>
+
+          <div
+            style="
+              margin-top:7px;
+              font-size:15px;
+              font-weight:800;
+            "
+          >
+            Driver KYC
+          </div>
+
+          <div
+            class="muted"
+            style="
+              margin-top:5px;
+              font-size:11px;
+            "
+          >
+            Identity, licence and
+            driver-specific documents.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           KYC CONTROL
+           ================================================= -->
+      <div
+        style="
+          padding:18px;
+          border:1px solid #3b4a61;
+          border-radius:12px;
+          background:#172033;
+        "
+      >
+
+        <h3
+          style="
+            margin:0 0 16px;
+            font-size:17px;
+          "
+        >
+          KYC Control
+        </h3>
+
+
+        <div class="govara-form-grid">
+
+          <!-- ROLE -->
+
+          <div class="govara-form-group">
+
+            <label>
+              KYC Entity / Role
+            </label>
+
+            <select
+              id="govara-kyc-role"
+            >
+
+              <option value="CUSTOMER">
+                Customer
+              </option>
+
+              <option value="VENDOR">
+                Vendor
+              </option>
+
+              <option value="DRIVER">
+                Driver
+              </option>
+
+            </select>
+
+            <small>
+              Same Central KYC Engine with
+              role-specific distribution.
+            </small>
+
+          </div>
+
+
+          <!-- STATUS -->
+
+          <div class="govara-form-group">
+
+            <label>
+              KYC Status
+            </label>
+
+            <select
+              id="govara-kyc-status"
+            >
+
+              <option value="PENDING">
+                Pending
+              </option>
+
+              <option value="SUBMITTED">
+                Submitted
+              </option>
+
+              <option value="VERIFIED">
+                Verified
+              </option>
+
+              <option value="REJECTED">
+                Rejected
+              </option>
+
+            </select>
+
+            <small>
+              Final verification authority remains
+              with the backend.
+            </small>
+
+          </div>
+
+
+          <!-- ENTITY ID -->
+
+          <div class="govara-form-group">
+
+            <label>
+              Entity ID
+            </label>
+
+            <input
+              type="text"
+              id="govara-kyc-entity-id"
+              placeholder="Customer / Vendor / Driver ID"
+            />
+
+            <small>
+              Existing entity identifier.
+            </small>
+
+          </div>
+
+
+          <!-- DOCUMENT TYPE -->
+
+          <div class="govara-form-group">
+
+            <label>
+              Document Type
+            </label>
+
+            <select
+              id="govara-kyc-document-type"
+            >
+
+              <option value="">
+                Select Document Type
+              </option>
+
+              <option value="IDENTITY">
+                Identity Document
+              </option>
+
+              <option value="ADDRESS">
+                Address Proof
+              </option>
+
+              <option value="PAN">
+                PAN
+              </option>
+
+              <option value="DRIVING_LICENSE">
+                Driving Licence
+              </option>
+
+              <option value="BUSINESS">
+                Business Document
+              </option>
+
+              <option value="OTHER">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- DOCUMENT NUMBER -->
+
+          <div class="govara-form-group">
+
+            <label>
+              Document Number
+            </label>
+
+            <input
+              type="text"
+              id="govara-kyc-document-number"
+              placeholder="Document number"
+            />
+
+          </div>
+
+
+          <!-- FILE -->
+
+          <div class="govara-form-group">
+
+            <label>
+              Document File
+            </label>
+
+            <input
+              type="file"
+              id="govara-kyc-document-file"
+              accept="
+                image/*,
+                application/pdf
+              "
+            />
+
+            <small>
+              File will be checked before upload.
+            </small>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             COMPRESSION CONTROL
+             ================================================= -->
+
+        <div
+          style="
+            margin-top:20px;
+            padding:15px;
+            border:1px solid #655326;
+            border-radius:11px;
+            background:#302814;
+          "
+        >
+
+          <strong
+            style="
+              color:#fde68a;
+              font-size:13px;
+            "
+          >
+            Document Compression / Optimization
+          </strong>
+
+          <div
+            style="
+              margin-top:6px;
+              color:#e8d9a3;
+              font-size:11px;
+              line-height:1.55;
+            "
+          >
+            KYC documents should be optimized before
+            storage while preserving readability.
+            Compression must not destroy identity
+            document information.
+          </div>
+
+          <div
+            id="govara-kyc-file-info"
+            style="
+              margin-top:10px;
+              color:#fde68a;
+              font-size:11px;
+            "
+          >
+            No file selected.
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             ACTIONS
+             ================================================= -->
+
+        <div class="govara-form-actions">
+
+          <button
+            type="button"
+            id="govara-kyc-validate"
+          >
+            Validate KYC
+          </button>
+
+          <button
+            type="button"
+            id="govara-kyc-clear"
+          >
+            Clear
+          </button>
+
+        </div>
+
+
+        <!-- =================================================
+             STATUS
+             ================================================= -->
+
+        <div
+          id="govara-kyc-message"
+          class="govara-message govara-message-info"
+          style="
+            margin-top:16px;
+            margin-bottom:0;
+          "
+        >
+          KYC Engine ready.
+          Select role, entity and document details.
+        </div>
+
+
+        <!-- =================================================
+             PIPELINE
+             ================================================= -->
+
+        <div
+          style="
+            margin-top:18px;
+            padding:14px;
+            border:1px solid #34445b;
+            border-radius:11px;
+            background:#111b2b;
+          "
+        >
+
+          <div
+            style="
+              color:#e2e8f0;
+              font-size:12px;
+              font-weight:800;
+            "
+          >
+            KYC DOCUMENT PIPELINE
+          </div>
+
+          <div
+            style="
+              margin-top:9px;
+              color:#aebbd0;
+              font-size:11px;
+              line-height:1.8;
+            "
+          >
+            1. Select Role
+            →
+            2. Select Entity
+            →
+            3. Select Document
+            →
+            4. Validate
+            →
+            5. Compress / Optimize
+            →
+            6. Store
+            →
+            7. Verify
+            →
+            8. KYC Status
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
-  </section>
+
+  </div>
+</section>
+
 
 
   <!-- ===================================================
@@ -2429,6 +2987,5 @@ function updateDashboardStatus() {
         
       </script></body>
 </html>
-
 
 

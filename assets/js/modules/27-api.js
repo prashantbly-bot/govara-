@@ -1033,10 +1033,18 @@
    * ========================================================== */
 
   async function customerList() {
+  APIState.lastModule = 'CUSTOMER';
 
-    return list('CUSTOMER');
-  }
-
+  /*
+   * Customer List is allowed to make its own API request.
+   * No manual Test Connection is required.
+   *
+   * IMPORTANT:
+   * This runs ONLY when customerList() is called.
+   * No API request is made on page load.
+   */
+  return list('CUSTOMER');
+}
 
   /* ==========================================================
    * 23. CUSTOMER GET

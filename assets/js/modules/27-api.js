@@ -37,13 +37,26 @@
   var CONFIG = {
     API_URL:
       'https://script.google.com/macros/s/AKfycbyczzk6Takt3vEArKzPzFfSInkZq-AJ8_gjBp4oC3R4gSREMqHFtGaZXl4RBYT_PRGX9g/exec',
+
     REQUEST_TIMEOUT: 20000,
-    VERSION: 'GOVARA-CONSOLIDATED-API-V6',
-    ENVIRONMENT: 'TESTING',
-    PROJECT: 'GoVara',
-    REAL_MONEY: 'BLOCKED',
-    REAL_PAYMENT: 'BLOCKED',
-    BANK_TRANSFER: 'BLOCKED'
+
+    VERSION:
+      'GOVARA-CONSOLIDATED-API-V6',
+
+    ENVIRONMENT:
+      'TESTING',
+
+    PROJECT:
+      'GoVara',
+
+    REAL_MONEY:
+      'BLOCKED',
+
+    REAL_PAYMENT:
+      'BLOCKED',
+
+    BANK_TRANSFER:
+      'BLOCKED'
   };
 
   /* ==========================================================
@@ -54,10 +67,12 @@
     configured: false,
     connected: false,
     verified: false,
+
     lastResponse: null,
     lastError: null,
     lastAction: null,
     lastModule: null,
+
     requestStartedAt: null,
     responseReceivedAt: null
   };
@@ -144,7 +159,8 @@
    * ========================================================== */
 
   var CUSTOMER_CONTRACT = {
-    MODULE: 'CUSTOMER',
+    MODULE:
+      'CUSTOMER',
 
     ACTIONS: [
       'LIST',
@@ -162,9 +178,14 @@
       'address'
     ],
 
-    BACKEND_TABLE: '16_Customer',
-    USER_TABLE: '05_User',
-    ID_FIELD: 'Customer_ID'
+    BACKEND_TABLE:
+      '16_Customer',
+
+    USER_TABLE:
+      '05_User',
+
+    ID_FIELD:
+      'Customer_ID'
   };
 
   /* ==========================================================
@@ -249,6 +270,7 @@
       if (!raw) {
         APIState.configured =
           isConfigured();
+
         return;
       }
 
@@ -282,6 +304,7 @@
             );
         }
       }
+
     } catch (error) {
       console.warn(
         '[GoVara STEP 27] Unable to load saved API configuration.',
@@ -304,15 +327,20 @@
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
-          API_URL: cleanURL,
+          API_URL:
+            cleanURL,
+
           ENVIRONMENT:
             CONFIG.ENVIRONMENT,
+
           VERSION:
             CONFIG.VERSION,
+
           PROJECT:
             CONFIG.PROJECT
         })
       );
+
     } catch (error) {
       console.warn(
         '[GoVara STEP 27] Unable to save API configuration.',
@@ -324,25 +352,35 @@
       cleanURL.length > 0;
 
     return {
-      success: true,
+      success:
+        true,
+
       configured:
         APIState.configured,
+
       apiUrl:
         cleanURL
     };
   }
 
   function clearConfiguration() {
-    CONFIG.API_URL = '';
+    CONFIG.API_URL =
+      '';
 
-    APIState.configured = false;
-    APIState.connected = false;
-    APIState.verified = false;
+    APIState.configured =
+      false;
+
+    APIState.connected =
+      false;
+
+    APIState.verified =
+      false;
 
     try {
       localStorage.removeItem(
         STORAGE_KEY
       );
+
     } catch (error) {
       console.warn(
         '[GoVara STEP 27] Unable to clear saved configuration.',
@@ -351,8 +389,11 @@
     }
 
     return {
-      success: true,
-      configured: false
+      success:
+        true,
+
+      configured:
+        false
     };
   }
 
@@ -454,6 +495,7 @@
     try {
       text =
         await response.text();
+
     } catch (error) {
       text = '';
     }
@@ -464,19 +506,28 @@
       try {
         parsed =
           JSON.parse(text);
+
       } catch (error) {
         parsed = {
-          success: false,
+          success:
+            false,
+
           error:
             'INVALID_JSON_RESPONSE',
-          message: text
+
+          message:
+            text
         };
       }
+
     } else {
       parsed = {
-        success: false,
+        success:
+          false,
+
         error:
           'EMPTY_RESPONSE',
+
         message:
           'Backend returned an empty response.'
       };
@@ -562,13 +613,15 @@
     }
 
     if (
-      response.success === false
+      response.success ===
+      false
     ) {
       return false;
     }
 
     return (
-      response.success === true
+      response.success ===
+      true
     );
   }
 
@@ -677,7 +730,8 @@
 
     try {
       var fetchOptions = {
-        method: 'POST',
+        method:
+          'POST',
 
         headers: {
           'Content-Type':
@@ -750,8 +804,26 @@
         APIState.lastError =
           apiError;
 
+        /*
+         * IMPORTANT:
+         *
+         * Do NOT throw here.
+         *
+         * The caller receives the actual
+         * backend response and can display
+         * TRUE/FALSE + full response.
+         */
+
         return parsed;
       }
+
+      /*
+       * A successful API request means
+       * the endpoint responded correctly.
+       */
+
+      APIState.connected =
+        true;
 
       APIState.lastError =
         null;
@@ -759,6 +831,7 @@
       return parsed;
 
     } catch (error) {
+
       APIState.lastError =
         error &&
         error.message
@@ -768,6 +841,7 @@
       throw error;
 
     } finally {
+
       if (timeoutId) {
         clearTimeout(
           timeoutId
@@ -839,7 +913,8 @@
 
     try {
       var options = {
-        method: 'GET'
+        method:
+          'GET'
       };
 
       if (controller) {
@@ -918,6 +993,7 @@
       return parsed;
 
     } catch (error) {
+
       APIState.connected =
         false;
 
@@ -933,6 +1009,7 @@
       throw error;
 
     } finally {
+
       if (timeoutId) {
         clearTimeout(
           timeoutId
@@ -1117,6 +1194,9 @@
     data =
       data || {};
 
+    APIState.lastModule =
+      'CUSTOMER';
+
     return request(
       'CUSTOMER_REGISTER',
       data
@@ -1126,13 +1206,16 @@
   /* ==========================================================
    * 22. CUSTOMER LIST
    *
-   * IMPORTANT:
-   * This reads existing customer records only.
-   * No customer is created here.
-   * No database/table is created here.
+   * Existing records only.
+   * No creation.
+   * No database/table creation.
    * ========================================================== */
 
   async function customerList() {
+
+    APIState.lastAction =
+      'LIST';
+
     APIState.lastModule =
       'CUSTOMER';
 
@@ -1269,10 +1352,15 @@
     data
   ) {
     return {
-      success: false,
-      blocked: true,
+      success:
+        false,
+
+      blocked:
+        true,
+
       error:
         'REAL_MONEY_BLOCKED',
+
       message:
         'Real money wallet operations are blocked.'
     };
@@ -1309,9 +1397,11 @@
   ) {
     return update(
       'SYSTEM',
+
       data && data.id
         ? data.id
         : 'SYSTEM',
+
       data || {}
     );
   }
@@ -1579,7 +1669,8 @@
 
   function diagnostics() {
     return {
-      success: true,
+      success:
+        true,
 
       project:
         CONFIG.PROJECT,
@@ -1647,7 +1738,7 @@
   }
 
   /* ==========================================================
-   * CUSTOMER LIST RESPONSE HELPERS
+   * 43. CUSTOMER LIST RESPONSE HELPERS
    * ========================================================== */
 
   function extractCustomerRows(
@@ -1661,11 +1752,7 @@
       response.result;
 
     /*
-     * Direct array:
-     * {
-     *   success: true,
-     *   result: [...]
-     * }
+     * result directly as array
      */
     if (
       Array.isArray(result)
@@ -1796,7 +1883,7 @@
   }
 
   /* ==========================================================
-   * HTML ESCAPE
+   * 44. HTML ESCAPE
    * ========================================================== */
 
   function escapeHTML(
@@ -1826,20 +1913,33 @@
   }
 
   /* ==========================================================
-   * CUSTOMER LIST RENDERER
+   * 45. JSON DISPLAY HELPER
+   * ========================================================== */
+
+  function formatResponse(
+    response
+  ) {
+    try {
+      return JSON.stringify(
+        response,
+        null,
+        2
+      );
+    } catch (error) {
+      return safeString(
+        response
+      );
+    }
+  }
+
+  /* ==========================================================
+   * 46. CUSTOMER LIST RENDERER
    * ========================================================== */
 
   function renderCustomerList(
     container,
     response
   ) {
-    /*
-     * IMPORTANT FIX:
-     *
-     * These IDs now match the actual
-     * STEP 27 Customer Database Check HTML.
-     */
-
     var box =
       container.querySelector(
         '#govara-step27-customer-list'
@@ -1855,13 +1955,28 @@
         '#govara-step27-customer-count'
       );
 
+    var resultBox =
+      container.querySelector(
+        '#govara-step27-customer-result'
+      );
+
     var rows =
       extractCustomerRows(
         response
       );
 
     /*
-     * Update count.
+     * Always show raw response.
+     */
+    if (resultBox) {
+      resultBox.textContent =
+        formatResponse(
+          response
+        );
+    }
+
+    /*
+     * Customer count.
      */
     if (count) {
       count.textContent =
@@ -1874,39 +1989,73 @@
     }
 
     /*
-     * No records.
+     * Backend/API explicitly returned false.
      */
-    if (!rows.length) {
+    if (
+      response &&
+      response.success === false
+    ) {
+      var errorMessage =
+        extractError(
+          response
+        );
+
       box.innerHTML =
-        '<div class="muted" style="padding:12px 0;">' +
-        'No customer records found.' +
+        '<div style="padding:12px 0;">' +
+        '<strong>ERROR</strong>' +
+        '<div class="muted" style="margin-top:6px;">' +
+        escapeHTML(
+          errorMessage
+        ) +
+        '</div>' +
         '</div>';
 
       if (status) {
         status.textContent =
-          '0 records found';
+          'ERROR — ' +
+          errorMessage;
       }
 
       return;
     }
 
     /*
-     * Discover columns dynamically
-     * from returned customer objects.
+     * No records.
+     */
+    if (!rows.length) {
+
+      box.innerHTML =
+        '<div class="muted" style="padding:12px 0;">' +
+        'API request completed, but no customer records were returned.' +
+        '</div>';
+
+      if (status) {
+        status.textContent =
+          'SUCCESS — 0 customer records returned.';
+      }
+
+      return;
+    }
+
+    /*
+     * Discover columns dynamically.
      */
     var columns = [];
 
     rows.forEach(
       function (row) {
+
         if (
           row &&
           typeof row ===
             'object' &&
           !Array.isArray(row)
         ) {
+
           Object.keys(row)
             .forEach(
               function (key) {
+
                 if (
                   columns.indexOf(
                     key
@@ -1916,16 +2065,19 @@
                     key
                   );
                 }
+
               }
             );
         }
+
       }
     );
 
     /*
-     * Unsupported response format.
+     * Unsupported format.
      */
     if (!columns.length) {
+
       box.innerHTML =
         '<div class="muted" style="padding:12px 0;">' +
         'Customer data returned, but table format is not supported yet.' +
@@ -1933,8 +2085,9 @@
 
       if (status) {
         status.textContent =
+          'SUCCESS — ' +
           rows.length +
-          ' records loaded';
+          ' records returned.';
       }
 
       return;
@@ -1945,7 +2098,11 @@
      */
     var html =
       '<div style="overflow:auto;">' +
-      '<table style="width:100%;border-collapse:collapse;min-width:700px;">';
+      '<table style="' +
+      'width:100%;' +
+      'border-collapse:collapse;' +
+      'min-width:700px;' +
+      '">';
 
     /*
      * Header.
@@ -1955,6 +2112,7 @@
 
     columns.forEach(
       function (col) {
+
         html +=
           '<th style="' +
           'text-align:left;' +
@@ -1963,8 +2121,11 @@
           'white-space:nowrap;' +
           'font-weight:700;' +
           '">' +
-          escapeHTML(col) +
+          escapeHTML(
+            col
+          ) +
           '</th>';
+
       }
     );
 
@@ -1979,17 +2140,42 @@
 
     rows.forEach(
       function (row) {
+
         html +=
           '<tr>';
 
         columns.forEach(
           function (col) {
+
             var value =
               row &&
               row[col] !==
                 undefined
                 ? row[col]
                 : '';
+
+            /*
+             * If backend returns an
+             * object/array as a cell,
+             * show readable JSON.
+             */
+            if (
+              value &&
+              typeof value ===
+                'object'
+            ) {
+              try {
+                value =
+                  JSON.stringify(
+                    value
+                  );
+              } catch (error) {
+                value =
+                  String(
+                    value
+                  );
+              }
+            }
 
             html +=
               '<td style="' +
@@ -2001,11 +2187,13 @@
                 value
               ) +
               '</td>';
+
           }
         );
 
         html +=
           '</tr>';
+
       }
     );
 
@@ -2017,13 +2205,14 @@
 
     if (status) {
       status.textContent =
+        'SUCCESS — ' +
         rows.length +
-        ' records loaded';
+        ' customer records loaded.';
     }
   }
 
   /* ==========================================================
-   * 43. FRONTEND RENDER
+   * 47. FRONTEND RENDER
    *
    * No automatic API request.
    * ========================================================== */
@@ -2052,7 +2241,9 @@
       <div class="govara-step27-panel">
 
         <div class="govara-step27-header">
+
           <div>
+
             <div style="
               font-size:12px;
               font-weight:700;
@@ -2070,13 +2261,17 @@
             <p style="margin:6px 0 0;">
               ONE Frontend API Boundary
             </p>
+
           </div>
 
           <div class="govara-step27-status-box">
+
             <span id="govara-step27-status">
               NOT CONFIGURED
             </span>
+
           </div>
+
         </div>
 
         <!-- ==================================================
@@ -2151,6 +2346,7 @@
             </button>
 
           </div>
+
         </div>
 
         <!-- ==================================================
@@ -2240,6 +2436,46 @@
           >
           </div>
 
+          <!-- ==================================================
+               CUSTOMER API RESPONSE / DEBUG RESULT
+               ================================================== -->
+
+          <div
+            style="
+              margin-top:16px;
+            "
+          >
+
+            <div
+              style="
+                font-weight:700;
+                margin-bottom:8px;
+              "
+            >
+              Customer API Response
+            </div>
+
+            <pre
+              id="govara-step27-customer-result"
+              style="
+                margin:0;
+                padding:14px;
+                min-height:60px;
+                max-height:420px;
+                overflow:auto;
+                white-space:pre-wrap;
+                word-break:break-word;
+                box-sizing:border-box;
+                border-radius:8px;
+                background:rgba(0,0,0,.035);
+                border:1px solid rgba(0,0,0,.08);
+                font-size:12px;
+                line-height:1.5;
+              "
+            >Customer list request has not been run.</pre>
+
+          </div>
+
         </div>
 
         <!-- ==================================================
@@ -2263,6 +2499,7 @@
           >
 
             <div class="govara-step27-info">
+
               <div class="muted">
                 Configured
               </div>
@@ -2272,9 +2509,11 @@
               >
                 NO
               </strong>
+
             </div>
 
             <div class="govara-step27-info">
+
               <div class="muted">
                 Connected
               </div>
@@ -2284,9 +2523,11 @@
               >
                 NO
               </strong>
+
             </div>
 
             <div class="govara-step27-info">
+
               <div class="muted">
                 Verified
               </div>
@@ -2296,9 +2537,11 @@
               >
                 NO
               </strong>
+
             </div>
 
             <div class="govara-step27-info">
+
               <div class="muted">
                 Environment
               </div>
@@ -2308,9 +2551,11 @@
               >
                 TESTING
               </strong>
+
             </div>
 
           </div>
+
         </div>
 
         <!-- ==================================================
@@ -2403,6 +2648,7 @@
             </div>
 
           </div>
+
         </div>
 
         <!-- ==================================================
@@ -2459,6 +2705,7 @@
             </span>
 
           </div>
+
         </div>
 
         <!-- ==================================================
@@ -2533,7 +2780,7 @@
   }
 
   /* ==========================================================
-   * STEP 27 STATUS REFRESH
+   * 48. STEP 27 STATUS REFRESH
    * ========================================================== */
 
   function refreshStep27Status(
@@ -2629,6 +2876,7 @@
     }
 
     if (status) {
+
       if (
         APIState.verified
       ) {
@@ -2655,7 +2903,7 @@
   }
 
   /* ==========================================================
-   * 44. RENDERED STATUS
+   * 49. RENDERED STATUS
    * ========================================================== */
 
   function updateRenderedStatus(
@@ -2676,6 +2924,7 @@
       );
 
     if (status) {
+
       if (
         !APIState.configured
       ) {
@@ -2710,14 +2959,74 @@
   }
 
   /* ==========================================================
-   * 45. RENDER EVENT BINDING
+   * 50. CUSTOMER ACTIVITY RESULT DISPLAY
    *
-   * IMPORTANT FIX:
-   * Customer List button is now explicitly bound here.
+   * Keeps Customer List result separate
+   * from GET_HEALTH Test Result.
+   * ========================================================== */
+
+  function updateCustomerActivityDisplay(
+    container,
+    response
+  ) {
+    if (!container) {
+      return;
+    }
+
+    var status =
+      container.querySelector(
+        '#govara-step27-customer-status'
+      );
+
+    var resultBox =
+      container.querySelector(
+        '#govara-step27-customer-result'
+      );
+
+    if (resultBox) {
+      resultBox.textContent =
+        formatResponse(
+          response
+        );
+    }
+
+    if (status) {
+
+      if (
+        response &&
+        response.success ===
+          true
+      ) {
+        status.textContent =
+          'TRUE — Customer API request succeeded.';
+
+      } else {
+        status.textContent =
+          'FALSE — Customer API returned an unsuccessful response.';
+      }
+    }
+
+    refreshStep27Status(
+      container
+    );
+  }
+
+  /* ==========================================================
+   * 51. RENDER EVENT BINDING
    *
-   * No customer API request happens on page load.
-   * The LIST request happens only after
-   * the user presses "Load Customer List".
+   * Customer List:
+   *
+   * Button
+   *   ↓
+   * customerList()
+   *   ↓
+   * LIST
+   *   ↓
+   * CUSTOMER
+   *   ↓
+   * Existing backend/database
+   *
+   * No automatic request.
    * ========================================================== */
 
   function bindRenderEvents(
@@ -2743,16 +3052,16 @@
         '#govara-step27-clear'
       );
 
-    /*
-     * ========================================================
+    /* ========================================================
      * SAVE API CONFIGURATION
-     * ========================================================
-     */
+     * ======================================================== */
 
     if (saveButton) {
+
       saveButton.addEventListener(
         'click',
         function () {
+
           var url =
             endpointInput
               ? endpointInput.value.trim()
@@ -2769,16 +3078,16 @@
       );
     }
 
-    /*
-     * ========================================================
+    /* ========================================================
      * CLEAR API CONFIGURATION
-     * ========================================================
-     */
+     * ======================================================== */
 
     if (clearButton) {
+
       clearButton.addEventListener(
         'click',
         function () {
+
           clearConfiguration();
 
           if (endpointInput) {
@@ -2793,22 +3102,23 @@
       );
     }
 
-    /*
-     * ========================================================
+    /* ========================================================
      * VALIDATE ENDPOINT
-     * ========================================================
-     */
+     * ======================================================== */
 
     if (validateButton) {
+
       validateButton.addEventListener(
         'click',
         async function () {
+
           var url =
             endpointInput
               ? endpointInput.value.trim()
               : '';
 
           if (!url) {
+
             APIState.lastError =
               'API endpoint is required.';
 
@@ -2824,9 +3134,11 @@
           );
 
           try {
+
             await testConnection();
 
           } catch (error) {
+
             console.error(
               '[GoVara STEP 27] API validation failed:',
               error
@@ -2840,24 +3152,15 @@
       );
     }
 
-    /*
-     * ========================================================
+    /* ========================================================
      * CUSTOMER LIST
      *
-     * THIS IS THE IMPORTANT FIX.
+     * IMPORTANT:
+     * This was the missing/no-op area.
      *
-     * Button:
-     * #govara-step27-load-customers
-     *
-     * Action:
-     * customerList()
-     *
-     * API:
-     * LIST / CUSTOMER
-     *
-     * No automatic call.
-     * ========================================================
-     */
+     * The button is explicitly connected
+     * to customerList().
+     * ======================================================== */
 
     var customerLoadButton =
       container.querySelector(
@@ -2865,6 +3168,7 @@
       );
 
     if (customerLoadButton) {
+
       customerLoadButton.addEventListener(
         'click',
         async function () {
@@ -2879,8 +3183,26 @@
               '#govara-step27-customer-list'
             );
 
+          var customerResultBox =
+            container.querySelector(
+              '#govara-step27-customer-result'
+            );
+
           /*
-           * Loading state.
+           * Clear previous error.
+           */
+
+          APIState.lastError =
+            null;
+
+          APIState.lastAction =
+            'LIST';
+
+          APIState.lastModule =
+            'CUSTOMER';
+
+          /*
+           * Immediate visible feedback.
            */
 
           if (customerStatus) {
@@ -2895,8 +3217,17 @@
               '</div>';
           }
 
+          if (customerResultBox) {
+            customerResultBox.textContent =
+              'REQUEST STARTED...\n\n' +
+              'Action: LIST\n' +
+              'Module: CUSTOMER\n' +
+              'Time: ' +
+              nowISO();
+          }
+
           /*
-           * Prevent double-click requests.
+           * Prevent duplicate clicks.
            */
 
           customerLoadButton.disabled =
@@ -2910,25 +3241,36 @@
 
           try {
 
-            /*
-             * Explicitly identify the module.
-             */
-
-            APIState.lastModule =
-              'CUSTOMER';
+            console.log(
+              '[GoVara STEP 27] Loading customer list...'
+            );
 
             /*
-             * Call existing Consolidated API.
-             *
-             * This does NOT require a separate
-             * Test Connection request first.
+             * Actual API call.
              */
 
             var response =
               await customerList();
 
             /*
-             * Render returned customer records.
+             * Keep complete response.
+             */
+
+            APIState.lastResponse =
+              response;
+
+            /*
+             * Determine success.
+             */
+
+            var success =
+              isResponseSuccess(
+                response
+              );
+
+            /*
+             * Render customer table
+             * and raw response.
              */
 
             renderCustomerList(
@@ -2936,12 +3278,95 @@
               response
             );
 
+            /*
+             * Explicit TRUE/FALSE status.
+             */
+
+            if (customerStatus) {
+
+              if (success) {
+
+                customerStatus.textContent =
+                  'TRUE — Customer list loaded successfully.';
+
+              } else {
+
+                customerStatus.textContent =
+                  'FALSE — API returned an unsuccessful response: ' +
+                  extractError(
+                    response
+                  );
+              }
+            }
+
+            /*
+             * Successful API response.
+             */
+
+            if (success) {
+
+              APIState.connected =
+                true;
+
+              APIState.lastError =
+                null;
+
+            } else {
+
+              APIState.lastError =
+                extractError(
+                  response
+                );
+            }
+
+            /*
+             * Raw response display.
+             */
+
+            updateCustomerActivityDisplay(
+              container,
+              response
+            );
+
+            /*
+             * Re-render actual customer
+             * status after helper call.
+             */
+
+            if (customerStatus) {
+
+              if (success) {
+
+                var loadedRows =
+                  extractCustomerRows(
+                    response
+                  );
+
+                customerStatus.textContent =
+                  'TRUE — ' +
+                  loadedRows.length +
+                  ' customer records loaded.';
+
+              } else {
+
+                customerStatus.textContent =
+                  'FALSE — ' +
+                  extractError(
+                    response
+                  );
+              }
+            }
+
             console.log(
               '[GoVara STEP 27] Customer list loaded.',
               response
             );
 
           } catch (error) {
+
+            /*
+             * Actual JavaScript/network error.
+             */
 
             APIState.lastError =
               error &&
@@ -2953,19 +3378,51 @@
 
             if (customerStatus) {
               customerStatus.textContent =
-                'Load failed';
+                'ERROR — ' +
+                APIState.lastError;
             }
 
             if (customerListBox) {
+
               customerListBox.innerHTML =
                 '<div style="padding:12px 0;">' +
-                '<strong>Unable to load customer list.</strong>' +
+
+                '<strong>ERROR — Unable to load customer list.</strong>' +
+
                 '<div class="muted" style="margin-top:6px;">' +
+
                 escapeHTML(
                   APIState.lastError
                 ) +
+
                 '</div>' +
+
                 '</div>';
+            }
+
+            if (customerResultBox) {
+
+              customerResultBox.textContent =
+                JSON.stringify(
+                  {
+                    success:
+                      false,
+
+                    action:
+                      'LIST',
+
+                    module:
+                      'CUSTOMER',
+
+                    error:
+                      APIState.lastError,
+
+                    timestamp:
+                      nowISO()
+                  },
+                  null,
+                  2
+                );
             }
 
             console.error(
@@ -2986,8 +3443,7 @@
               originalButtonText;
 
             /*
-             * Update only status information.
-             * The customer table remains visible.
+             * Update Last API Activity.
              */
 
             refreshStep27Status(
@@ -2996,13 +3452,22 @@
           }
         }
       );
+
+    } else {
+
+      /*
+       * This should never happen if the
+       * STEP 27 render HTML is correct.
+       */
+
+      console.error(
+        '[GoVara STEP 27] Customer List button not found.'
+      );
     }
 
-    /*
-     * ========================================================
+    /* ========================================================
      * TEST CONNECTION
-     * ========================================================
-     */
+     * ======================================================== */
 
     var testButton =
       container.querySelector(
@@ -3010,6 +3475,7 @@
       );
 
     if (testButton) {
+
       testButton.addEventListener(
         'click',
         async function () {
@@ -3030,6 +3496,7 @@
               await testConnection();
 
             if (diagnosticsBox) {
+
               diagnosticsBox.textContent =
                 typeof result ===
                 'string'
@@ -3052,11 +3519,11 @@
                   );
 
             if (diagnosticsBox) {
+
               diagnosticsBox.textContent =
                 'API TEST FAILED\n\n' +
                 APIState.lastError;
             }
-
           }
 
           refreshStep27Status(
@@ -3068,7 +3535,7 @@
   }
 
   /* ==========================================================
-   * 46. RENDER + BIND
+   * 52. RENDER + BIND
    * ========================================================== */
 
   function renderAndBind(
@@ -3080,7 +3547,7 @@
   }
 
   /* ==========================================================
-   * 47. PUBLIC API
+   * 53. PUBLIC API
    * ========================================================== */
 
   var GoVaraAPI = {
@@ -3257,7 +3724,7 @@
   };
 
   /* ==========================================================
-   * 48. STEP 27 PUBLIC OBJECT
+   * 54. STEP 27 PUBLIC OBJECT
    * ========================================================== */
 
   var GoVara27 = {
@@ -3439,7 +3906,7 @@
   };
 
   /* ==========================================================
-   * 49. GLOBAL REGISTRIES
+   * 55. GLOBAL REGISTRIES
    *
    * Preserve compatibility with existing frontend.
    * ========================================================== */
@@ -3477,7 +3944,7 @@
     GoVara27;
 
   /* ==========================================================
-   * 50. INITIAL CONFIGURATION LOAD
+   * 56. INITIAL CONFIGURATION LOAD
    *
    * IMPORTANT:
    * Only local configuration is loaded.
@@ -3487,7 +3954,7 @@
   loadSavedConfiguration();
 
   /* ==========================================================
-   * 51. CONSOLE STATUS
+   * 57. CONSOLE STATUS
    * ========================================================== */
 
   console.log(

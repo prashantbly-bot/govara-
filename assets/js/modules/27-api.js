@@ -41,12 +41,10 @@
     VERSION: 'GOVARA-CONSOLIDATED-API-V6',
     ENVIRONMENT: 'TESTING',
     PROJECT: 'GoVara',
-
     REAL_MONEY: 'BLOCKED',
     REAL_PAYMENT: 'BLOCKED',
     BANK_TRANSFER: 'BLOCKED'
   };
-
 
   /* ==========================================================
    * 02. API STATE
@@ -56,16 +54,13 @@
     configured: false,
     connected: false,
     verified: false,
-
     lastResponse: null,
     lastError: null,
     lastAction: null,
     lastModule: null,
-
     requestStartedAt: null,
     responseReceivedAt: null
   };
-
 
   /* ==========================================================
    * 03. SUPPORTED MODULES
@@ -79,61 +74,47 @@
     'USER',
     'ROLE',
     'PERMISSION',
-
     'CUSTOMER',
     'VENDOR',
     'DRIVER',
     'VEHICLE',
-
     'SERVICE',
     'SERVICE_TYPE',
     'DUTY_TYPE',
-
     'BOOKING',
     'DUTY',
-
     'RATE',
     'RATE_VERSION',
     'RATE_COMPONENT',
-
     'CALCULATION',
     'CALCULATION_COMPONENT',
-
     'TRANSACTION',
     'LEDGER',
     'INVOICE',
     'SETTLEMENT',
-
     'DOCUMENT_TYPE',
     'DOCUMENT',
-
     'LOCATION',
     'ROUTE',
-
     'CALL_CENTER',
     'CALL_CENTER_AGENT',
     'CALL',
     'TICKET',
     'CALL_ASSIGNMENT',
     'CALL_ESCALATION',
-
     'API_PROVIDER',
     'API_CONNECTOR',
     'API_LOG',
-
     'NOTIFICATION',
-
     'WELFARE',
     'WELFARE_FUND',
     'WELFARE_POLICY',
     'WELFARE_CONTRIBUTION',
     'WELFARE_ALLOCATION',
     'WELFARE_BENEFICIARY',
-
     'AUDIT_LOG',
     'SYSTEM_EVENT'
   ];
-
 
   /* ==========================================================
    * 04. SUPPORTED ACTIONS
@@ -149,7 +130,6 @@
     'CUSTOMER_REGISTER'
   ];
 
-
   /* ==========================================================
    * 05. PROTECTED ACTIONS
    * ========================================================== */
@@ -158,7 +138,6 @@
     'CREATE',
     'UPDATE'
   ];
-
 
   /* ==========================================================
    * 06. CUSTOMER MODULE CONTRACT
@@ -184,12 +163,9 @@
     ],
 
     BACKEND_TABLE: '16_Customer',
-
     USER_TABLE: '05_User',
-
     ID_FIELD: 'Customer_ID'
   };
-
 
   /* ==========================================================
    * 07. MODULE REGISTRY
@@ -198,69 +174,81 @@
   var ModuleRegistry = {};
 
   MODULES.forEach(function (moduleName) {
+
     ModuleRegistry[moduleName] = {
       module: moduleName,
       enabled: true
     };
-  });
 
+  });
 
   /* ==========================================================
    * 08. UTILITY
    * ========================================================== */
 
   function isObject(value) {
+
     return value !== null &&
       typeof value === 'object' &&
       !Array.isArray(value);
+
   }
 
-
   function safeString(value) {
+
     if (value === null || value === undefined) {
       return '';
     }
 
     return String(value);
+
   }
 
-
   function normalizeModule(module) {
+
     return safeString(module)
       .trim()
       .toUpperCase();
+
   }
 
-
   function normalizeAction(action) {
+
     return safeString(action)
       .trim()
       .toUpperCase();
+
   }
 
-
   function getAPIUrl() {
+
     return (
       CONFIG.API_URL ||
       window.GOVARA_API_URL ||
       ''
     ).trim();
-  }
 
+  }
 
   function isConfigured() {
-    return getAPIUrl().length > 0;
-  }
 
+    return getAPIUrl().length > 0;
+
+  }
 
   function nowISO() {
-    try {
-      return new Date().toISOString();
-    } catch (error) {
-      return '';
-    }
-  }
 
+    try {
+
+      return new Date().toISOString();
+
+    } catch (error) {
+
+      return '';
+
+    }
+
+  }
 
   /* ==========================================================
    * 09. STORAGE
@@ -273,8 +261,11 @@
       var raw = localStorage.getItem(STORAGE_KEY);
 
       if (!raw) {
+
         APIState.configured = isConfigured();
+
         return;
+
       }
 
       var saved = JSON.parse(raw);
@@ -282,16 +273,26 @@
       if (saved && typeof saved === 'object') {
 
         if (saved.API_URL !== undefined) {
-          CONFIG.API_URL = safeString(saved.API_URL).trim();
+
+          CONFIG.API_URL =
+            safeString(saved.API_URL).trim();
+
         }
 
         if (saved.ENVIRONMENT) {
-          CONFIG.ENVIRONMENT = safeString(saved.ENVIRONMENT);
+
+          CONFIG.ENVIRONMENT =
+            safeString(saved.ENVIRONMENT);
+
         }
 
         if (saved.VERSION) {
-          CONFIG.VERSION = safeString(saved.VERSION);
+
+          CONFIG.VERSION =
+            safeString(saved.VERSION);
+
         }
+
       }
 
     } catch (error) {
@@ -304,12 +305,13 @@
     }
 
     APIState.configured = isConfigured();
-  }
 
+  }
 
   function saveConfiguration(url) {
 
-    var cleanURL = safeString(url).trim();
+    var cleanURL =
+      safeString(url).trim();
 
     CONFIG.API_URL = cleanURL;
 
@@ -334,15 +336,16 @@
 
     }
 
-    APIState.configured = cleanURL.length > 0;
+    APIState.configured =
+      cleanURL.length > 0;
 
     return {
       success: true,
       configured: APIState.configured,
       apiUrl: cleanURL
     };
-  }
 
+  }
 
   function clearConfiguration() {
 
@@ -353,20 +356,24 @@
     APIState.verified = false;
 
     try {
+
       localStorage.removeItem(STORAGE_KEY);
+
     } catch (error) {
+
       console.warn(
         '[GoVara STEP 27] Unable to clear saved configuration.',
         error
       );
+
     }
 
     return {
       success: true,
       configured: false
     };
-  }
 
+  }
 
   /* ==========================================================
    * 10. REQUEST VALIDATION
@@ -374,57 +381,65 @@
 
   function validateAction(action) {
 
-    var cleanAction = normalizeAction(action);
+    var cleanAction =
+      normalizeAction(action);
 
     if (ACTIONS.indexOf(cleanAction) === -1) {
 
       throw new Error(
-        'Unsupported API action: ' + cleanAction
+        'Unsupported API action: ' +
+        cleanAction
       );
+
     }
 
     return true;
-  }
 
+  }
 
   function validateModule(module) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
     if (!cleanModule) {
-      throw new Error('API module is required.');
+
+      throw new Error(
+        'API module is required.'
+      );
+
     }
 
     if (MODULES.indexOf(cleanModule) === -1) {
 
       throw new Error(
-        'Unsupported API module: ' + cleanModule
+        'Unsupported API module: ' +
+        cleanModule
       );
+
     }
 
     return true;
-  }
 
+  }
 
   function validateRequest(action, payload) {
 
-    var cleanAction = normalizeAction(action);
+    var cleanAction =
+      normalizeAction(action);
 
     validateAction(cleanAction);
 
-    /*
-     * GET_HEALTH does not require a module.
-     */
     if (cleanAction === 'GET_HEALTH') {
+
       return true;
+
     }
 
-    /*
-     * CUSTOMER_REGISTER is a public registration action.
-     * It does not require module in the backend validation path.
-     */
     if (cleanAction === 'CUSTOMER_REGISTER') {
+
       return true;
+
     }
 
     var module =
@@ -433,12 +448,14 @@
         : '';
 
     if (module) {
+
       validateModule(module);
+
     }
 
     return true;
-  }
 
+  }
 
   /* ==========================================================
    * 11. RESPONSE PARSING
@@ -449,9 +466,13 @@
     var text = '';
 
     try {
+
       text = await response.text();
+
     } catch (error) {
+
       text = '';
+
     }
 
     var parsed = null;
@@ -459,7 +480,9 @@
     if (text) {
 
       try {
+
         parsed = JSON.parse(text);
+
       } catch (error) {
 
         parsed = {
@@ -467,6 +490,7 @@
           error: 'INVALID_JSON_RESPONSE',
           message: text
         };
+
       }
 
     } else {
@@ -474,24 +498,28 @@
       parsed = {
         success: false,
         error: 'EMPTY_RESPONSE',
-        message: 'Backend returned an empty response.'
+        message:
+          'Backend returned an empty response.'
       };
+
     }
 
+    if (
+      parsed &&
+      typeof parsed === 'object'
+    ) {
 
-    /*
-     * Preserve HTTP information.
-     */
-    if (parsed && typeof parsed === 'object') {
+      parsed.httpStatus =
+        response.status;
 
-      parsed.httpStatus = response.status;
-      parsed.httpOk = response.ok;
+      parsed.httpOk =
+        response.ok;
+
     }
-
 
     return parsed;
-  }
 
+  }
 
   /* ==========================================================
    * 12. ERROR EXTRACTION
@@ -500,34 +528,52 @@
   function extractError(response) {
 
     if (!response) {
+
       return 'Unknown API error.';
+
     }
 
     if (response.error) {
-      return safeString(response.error);
+
+      return safeString(
+        response.error
+      );
+
     }
 
     if (response.message) {
-      return safeString(response.message);
+
+      return safeString(
+        response.message
+      );
+
     }
 
     if (
       response.result &&
       response.result.error
     ) {
-      return safeString(response.result.error);
+
+      return safeString(
+        response.result.error
+      );
+
     }
 
     if (
       response.result &&
       response.result.message
     ) {
-      return safeString(response.result.message);
+
+      return safeString(
+        response.result.message
+      );
+
     }
 
     return 'API request failed.';
-  }
 
+  }
 
   /* ==========================================================
    * 13. NESTED RESULT SUCCESS
@@ -536,64 +582,39 @@
   function isResponseSuccess(response) {
 
     if (!response) {
-      return false;
-    }
 
-    /*
-     * Backend may return:
-     *
-     * {
-     *   success: true,
-     *   result: {
-     *      success: true
-     *   }
-     * }
-     */
+      return false;
+
+    }
 
     if (
       response.result &&
       typeof response.result === 'object' &&
       response.result.success === false
     ) {
+
       return false;
+
     }
 
     if (response.success === false) {
+
       return false;
+
     }
 
     return response.success === true;
-  }
 
+  }
 
   /* ==========================================================
    * 14. CENTRAL REQUEST
-   *
-   * IMPORTANT FIX:
-   *
-   * Existing generic API uses:
-   *
-   * {
-   *   action: "...",
-   *   payload: {...}
-   * }
-   *
-   * Customer Registration backend expects:
-   *
-   * {
-   *   action: "CUSTOMER_REGISTER",
-   *   data: {...}
-   * }
-   *
-   * Therefore only CUSTOMER_REGISTER is translated
-   * from payload → data.
-   *
-   * All other actions retain their existing contract.
    * ========================================================== */
 
   async function request(action, payload) {
 
-    var cleanAction = normalizeAction(action);
+    var cleanAction =
+      normalizeAction(action);
 
     validateAction(cleanAction);
 
@@ -604,107 +625,128 @@
       throw new Error(
         'Consolidated API endpoint is not configured.'
       );
+
     }
 
     payload = payload || {};
 
-    validateRequest(cleanAction, payload);
+    validateRequest(
+      cleanAction,
+      payload
+    );
 
-    APIState.lastAction = cleanAction;
+    APIState.lastAction =
+      cleanAction;
+
     APIState.lastError = null;
-    APIState.requestStartedAt = nowISO();
 
+    APIState.requestStartedAt =
+      nowISO();
 
-    /*
-     * Existing generic envelope.
-     */
     var requestBody = {
       action: cleanAction,
       payload: payload,
-
       version: CONFIG.VERSION,
       project: CONFIG.PROJECT,
       environment: CONFIG.ENVIRONMENT
     };
 
+    /* ========================================================
+     * CUSTOMER REGISTER CONTRACT
+     * ======================================================== */
 
-    /*
-     * ========================================================
-     * CUSTOMER REGISTRATION CONTRACT FIX
-     * ========================================================
-     *
-     * Backend:
-     * GV_apiExecuteCustomerRegister(request)
-     *
-     * reads:
-     * request.data
-     *
-     * NOT:
-     * request.payload
-     *
-     * Therefore move only this action's object.
-     * ========================================================
-     */
+    if (
+      cleanAction ===
+      'CUSTOMER_REGISTER'
+    ) {
 
-    if (cleanAction === 'CUSTOMER_REGISTER') {
-
-      requestBody.data = requestBody.payload;
+      requestBody.data =
+        requestBody.payload;
 
       delete requestBody.payload;
-    }
 
+    }
 
     var controller = null;
     var timeoutId = null;
 
-    if (typeof AbortController !== 'undefined') {
-      controller = new AbortController();
+    if (
+      typeof AbortController !==
+      'undefined'
+    ) {
 
-      timeoutId = setTimeout(function () {
+      controller =
+        new AbortController();
 
-        try {
-          controller.abort();
-        } catch (error) {
-          // Ignore abort errors.
-        }
+      timeoutId =
+        setTimeout(
+          function () {
 
-      }, CONFIG.REQUEST_TIMEOUT);
+            try {
+
+              controller.abort();
+
+            } catch (error) {
+
+              // Ignore abort errors.
+
+            }
+
+          },
+          CONFIG.REQUEST_TIMEOUT
+        );
+
     }
-
 
     try {
 
       var fetchOptions = {
+
         method: 'POST',
 
         headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
+          'Content-Type':
+            'text/plain;charset=utf-8'
         },
 
-        body: JSON.stringify(requestBody)
+        body:
+          JSON.stringify(
+            requestBody
+          )
+
       };
 
       if (controller) {
-        fetchOptions.signal = controller.signal;
+
+        fetchOptions.signal =
+          controller.signal;
+
       }
 
+      var response =
+        await fetch(
+          url,
+          fetchOptions
+        );
 
-      var response = await fetch(
-        url,
-        fetchOptions
-      );
+      var parsed =
+        await parseResponse(
+          response
+        );
 
+      APIState.responseReceivedAt =
+        nowISO();
 
-      var parsed = await parseResponse(response);
-
-      APIState.responseReceivedAt = nowISO();
-      APIState.lastResponse = parsed;
-
+      APIState.lastResponse =
+        parsed;
 
       if (!response.ok) {
 
-        APIState.connected = false;
-        APIState.verified = false;
+        APIState.connected =
+          false;
+
+        APIState.verified =
+          false;
 
         var httpError =
           extractError(parsed) ||
@@ -714,36 +756,50 @@
             ' request failed.'
           );
 
-        APIState.lastError = httpError;
+        APIState.lastError =
+          httpError;
 
-        throw new Error(httpError);
+        throw new Error(
+          httpError
+        );
+
       }
 
+      if (
+        !isResponseSuccess(
+          parsed
+        )
+      ) {
 
-      /*
-       * Successful HTTP response does not automatically mean
-       * business operation succeeded.
-       *
-       * Nested result.success is checked here too.
-       */
-      if (!isResponseSuccess(parsed)) {
+        var apiError =
+          extractError(parsed);
 
-        var apiError = extractError(parsed);
-
-        APIState.lastError = apiError;
+        APIState.lastError =
+          apiError;
 
         return parsed;
+
       }
 
+      APIState.lastError =
+        null;
 
-      APIState.lastError = null;
+      /*
+       * A successful API request proves that
+       * the API responded, but does not replace
+       * the explicit GET_HEALTH verification.
+       *
+       * Therefore CUSTOMER LIST does NOT require
+       * testConnection() first.
+       */
 
       return parsed;
 
     } catch (error) {
 
       APIState.lastError =
-        error && error.message
+        error &&
+        error.message
           ? error.message
           : safeString(error);
 
@@ -752,11 +808,16 @@
     } finally {
 
       if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    }
-  }
 
+        clearTimeout(
+          timeoutId
+        );
+
+      }
+
+    }
+
+  }
 
   /* ==========================================================
    * 15. GET HEALTH
@@ -764,43 +825,68 @@
 
   async function testConnection() {
 
-    var url = getAPIUrl();
+    var url =
+      getAPIUrl();
 
     if (!url) {
 
-      APIState.configured = false;
-      APIState.connected = false;
-      APIState.verified = false;
+      APIState.configured =
+        false;
+
+      APIState.connected =
+        false;
+
+      APIState.verified =
+        false;
 
       throw new Error(
         'Consolidated API endpoint is not configured.'
       );
+
     }
 
+    APIState.lastAction =
+      'GET_HEALTH';
 
-    APIState.lastAction = 'GET_HEALTH';
-    APIState.lastError = null;
-    APIState.requestStartedAt = nowISO();
+    APIState.lastModule =
+      null;
 
+    APIState.lastError =
+      null;
+
+    APIState.requestStartedAt =
+      nowISO();
 
     var controller = null;
     var timeoutId = null;
 
-    if (typeof AbortController !== 'undefined') {
+    if (
+      typeof AbortController !==
+      'undefined'
+    ) {
 
-      controller = new AbortController();
+      controller =
+        new AbortController();
 
-      timeoutId = setTimeout(function () {
+      timeoutId =
+        setTimeout(
+          function () {
 
-        try {
-          controller.abort();
-        } catch (error) {
-          // Ignore.
-        }
+            try {
 
-      }, CONFIG.REQUEST_TIMEOUT);
+              controller.abort();
+
+            } catch (error) {
+
+              // Ignore.
+
+            }
+
+          },
+          CONFIG.REQUEST_TIMEOUT
+        );
+
     }
-
 
     try {
 
@@ -809,40 +895,49 @@
       };
 
       if (controller) {
-        options.signal = controller.signal;
+
+        options.signal =
+          controller.signal;
+
       }
 
+      var response =
+        await fetch(
+          url,
+          options
+        );
 
-      var response = await fetch(
-        url,
-        options
-      );
+      var parsed =
+        await parseResponse(
+          response
+        );
 
+      APIState.responseReceivedAt =
+        nowISO();
 
-      var parsed = await parseResponse(response);
-
-      APIState.responseReceivedAt = nowISO();
-      APIState.lastResponse = parsed;
-
+      APIState.lastResponse =
+        parsed;
 
       if (!response.ok) {
 
-        APIState.connected = false;
-        APIState.verified = false;
+        APIState.connected =
+          false;
 
-        var httpError = extractError(parsed);
+        APIState.verified =
+          false;
 
-        APIState.lastError = httpError;
+        var httpError =
+          extractError(parsed);
 
-        throw new Error(httpError);
+        APIState.lastError =
+          httpError;
+
+        throw new Error(
+          httpError
+        );
+
       }
 
-
-      /*
-       * Backend identity verification.
-       *
-       * GoVara project must be returned.
-       */
       var project =
         parsed &&
         (
@@ -853,14 +948,16 @@
           )
         );
 
-
       var verifiedProject =
-        safeString(project).trim() === 'GoVara';
+        safeString(
+          project
+        ).trim() === 'GoVara';
 
+      APIState.connected =
+        true;
 
-      APIState.connected = true;
-      APIState.verified = verifiedProject;
-
+      APIState.verified =
+        verifiedProject;
 
       if (!verifiedProject) {
 
@@ -870,18 +967,22 @@
         throw new Error(
           'Backend project verification failed.'
         );
-      }
 
+      }
 
       return parsed;
 
     } catch (error) {
 
-      APIState.connected = false;
-      APIState.verified = false;
+      APIState.connected =
+        false;
+
+      APIState.verified =
+        false;
 
       APIState.lastError =
-        error && error.message
+        error &&
+        error.message
           ? error.message
           : safeString(error);
 
@@ -890,11 +991,16 @@
     } finally {
 
       if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    }
-  }
 
+        clearTimeout(
+          timeoutId
+        );
+
+      }
+
+    }
+
+  }
 
   /* ==========================================================
    * 16. GENERIC LIST
@@ -902,18 +1008,25 @@
 
   async function list(module) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
-    validateModule(cleanModule);
+    validateModule(
+      cleanModule
+    );
+
+    APIState.lastModule =
+      cleanModule;
 
     return request(
       'LIST',
       {
-        module: cleanModule
+        module:
+          cleanModule
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 17. GENERIC GET
@@ -921,23 +1034,38 @@
 
   async function get(module, id) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
-    validateModule(cleanModule);
+    validateModule(
+      cleanModule
+    );
 
-    if (!safeString(id).trim()) {
-      throw new Error('Record ID is required.');
+    if (
+      !safeString(id).trim()
+    ) {
+
+      throw new Error(
+        'Record ID is required.'
+      );
+
     }
+
+    APIState.lastModule =
+      cleanModule;
 
     return request(
       'GET',
       {
-        module: cleanModule,
-        id: safeString(id).trim()
+        module:
+          cleanModule,
+
+        id:
+          safeString(id).trim()
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 18. GENERIC VALIDATE
@@ -945,19 +1073,28 @@
 
   async function validate(module, data) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
-    validateModule(cleanModule);
+    validateModule(
+      cleanModule
+    );
+
+    APIState.lastModule =
+      cleanModule;
 
     return request(
       'VALIDATE',
       {
-        module: cleanModule,
-        data: data || {}
+        module:
+          cleanModule,
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 19. GENERIC CREATE
@@ -965,19 +1102,28 @@
 
   async function create(module, data) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
-    validateModule(cleanModule);
+    validateModule(
+      cleanModule
+    );
+
+    APIState.lastModule =
+      cleanModule;
 
     return request(
       'CREATE',
       {
-        module: cleanModule,
-        data: data || {}
+        module:
+          cleanModule,
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 20. GENERIC UPDATE
@@ -985,66 +1131,79 @@
 
   async function update(module, id, data) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
-    validateModule(cleanModule);
+    validateModule(
+      cleanModule
+    );
 
-    if (!safeString(id).trim()) {
-      throw new Error('Record ID is required.');
+    if (
+      !safeString(id).trim()
+    ) {
+
+      throw new Error(
+        'Record ID is required.'
+      );
+
     }
+
+    APIState.lastModule =
+      cleanModule;
 
     return request(
       'UPDATE',
       {
-        module: cleanModule,
-        id: safeString(id).trim(),
-        data: data || {}
+        module:
+          cleanModule,
+
+        id:
+          safeString(id).trim(),
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 21. CUSTOMER REGISTER
-   *
-   * This is the important corrected path.
    * ========================================================== */
 
   async function customerRegister(data) {
 
     data = data || {};
 
-    /*
-     * Do not silently change the customer's data here.
-     * 28-Customer.js already normalizes the mobile.
-     *
-     * Backend remains authoritative for validation.
-     */
+    APIState.lastModule =
+      'CUSTOMER';
 
     return request(
       'CUSTOMER_REGISTER',
       data
     );
-  }
 
+  }
 
   /* ==========================================================
    * 22. CUSTOMER LIST
+   *
+   * IMPORTANT:
+   * - Does NOT require testConnection().
+   * - Does NOT automatically run on page load.
+   * - Called only when UI button is pressed.
    * ========================================================== */
 
   async function customerList() {
-  APIState.lastModule = 'CUSTOMER';
 
-  /*
-   * Customer List is allowed to make its own API request.
-   * No manual Test Connection is required.
-   *
-   * IMPORTANT:
-   * This runs ONLY when customerList() is called.
-   * No API request is made on page load.
-   */
-  return list('CUSTOMER');
-}
+    APIState.lastModule =
+      'CUSTOMER';
+
+    return list(
+      'CUSTOMER'
+    );
+
+  }
 
   /* ==========================================================
    * 23. CUSTOMER GET
@@ -1052,12 +1211,15 @@
 
   async function customerGet(customerId) {
 
+    APIState.lastModule =
+      'CUSTOMER';
+
     return get(
       'CUSTOMER',
       customerId
     );
-  }
 
+  }
 
   /* ==========================================================
    * 24. CUSTOMER VALIDATE
@@ -1065,12 +1227,15 @@
 
   async function customerValidate(data) {
 
+    APIState.lastModule =
+      'CUSTOMER';
+
     return validate(
       'CUSTOMER',
       data || {}
     );
-  }
 
+  }
 
   /* ==========================================================
    * 25. CUSTOMER CREATE
@@ -1078,26 +1243,35 @@
 
   async function customerCreate(data) {
 
+    APIState.lastModule =
+      'CUSTOMER';
+
     return create(
       'CUSTOMER',
       data || {}
     );
-  }
 
+  }
 
   /* ==========================================================
    * 26. CUSTOMER UPDATE
    * ========================================================== */
 
-  async function customerUpdate(customerId, data) {
+  async function customerUpdate(
+    customerId,
+    data
+  ) {
+
+    APIState.lastModule =
+      'CUSTOMER';
 
     return update(
       'CUSTOMER',
       customerId,
       data || {}
     );
-  }
 
+  }
 
   /* ==========================================================
    * 27. FARE
@@ -1105,15 +1279,21 @@
 
   async function fareCalculate(data) {
 
+    APIState.lastModule =
+      'CALCULATION';
+
     return request(
       'CALCULATE',
       {
-        module: 'CALCULATION',
-        data: data || {}
+        module:
+          'CALCULATION',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 28. TRANSACTION
@@ -1121,50 +1301,60 @@
 
   async function transactionCreate(data) {
 
+    APIState.lastModule =
+      'TRANSACTION';
+
     return create(
       'TRANSACTION',
       data || {}
     );
-  }
 
+  }
 
   /* ==========================================================
    * 29. WALLET GET
-   *
-   * Uses existing transaction/financial boundary.
-   * Frontend is not financial authority.
    * ========================================================== */
 
   async function walletGet(data) {
 
+    APIState.lastModule =
+      'TRANSACTION';
+
     return request(
       'GET',
       {
-        module: 'TRANSACTION',
-        type: 'WALLET',
-        data: data || {}
+        module:
+          'TRANSACTION',
+
+        type:
+          'WALLET',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 30. WALLET UPDATE
-   *
-   * Real-money operations remain blocked.
    * ========================================================== */
 
   async function walletUpdate(data) {
 
+    APIState.lastModule =
+      'TRANSACTION';
+
     return {
       success: false,
       blocked: true,
-      error: 'REAL_MONEY_BLOCKED',
+      error:
+        'REAL_MONEY_BLOCKED',
       message:
         'Real money wallet operations are blocked.'
     };
-  }
 
+  }
 
   /* ==========================================================
    * 31. ADMIN GET
@@ -1172,22 +1362,33 @@
 
   async function adminGet(data) {
 
+    APIState.lastModule =
+      'SYSTEM';
+
     return request(
       'GET',
       {
-        module: 'SYSTEM',
-        type: 'ADMIN',
-        data: data || {}
+        module:
+          'SYSTEM',
+
+        type:
+          'ADMIN',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 32. ADMIN UPDATE
    * ========================================================== */
 
   async function adminUpdate(data) {
+
+    APIState.lastModule =
+      'SYSTEM';
 
     return update(
       'SYSTEM',
@@ -1196,8 +1397,8 @@
         : 'SYSTEM',
       data || {}
     );
-  }
 
+  }
 
   /* ==========================================================
    * 33. AUDIT LIST
@@ -1205,9 +1406,14 @@
 
   async function auditList(data) {
 
-    return list('AUDIT_LOG');
-  }
+    APIState.lastModule =
+      'AUDIT_LOG';
 
+    return list(
+      'AUDIT_LOG'
+    );
+
+  }
 
   /* ==========================================================
    * 34. TRAVEL MODULES
@@ -1215,42 +1421,66 @@
 
   async function flight(data) {
 
+    APIState.lastModule =
+      'SERVICE';
+
     return request(
       'LIST',
       {
-        module: 'SERVICE',
-        serviceCategory: 'FLIGHT',
-        data: data || {}
+        module:
+          'SERVICE',
+
+        serviceCategory:
+          'FLIGHT',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   async function train(data) {
 
+    APIState.lastModule =
+      'SERVICE';
+
     return request(
       'LIST',
       {
-        module: 'SERVICE',
-        serviceCategory: 'TRAIN',
-        data: data || {}
+        module:
+          'SERVICE',
+
+        serviceCategory:
+          'TRAIN',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   async function hotel(data) {
 
+    APIState.lastModule =
+      'SERVICE';
+
     return request(
       'LIST',
       {
-        module: 'SERVICE',
-        serviceCategory: 'HOTEL',
-        data: data || {}
+        module:
+          'SERVICE',
+
+        serviceCategory:
+          'HOTEL',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 35. WELFARE
@@ -1258,15 +1488,21 @@
 
   async function welfare(data) {
 
+    APIState.lastModule =
+      'WELFARE';
+
     return request(
       'LIST',
       {
-        module: 'WELFARE',
-        data: data || {}
+        module:
+          'WELFARE',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 36. LOCATION
@@ -1274,15 +1510,21 @@
 
   async function location(data) {
 
+    APIState.lastModule =
+      'LOCATION';
+
     return request(
       'LIST',
       {
-        module: 'LOCATION',
-        data: data || {}
+        module:
+          'LOCATION',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 37. NOTIFICATION
@@ -1290,15 +1532,21 @@
 
   async function notifications(data) {
 
+    APIState.lastModule =
+      'NOTIFICATION';
+
     return request(
       'LIST',
       {
-        module: 'NOTIFICATION',
-        data: data || {}
+        module:
+          'NOTIFICATION',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 38. AUTHENTICATION
@@ -1306,15 +1554,21 @@
 
   async function authentication(data) {
 
+    APIState.lastModule =
+      'USER';
+
     return request(
       'GET',
       {
-        module: 'USER',
-        data: data || {}
+        module:
+          'USER',
+
+        data:
+          data || {}
       }
     );
-  }
 
+  }
 
   /* ==========================================================
    * 39. API CONFIGURATION
@@ -1323,37 +1577,54 @@
   function getConfiguration() {
 
     return {
-      apiUrl: getAPIUrl(),
-      configured: isConfigured(),
 
-      version: CONFIG.VERSION,
-      environment: CONFIG.ENVIRONMENT,
-      project: CONFIG.PROJECT,
+      apiUrl:
+        getAPIUrl(),
 
-      realMoney: CONFIG.REAL_MONEY,
-      realPayment: CONFIG.REAL_PAYMENT,
-      bankTransfer: CONFIG.BANK_TRANSFER
+      configured:
+        isConfigured(),
+
+      version:
+        CONFIG.VERSION,
+
+      environment:
+        CONFIG.ENVIRONMENT,
+
+      project:
+        CONFIG.PROJECT,
+
+      realMoney:
+        CONFIG.REAL_MONEY,
+
+      realPayment:
+        CONFIG.REAL_PAYMENT,
+
+      bankTransfer:
+        CONFIG.BANK_TRANSFER
+
     };
-  }
 
+  }
 
   function setAPIEndpoint(url) {
 
-    return saveConfiguration(url);
-  }
+    return saveConfiguration(
+      url
+    );
 
+  }
 
   function getAPIEndpoint() {
 
     return getAPIUrl();
-  }
 
+  }
 
   function clearAPIEndpoint() {
 
     return clearConfiguration();
-  }
 
+  }
 
   /* ==========================================================
    * 40. STATE
@@ -1362,23 +1633,40 @@
   function getState() {
 
     return {
-      configured: APIState.configured,
-      connected: APIState.connected,
-      verified: APIState.verified,
 
-      lastAction: APIState.lastAction,
-      lastModule: APIState.lastModule,
+      configured:
+        APIState.configured,
 
-      lastResponse: APIState.lastResponse,
-      lastError: APIState.lastError,
+      connected:
+        APIState.connected,
 
-      requestStartedAt: APIState.requestStartedAt,
-      responseReceivedAt: APIState.responseReceivedAt,
+      verified:
+        APIState.verified,
 
-      configuration: getConfiguration()
+      lastAction:
+        APIState.lastAction,
+
+      lastModule:
+        APIState.lastModule,
+
+      lastResponse:
+        APIState.lastResponse,
+
+      lastError:
+        APIState.lastError,
+
+      requestStartedAt:
+        APIState.requestStartedAt,
+
+      responseReceivedAt:
+        APIState.responseReceivedAt,
+
+      configuration:
+        getConfiguration()
+
     };
-  }
 
+  }
 
   /* ==========================================================
    * 41. MODULE REGISTRY ACCESS
@@ -1387,20 +1675,27 @@
   function getModules() {
 
     return MODULES.slice();
-  }
 
+  }
 
   function getModule(module) {
 
-    var cleanModule = normalizeModule(module);
+    var cleanModule =
+      normalizeModule(module);
 
     if (!cleanModule) {
+
       return null;
+
     }
 
-    return ModuleRegistry[cleanModule] || null;
-  }
+    return (
+      ModuleRegistry[
+        cleanModule
+      ] || null
+    );
 
+  }
 
   /* ==========================================================
    * 42. DIAGNOSTICS
@@ -1409,916 +1704,1248 @@
   function diagnostics() {
 
     return {
+
       success: true,
 
-      project: CONFIG.PROJECT,
-      version: CONFIG.VERSION,
-      environment: CONFIG.ENVIRONMENT,
+      project:
+        CONFIG.PROJECT,
 
-      configured: isConfigured(),
-      connected: APIState.connected,
-      verified: APIState.verified,
+      version:
+        CONFIG.VERSION,
+
+      environment:
+        CONFIG.ENVIRONMENT,
+
+      configured:
+        isConfigured(),
+
+      connected:
+        APIState.connected,
+
+      verified:
+        APIState.verified,
 
       endpoint:
         isConfigured()
           ? getAPIUrl()
           : '',
 
-      moduleCount: MODULES.length,
+      moduleCount:
+        MODULES.length,
 
-      modules: MODULES.slice(),
+      modules:
+        MODULES.slice(),
 
       customer: {
-        module: CUSTOMER_CONTRACT.MODULE,
-        table: CUSTOMER_CONTRACT.BACKEND_TABLE,
-        userTable: CUSTOMER_CONTRACT.USER_TABLE,
-        registrationEnabled: true
+
+        module:
+          CUSTOMER_CONTRACT.MODULE,
+
+        table:
+          CUSTOMER_CONTRACT.BACKEND_TABLE,
+
+        userTable:
+          CUSTOMER_CONTRACT.USER_TABLE,
+
+        registrationEnabled:
+          true
+
       },
 
       safety: {
-        realMoney: 'BLOCKED',
-        realPayment: 'BLOCKED',
-        bankTransfer: 'BLOCKED'
+
+        realMoney:
+          'BLOCKED',
+
+        realPayment:
+          'BLOCKED',
+
+        bankTransfer:
+          'BLOCKED'
+
       },
 
-      lastAction: APIState.lastAction,
-      lastError: APIState.lastError
+      lastAction:
+        APIState.lastAction,
+
+      lastModule:
+        APIState.lastModule,
+
+      lastError:
+        APIState.lastError
+
     };
-  }
-function extractCustomerRows(response) {
-  if (!response) return [];
 
-  var result = response.result;
-
-  if (Array.isArray(result)) return result;
-  if (result && Array.isArray(result.data)) return result.data;
-  if (result && Array.isArray(result.rows)) return result.rows;
-  if (Array.isArray(response.data)) return response.data;
-  if (Array.isArray(response.rows)) return response.rows;
-
-  return [];
-}
-
-function escapeHTML(value) {
-  return safeString(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function renderCustomerList(container, response) {
-  var box = container.querySelector('#govara-step27-customer-table');
-  var status = container.querySelector('#govara-step27-customer-list-status');
-  var count = container.querySelector('#govara-step27-customer-count');
-
-  var rows = extractCustomerRows(response);
-
-  if (count) count.textContent = String(rows.length);
-
-  if (!box) return;
-
-  if (!rows.length) {
-    box.innerHTML = '<div class="muted">No customer records found.</div>';
-    if (status) status.textContent = '0 records found';
-    return;
   }
 
-  var columns = [];
+  /* ==========================================================
+   * CUSTOMER LIST HELPERS
+   *
+   * Frontend display only.
+   * No database modification.
+   * ========================================================== */
 
-  rows.forEach(function(row) {
-    if (row && typeof row === 'object' && !Array.isArray(row)) {
-      Object.keys(row).forEach(function(key) {
-        if (columns.indexOf(key) === -1) {
-          columns.push(key);
-        }
-      });
-    }
-  });
+  function extractCustomerRows(response) {
 
-  if (!columns.length) {
-    box.innerHTML =
-      '<div class="muted">Customer data returned, but table format is not supported yet.</div>';
+    if (!response) {
 
-    if (status) {
-      status.textContent = rows.length + ' records loaded';
+      return [];
+
     }
 
-    return;
-  }
+    /*
+     * Possible backend response:
+     *
+     * {
+     *   success: true,
+     *   result: [...]
+     * }
+     */
+
+    var result =
+      response.result;
+
+    if (Array.isArray(result)) {
+
+      return result;
+
+    }
+
+    /*
+     * {
+     *   success: true,
+     *   result: {
+     *     data: [...]
+     *   }
+     * }
+     */
+
+    if (
+      result &&
+      Array.isArray(result.data)
+    ) {
+
+      return result.data;
+
+    }
+
+    /*
+     * {
+     *   success: true,
+     *   result: {
+     *     rows: [...]
+     *   }
+     * }
+     */
+
+    if (
+      result &&
+      Array.isArray(result.rows)
+    ) {
+
+      return result.rows;
+
+    }
+
+    /*
+     * {
+     *   success: true,
+     *   data: [...]
+     * }
+     */
+
+    if (
+      Array.isArray(
+        response.data
+      )
+    ) {
+
+      return response.data;
+
+    }
+
+    /*
+     * {
+     *   success: true,
+     *   rows: [...]
+     * }
+     */
+
+    if (
+      Array.isArray(
+        response.rows
+      )
+    ) {
+
+      return response.rows;
+
+    }
+
+    /*
+     * Some backends may use records.
+     */
+
+    if (
+      Array.isArray(
+        response.records
+      )
+    ) {
+
+      return response.records;
+
+    }
 
-  var html =
-    '<div style="overflow:auto;">' +
-    '<table style="width:100%;border-collapse:collapse;">';
+    if (
+      result &&
+      Array.isArray(
+        result.records
+      )
+    ) {
 
-  html += '<thead><tr>';
+      return result.records;
 
-  columns.forEach(function(col) {
-    html +=
-      '<th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;white-space:nowrap;">' +
-      escapeHTML(col) +
-      '</th>';
-  });
+    }
 
-  html += '</tr></thead><tbody>';
-
-  rows.forEach(function(row) {
-    html += '<tr>';
-
-    columns.forEach(function(col) {
-      var value =
-        row && row[col] !== undefined
-          ? row[col]
-          : '';
-
-      html +=
-        '<td style="padding:10px;border-bottom:1px solid #eee;white-space:nowrap;">' +
-        escapeHTML(value) +
-        '</td>';
-    });
-
-    html += '</tr>';
-  });
-
-  html += '</tbody></table></div>';
-
-  box.innerHTML = html;
-
-  if (status) {
-    status.textContent =
-      rows.length + ' records loaded';
-  }
-}
-
-/* ==========================================================
- * 43. FRONTEND RENDER
- *
- * No automatic API request.
- * ========================================================== */
-
-function render(container) {
-
-  var target = container;
-
-  if (typeof target === "string") {
-    target = document.querySelector(target);
-  }
-
-  if (!target) {
-    return false;
-  }
-
-  target.innerHTML = `
-    <div class="govara-step27-panel">
-
-      <div class="govara-step27-header">
-
-        <div>
-
-          <div style="
-            font-size:12px;
-            font-weight:700;
-            letter-spacing:1px;
-            opacity:.7;
-            margin-bottom:6px;
-          ">
-            STEP 27
-          </div>
-
-          <h2 style="margin:0;">
-            Consolidated API
-          </h2>
-
-          <p style="margin:6px 0 0;">
-            ONE Frontend API Boundary
-          </p>
-
-        </div>
-
-        <div class="govara-step27-status-box">
-
-          <span id="govara-step27-status">
-            NOT CONFIGURED
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           API CONFIGURATION
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>API Configuration</h3>
-
-        <div class="muted">
-          Configure the single GoVara Consolidated API endpoint.
-        </div>
-
-        <label
-          for="govara-step27-endpoint"
-          style="
-            display:block;
-            margin-top:16px;
-            margin-bottom:7px;
-            font-weight:600;
-          "
-        >
-          Consolidated API Endpoint
-        </label>
-
-        <input
-          id="govara-step27-endpoint"
-          type="url"
-          autocomplete="off"
-          placeholder="https://script.google.com/macros/s/.../exec"
-          style="
-            width:100%;
-            box-sizing:border-box;
-            padding:12px 14px;
-            border-radius:8px;
-            border:1px solid #ccc;
-          "
-        />
-
-        <div
-          class="govara-step27-actions"
-          style="
-            display:flex;
-            flex-wrap:wrap;
-            gap:10px;
-            margin-top:14px;
-          "
-        >
-
-          <button
-            type="button"
-            id="govara-step27-validate"
-          >
-            Validate Endpoint
-          </button>
-
-          <button
-            type="button"
-            id="govara-step27-save"
-          >
-            Save API Configuration
-          </button>
-
-          <button
-            type="button"
-            id="govara-step27-clear"
-          >
-            Clear API
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           API CONNECTION TEST
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>API Connection Test</h3>
-
-        <div class="muted" style="margin-bottom:14px;">
-
-          Run the API health check manually.
-          No automatic API request is made on page load.
-
-        </div>
-
-        <button
-          type="button"
-          id="govara-step27-test"
-        >
-          Test Connection
-        </button>
-
-      </div>
-
-
-      <!-- ==================================================
-           CUSTOMER DATABASE CHECK
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>Customer Database Check</h3>
-
-        <div class="muted">
-          Read existing customers through the
-          GoVara Consolidated API.
-        </div>
-
-        <div
-          style="
-            display:flex;
-            align-items:center;
-            flex-wrap:wrap;
-            gap:12px;
-            margin-top:14px;
-          "
-        >
-
-          <button
-            type="button"
-            id="govara-step27-load-customers"
-          >
-            Load Customer List
-          </button>
-
-          <strong id="govara-step27-customer-count">
-            Total Customers: —
-          </strong>
-
-        </div>
-
-        <div
-          id="govara-step27-customer-status"
-          class="muted"
-          style="
-            margin-top:12px;
-            min-height:20px;
-          "
-        >
-          Customer list has not been loaded.
-        </div>
-
-        <div
-          id="govara-step27-customer-list"
-          style="
-            margin-top:14px;
-            overflow-x:auto;
-          "
-        >
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           API STATUS
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>API Status</h3>
-
-        <div
-          style="
-            display:grid;
-            grid-template-columns:
-              repeat(auto-fit,minmax(160px,1fr));
-            gap:12px;
-            margin-top:14px;
-          "
-        >
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Configured
-            </div>
-
-            <strong id="govara-step27-configured">
-              NO
-            </strong>
-
-          </div>
-
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Connected
-            </div>
-
-            <strong id="govara-step27-connected">
-              NO
-            </strong>
-
-          </div>
-
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Verified
-            </div>
-
-            <strong id="govara-step27-verified">
-              NO
-            </strong>
-
-          </div>
-
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Environment
-            </div>
-
-            <strong id="govara-step27-environment">
-              TESTING
-            </strong>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           TEST RESULT
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>Test Result</h3>
-
-        <div
-          id="govara-step27-diagnostics"
-          style="
-            margin-top:12px;
-            min-height:70px;
-            padding:14px;
-            border-radius:8px;
-            background:rgba(0,0,0,.035);
-            white-space:pre-wrap;
-            word-break:break-word;
-          "
-        >
-          API test has not been run.
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           LAST API ACTIVITY
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>Last API Activity</h3>
-
-        <div
-          style="
-            display:grid;
-            grid-template-columns:
-              repeat(auto-fit,minmax(180px,1fr));
-            gap:12px;
-            margin-top:14px;
-          "
-        >
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Last Action
-            </div>
-
-            <strong id="govara-step27-last-action">
-              —
-            </strong>
-
-          </div>
-
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Last Module
-            </div>
-
-            <strong id="govara-step27-last-module">
-              —
-            </strong>
-
-          </div>
-
-
-          <div class="govara-step27-info">
-
-            <div class="muted">
-              Last Error
-            </div>
-
-            <strong id="govara-step27-last-error">
-              —
-            </strong>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           CONSOLIDATED API CONTRACT
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>Consolidated API Contract</h3>
-
-        <div class="muted" style="margin:8px 0 14px;">
-          Single API boundary for GoVara frontend modules.
-        </div>
-
-        <div
-          style="
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-          "
-        >
-
-          <span class="govara-step27-contract">
-            GET_HEALTH
-          </span>
-
-          <span class="govara-step27-contract">
-            LIST
-          </span>
-
-          <span class="govara-step27-contract">
-            GET
-          </span>
-
-          <span class="govara-step27-contract">
-            VALIDATE
-          </span>
-
-          <span class="govara-step27-contract">
-            CREATE
-          </span>
-
-          <span class="govara-step27-contract">
-            UPDATE
-          </span>
-
-          <span class="govara-step27-contract">
-            CUSTOMER_REGISTER
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <!-- ==================================================
-           SAFETY BOUNDARY
-           ================================================== -->
-
-      <div class="govara-step27-card">
-
-        <h3>Safety Boundary</h3>
-
-        <div style="margin-top:12px;line-height:1.8;">
-
-          <div>
-            Real Money:
-            <strong>BLOCKED</strong>
-          </div>
-
-          <div>
-            Real Payment:
-            <strong>BLOCKED</strong>
-          </div>
-
-          <div>
-            Bank Transfer:
-            <strong>BLOCKED</strong>
-          </div>
-
-        </div>
-
-        <div class="muted" style="margin-top:12px;">
-
-          Backend remains authoritative for financial
-          and business truth.
-
-        </div>
-
-      </div>
-
-    </div>
-  `;
-
-
-  var endpointInput =
-    target.querySelector(
-      "#govara-step27-endpoint"
-    );
-
-
-  var savedURL =
-    getAPIUrl();
-
-
-  if (endpointInput) {
-
-    endpointInput.value =
-      savedURL || "";
+    return [];
 
   }
 
+  function escapeHTML(value) {
 
-  bindRenderEvents(target);
+    return safeString(value)
 
+      .replace(
+        /&/g,
+        '&amp;'
+      )
 
-  function refreshStep27Status() {
+      .replace(
+        /</g,
+        '&lt;'
+      )
+
+      .replace(
+        />/g,
+        '&gt;'
+      )
+
+      .replace(
+        /"/g,
+        '&quot;'
+      )
+
+      .replace(
+        /'/g,
+        '&#39;'
+      );
+
+  }
+
+  function renderCustomerList(
+    container,
+    response
+  ) {
+
+    var box =
+      container.querySelector(
+        '#govara-step27-customer-list'
+      );
 
     var status =
-      target.querySelector(
-        "#govara-step27-status"
+      container.querySelector(
+        '#govara-step27-customer-status'
       );
 
-    var configured =
-      target.querySelector(
-        "#govara-step27-configured"
+    var count =
+      container.querySelector(
+        '#govara-step27-customer-count'
       );
 
-    var connected =
-      target.querySelector(
-        "#govara-step27-connected"
+    var rows =
+      extractCustomerRows(
+        response
       );
 
-    var verified =
-      target.querySelector(
-        "#govara-step27-verified"
-      );
+    if (count) {
 
-    var environment =
-      target.querySelector(
-        "#govara-step27-environment"
-      );
-
-    var lastAction =
-      target.querySelector(
-        "#govara-step27-last-action"
-      );
-
-    var lastModule =
-      target.querySelector(
-        "#govara-step27-last-module"
-      );
-
-    var lastError =
-      target.querySelector(
-        "#govara-step27-last-error"
-      );
-
-
-    if (configured) {
-
-      configured.textContent =
-        APIState.configured
-          ? "YES"
-          : "NO";
+      count.textContent =
+        'Total Customers: ' +
+        rows.length;
 
     }
 
+    if (!box) {
 
-    if (connected) {
-
-      connected.textContent =
-        APIState.connected
-          ? "YES"
-          : "NO";
+      return;
 
     }
 
+    if (!rows.length) {
 
-    if (verified) {
+      box.innerHTML =
+        '<div class="muted" style="padding:12px;">' +
+        'No customer records found.' +
+        '</div>';
 
-      verified.textContent =
-        APIState.verified
-          ? "YES"
-          : "NO";
+      if (status) {
 
-    }
+        status.textContent =
+          'Customer list loaded successfully. 0 records found.';
 
+      }
 
-    if (environment) {
-
-      environment.textContent =
-        CONFIG.ENVIRONMENT ||
-        "TESTING";
-
-    }
-
-
-    if (lastAction) {
-
-      lastAction.textContent =
-        APIState.lastAction ||
-        "—";
+      return;
 
     }
 
+    /*
+     * Collect all object keys so that
+     * different backend row shapes can
+     * still be displayed.
+     */
 
-    if (lastModule) {
+    var columns = [];
 
-      lastModule.textContent =
-        APIState.lastModule ||
-        "—";
+    rows.forEach(
+      function (row) {
+
+        if (
+          row &&
+          typeof row === 'object' &&
+          !Array.isArray(row)
+        ) {
+
+          Object.keys(row)
+            .forEach(
+              function (key) {
+
+                if (
+                  columns.indexOf(
+                    key
+                  ) === -1
+                ) {
+
+                  columns.push(
+                    key
+                  );
+
+                }
+
+              }
+            );
+
+        }
+
+      }
+    );
+
+    /*
+     * If backend returned primitive values
+     * instead of objects, show them safely.
+     */
+
+    if (!columns.length) {
+
+      var primitiveHTML =
+        '<div style="overflow:auto;">' +
+        '<table style="width:100%;border-collapse:collapse;">' +
+        '<thead>' +
+        '<tr>' +
+        '<th style="text-align:left;padding:10px;border-bottom:1px solid #ddd;">' +
+        'Customer Data' +
+        '</th>' +
+        '</tr>' +
+        '</thead>' +
+        '<tbody>';
+
+      rows.forEach(
+        function (row) {
+
+          primitiveHTML +=
+            '<tr>' +
+            '<td style="padding:10px;border-bottom:1px solid #eee;">' +
+            escapeHTML(row) +
+            '</td>' +
+            '</tr>';
+
+        }
+      );
+
+      primitiveHTML +=
+        '</tbody></table></div>';
+
+      box.innerHTML =
+        primitiveHTML;
+
+      if (status) {
+
+        status.textContent =
+          rows.length +
+          ' customer records loaded.';
+
+      }
+
+      return;
 
     }
 
+    /*
+     * Object table.
+     */
 
-    if (lastError) {
+    var html =
+      '<div style="overflow:auto;">' +
 
-      lastError.textContent =
-        APIState.lastError ||
-        "—";
+      '<table style="' +
+      'width:100%;' +
+      'border-collapse:collapse;' +
+      'min-width:700px;' +
+      '">';
 
-    }
+    html +=
+      '<thead><tr>';
 
+    columns.forEach(
+      function (column) {
+
+        html +=
+          '<th style="' +
+          'text-align:left;' +
+          'padding:10px;' +
+          'border-bottom:1px solid #ddd;' +
+          'white-space:nowrap;' +
+          '">' +
+          escapeHTML(column) +
+          '</th>';
+
+      }
+    );
+
+    html +=
+      '</tr></thead><tbody>';
+
+    rows.forEach(
+      function (row) {
+
+        html += '<tr>';
+
+        columns.forEach(
+          function (column) {
+
+            var value =
+              row &&
+              row[column] !== undefined
+                ? row[column]
+                : '';
+
+            /*
+             * Objects/arrays inside a cell
+             * are displayed as JSON.
+             */
+
+            if (
+              value &&
+              typeof value === 'object'
+            ) {
+
+              try {
+
+                value =
+                  JSON.stringify(
+                    value
+                  );
+
+              } catch (error) {
+
+                value =
+                  safeString(value);
+
+              }
+
+            }
+
+            html +=
+              '<td style="' +
+              'padding:10px;' +
+              'border-bottom:1px solid #eee;' +
+              'white-space:nowrap;' +
+              '">' +
+              escapeHTML(value) +
+              '</td>';
+
+          }
+        );
+
+        html +=
+          '</tr>';
+
+      }
+    );
+
+    html +=
+      '</tbody></table></div>';
+
+    box.innerHTML =
+      html;
 
     if (status) {
 
-      if (APIState.verified) {
-
-        status.textContent =
-          "VERIFIED";
-
-      } else if (APIState.connected) {
-
-        status.textContent =
-          "CONNECTED";
-
-      } else if (APIState.configured) {
-
-        status.textContent =
-          "CONFIGURED";
-
-      } else {
-
-        status.textContent =
-          "NOT CONFIGURED";
-
-      }
+      status.textContent =
+        rows.length +
+        ' customer records loaded successfully.';
 
     }
 
   }
 
+  /* ==========================================================
+   * 43. FRONTEND RENDER
+   *
+   * No automatic API request.
+   * ========================================================== */
 
-  var testButton =
-    target.querySelector(
-      "#govara-step27-test"
+  function render(container) {
+
+    var target =
+      container;
+
+    if (
+      typeof target ===
+      'string'
+    ) {
+
+      target =
+        document.querySelector(
+          target
+        );
+
+    }
+
+    if (!target) {
+
+      return false;
+
+    }
+
+    target.innerHTML = `
+
+      <div class="govara-step27-panel">
+
+        <div class="govara-step27-header">
+
+          <div>
+
+            <div style="
+              font-size:12px;
+              font-weight:700;
+              letter-spacing:1px;
+              opacity:.7;
+              margin-bottom:6px;
+            ">
+              STEP 27
+            </div>
+
+            <h2 style="margin:0;">
+              Consolidated API
+            </h2>
+
+            <p style="margin:6px 0 0;">
+              ONE Frontend API Boundary
+            </p>
+
+          </div>
+
+          <div class="govara-step27-status-box">
+
+            <span id="govara-step27-status">
+              NOT CONFIGURED
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             API CONFIGURATION
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            API Configuration
+          </h3>
+
+          <div class="muted">
+
+            Configure the single GoVara Consolidated API endpoint.
+
+          </div>
+
+          <label
+            for="govara-step27-endpoint"
+            style="
+              display:block;
+              margin-top:16px;
+              margin-bottom:7px;
+              font-weight:600;
+            "
+          >
+            Consolidated API Endpoint
+          </label>
+
+          <input
+            id="govara-step27-endpoint"
+            type="url"
+            autocomplete="off"
+            placeholder="https://script.google.com/macros/s/.../exec"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px 14px;
+              border-radius:8px;
+              border:1px solid #ccc;
+            "
+          />
+
+          <div
+            class="govara-step27-actions"
+            style="
+              display:flex;
+              flex-wrap:wrap;
+              gap:10px;
+              margin-top:14px;
+            "
+          >
+
+            <button
+              type="button"
+              id="govara-step27-validate"
+            >
+              Validate Endpoint
+            </button>
+
+            <button
+              type="button"
+              id="govara-step27-save"
+            >
+              Save API Configuration
+            </button>
+
+            <button
+              type="button"
+              id="govara-step27-clear"
+            >
+              Clear API
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             API CONNECTION TEST
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            API Connection Test
+          </h3>
+
+          <div
+            class="muted"
+            style="margin-bottom:14px;"
+          >
+
+            Run the API health check manually.
+            No automatic API request is made on page load.
+
+          </div>
+
+          <button
+            type="button"
+            id="govara-step27-test"
+          >
+            Test Connection
+          </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             CUSTOMER DATABASE CHECK
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            Customer Database Check
+          </h3>
+
+          <div class="muted">
+
+            Read existing customers through the
+            GoVara Consolidated API.
+
+          </div>
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              flex-wrap:wrap;
+              gap:12px;
+              margin-top:14px;
+            "
+          >
+
+            <button
+              type="button"
+              id="govara-step27-load-customers"
+            >
+              Load Customer List
+            </button>
+
+            <strong id="govara-step27-customer-count">
+              Total Customers: —
+            </strong>
+
+          </div>
+
+          <div
+            id="govara-step27-customer-status"
+            class="muted"
+            style="
+              margin-top:12px;
+              min-height:20px;
+            "
+          >
+            Customer list has not been loaded.
+          </div>
+
+          <div
+            id="govara-step27-customer-list"
+            style="
+              margin-top:14px;
+              overflow-x:auto;
+            "
+          >
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             API STATUS
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            API Status
+          </h3>
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:
+                repeat(auto-fit,minmax(160px,1fr));
+              gap:12px;
+              margin-top:14px;
+            "
+          >
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Configured
+              </div>
+
+              <strong id="govara-step27-configured">
+                NO
+              </strong>
+
+            </div>
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Connected
+              </div>
+
+              <strong id="govara-step27-connected">
+                NO
+              </strong>
+
+            </div>
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Verified
+              </div>
+
+              <strong id="govara-step27-verified">
+                NO
+              </strong>
+
+            </div>
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Environment
+              </div>
+
+              <strong id="govara-step27-environment">
+                TESTING
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             TEST RESULT
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            Test Result
+          </h3>
+
+          <div
+            id="govara-step27-diagnostics"
+            style="
+              margin-top:12px;
+              min-height:70px;
+              padding:14px;
+              border-radius:8px;
+              background:rgba(0,0,0,.035);
+              white-space:pre-wrap;
+              word-break:break-word;
+            "
+          >
+            API test has not been run.
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             LAST API ACTIVITY
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            Last API Activity
+          </h3>
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:
+                repeat(auto-fit,minmax(180px,1fr));
+              gap:12px;
+              margin-top:14px;
+            "
+          >
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Last Action
+              </div>
+
+              <strong id="govara-step27-last-action">
+                —
+              </strong>
+
+            </div>
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Last Module
+              </div>
+
+              <strong id="govara-step27-last-module">
+                —
+              </strong>
+
+            </div>
+
+            <div class="govara-step27-info">
+
+              <div class="muted">
+                Last Error
+              </div>
+
+              <strong id="govara-step27-last-error">
+                —
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             CONSOLIDATED API CONTRACT
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            Consolidated API Contract
+          </h3>
+
+          <div
+            class="muted"
+            style="margin:8px 0 14px;"
+          >
+
+            Single API boundary for GoVara frontend modules.
+
+          </div>
+
+          <div
+            style="
+              display:flex;
+              flex-wrap:wrap;
+              gap:8px;
+            "
+          >
+
+            <span class="govara-step27-contract">
+              GET_HEALTH
+            </span>
+
+            <span class="govara-step27-contract">
+              LIST
+            </span>
+
+            <span class="govara-step27-contract">
+              GET
+            </span>
+
+            <span class="govara-step27-contract">
+              VALIDATE
+            </span>
+
+            <span class="govara-step27-contract">
+              CREATE
+            </span>
+
+            <span class="govara-step27-contract">
+              UPDATE
+            </span>
+
+            <span class="govara-step27-contract">
+              CUSTOMER_REGISTER
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             SAFETY BOUNDARY
+             ================================================== -->
+
+        <div class="govara-step27-card">
+
+          <h3>
+            Safety Boundary
+          </h3>
+
+          <div
+            style="
+              margin-top:12px;
+              line-height:1.8;
+            "
+          >
+
+            <div>
+              Real Money:
+              <strong>BLOCKED</strong>
+            </div>
+
+            <div>
+              Real Payment:
+              <strong>BLOCKED</strong>
+            </div>
+
+            <div>
+              Bank Transfer:
+              <strong>BLOCKED</strong>
+            </div>
+
+          </div>
+
+          <div
+            class="muted"
+            style="margin-top:12px;"
+          >
+
+            Backend remains authoritative for financial
+            and business truth.
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+    var endpointInput =
+      target.querySelector(
+        '#govara-step27-endpoint'
+      );
+
+    var savedURL =
+      getAPIUrl();
+
+    if (endpointInput) {
+
+      endpointInput.value =
+        savedURL || '';
+
+    }
+
+    bindRenderEvents(
+      target
     );
 
-
-  if (testButton) {
-
-    testButton.addEventListener(
-      "click",
-      async function () {
-
-        var diagnostics =
-          target.querySelector(
-            "#govara-step27-diagnostics"
-          );
-
-
-        if (diagnostics) {
-
-          diagnostics.textContent =
-            "Testing Consolidated API...";
-
-        }
-
-
-        try {
-
-          var result =
-            await testConnection();
-
-
-          if (diagnostics) {
-
-            diagnostics.textContent =
-              typeof result === "string"
-                ? result
-                : JSON.stringify(
-                    result,
-                    null,
-                    2
-                  );
-
-          }
-
-        } catch (error) {
-
-          APIState.lastError =
-            error &&
-            error.message
-              ? error.message
-              : String(error);
-
-
-          if (diagnostics) {
-
-            diagnostics.textContent =
-              "API TEST FAILED\n\n" +
-              APIState.lastError;
-
-          }
-
-        }
-
-
-        refreshStep27Status();
-
-      }
+    refreshStep27Status(
+      target
     );
+
+    return true;
 
   }
 
-
-  refreshStep27Status();
-
-  return true;
-
-}
   /* ==========================================================
    * 44. RENDERED STATUS
    * ========================================================== */
 
-  function updateRenderedStatus(container) {
+  function updateRenderedStatus(
+    container
+  ) {
 
     if (!container) {
-      return;
-    }
 
+      return;
+
+    }
 
     var status =
       container.querySelector(
         '#govara-step27-status'
       );
 
-
     var diagnosticsBox =
       container.querySelector(
         '#govara-step27-diagnostics'
       );
 
+    var configured =
+      container.querySelector(
+        '#govara-step27-configured'
+      );
+
+    var connected =
+      container.querySelector(
+        '#govara-step27-connected'
+      );
+
+    var verified =
+      container.querySelector(
+        '#govara-step27-verified'
+      );
+
+    var environment =
+      container.querySelector(
+        '#govara-step27-environment'
+      );
+
+    var lastAction =
+      container.querySelector(
+        '#govara-step27-last-action'
+      );
+
+    var lastModule =
+      container.querySelector(
+        '#govara-step27-last-module'
+      );
+
+    var lastError =
+      container.querySelector(
+        '#govara-step27-last-error'
+      );
+
+    if (configured) {
+
+      configured.textContent =
+        APIState.configured
+          ? 'YES'
+          : 'NO';
+
+    }
+
+    if (connected) {
+
+      connected.textContent =
+        APIState.connected
+          ? 'YES'
+          : 'NO';
+
+    }
+
+    if (verified) {
+
+      verified.textContent =
+        APIState.verified
+          ? 'YES'
+          : 'NO';
+
+    }
+
+    if (environment) {
+
+      environment.textContent =
+        CONFIG.ENVIRONMENT ||
+        'TESTING';
+
+    }
+
+    if (lastAction) {
+
+      lastAction.textContent =
+        APIState.lastAction ||
+        '—';
+
+    }
+
+    if (lastModule) {
+
+      lastModule.textContent =
+        APIState.lastModule ||
+        '—';
+
+    }
+
+    if (lastError) {
+
+      lastError.textContent =
+        APIState.lastError ||
+        '—';
+
+    }
 
     if (status) {
 
-      if (!APIState.configured) {
+      if (APIState.verified) {
 
         status.textContent =
-          'NOT CONFIGURED';
+          'VERIFIED';
 
       } else if (
-        APIState.connected &&
-        APIState.verified
+        APIState.connected
       ) {
 
         status.textContent =
-          'API CONNECTED';
+          'CONNECTED';
+
+      } else if (
+        APIState.configured
+      ) {
+
+        status.textContent =
+          'CONFIGURED';
 
       } else {
 
         status.textContent =
-          'CONFIGURED';
-      }
-    }
+          'NOT CONFIGURED';
 
+      }
+
+    }
 
     if (diagnosticsBox) {
 
-      diagnosticsBox.textContent =
-        JSON.stringify(
-          diagnostics(),
-          null,
-          2
-        );
+      /*
+       * Keep the existing diagnostics
+       * display behavior.
+       *
+       * Customer List does not automatically
+       * overwrite this with a fake health-test result.
+       */
+
+      if (
+        APIState.lastAction &&
+        APIState.lastAction !==
+        'GET_HEALTH'
+      ) {
+
+        diagnosticsBox.textContent =
+          JSON.stringify(
+            {
+              lastAction:
+                APIState.lastAction,
+
+              lastModule:
+                APIState.lastModule,
+
+              lastError:
+                APIState.lastError,
+
+              response:
+                APIState.lastResponse
+            },
+            null,
+            2
+          );
+
+      }
+
     }
+
   }
 
-
   /* ==========================================================
-   * 45. RENDER EVENT BINDING
+   * 45. STEP 27 STATUS REFRESH
    * ========================================================== */
 
-  function bindRenderEvents(container) {
+  function refreshStep27Status(
+    container
+  ) {
+
+    updateRenderedStatus(
+      container
+    );
+
+  }
+
+  /* ==========================================================
+   * 46. RENDER EVENT BINDING
+   * ========================================================== */
+
+  function bindRenderEvents(
+    container
+  ) {
 
     var endpointInput =
       container.querySelector(
@@ -2340,6 +2967,20 @@ function render(container) {
         '#govara-step27-clear'
       );
 
+    var testButton =
+      container.querySelector(
+        '#govara-step27-test'
+      );
+
+    var customerListButton =
+      container.querySelector(
+        '#govara-step27-load-customers'
+      );
+
+
+    /* ========================================================
+     * SAVE API CONFIGURATION
+     * ======================================================== */
 
     if (saveButton) {
 
@@ -2352,13 +2993,23 @@ function render(container) {
               ? endpointInput.value.trim()
               : '';
 
-          saveConfiguration(url);
+          saveConfiguration(
+            url
+          );
 
-          updateRenderedStatus(container);
+          updateRenderedStatus(
+            container
+          );
+
         }
       );
+
     }
 
+
+    /* ========================================================
+     * CLEAR API CONFIGURATION
+     * ======================================================== */
 
     if (clearButton) {
 
@@ -2369,14 +3020,25 @@ function render(container) {
           clearConfiguration();
 
           if (endpointInput) {
-            endpointInput.value = '';
+
+            endpointInput.value =
+              '';
+
           }
 
-          updateRenderedStatus(container);
+          updateRenderedStatus(
+            container
+          );
+
         }
       );
+
     }
 
+
+    /* ========================================================
+     * VALIDATE ENDPOINT
+     * ======================================================== */
 
     if (validateButton) {
 
@@ -2394,14 +3056,17 @@ function render(container) {
             APIState.lastError =
               'API endpoint is required.';
 
-            updateRenderedStatus(container);
+            updateRenderedStatus(
+              container
+            );
 
             return;
+
           }
 
-
-          saveConfiguration(url);
-
+          saveConfiguration(
+            url
+          );
 
           try {
 
@@ -2413,241 +3078,667 @@ function render(container) {
               '[GoVara STEP 27] API validation failed:',
               error
             );
+
+          }
+
+          updateRenderedStatus(
+            container
+          );
+
+        }
+      );
+
+    }
+
+
+    /* ========================================================
+     * TEST CONNECTION
+     * ======================================================== */
+
+    if (testButton) {
+
+      testButton.addEventListener(
+        'click',
+        async function () {
+
+          var diagnosticsBox =
+            container.querySelector(
+              '#govara-step27-diagnostics'
+            );
+
+          if (diagnosticsBox) {
+
+            diagnosticsBox.textContent =
+              'Testing Consolidated API...';
+
+          }
+
+          try {
+
+            var result =
+              await testConnection();
+
+            if (diagnosticsBox) {
+
+              diagnosticsBox.textContent =
+                typeof result ===
+                'string'
+
+                  ? result
+
+                  : JSON.stringify(
+                      result,
+                      null,
+                      2
+                    );
+
+            }
+
+          } catch (error) {
+
+            APIState.lastError =
+              error &&
+              error.message
+                ? error.message
+                : String(error);
+
+            if (diagnosticsBox) {
+
+              diagnosticsBox.textContent =
+                'API TEST FAILED\n\n' +
+                APIState.lastError;
+
+            }
+
+          }
+
+          updateRenderedStatus(
+            container
+          );
+
+        }
+      );
+
+    }
+
+
+    /* ========================================================
+     * CUSTOMER LIST
+     *
+     * IMPORTANT:
+     * This is the only place where the Customer
+     * List API request is initiated from STEP 27.
+     *
+     * No API request occurs automatically.
+     *
+     * No testConnection() is required first.
+     * ======================================================== */
+
+    if (customerListButton) {
+
+      customerListButton.addEventListener(
+        'click',
+        async function () {
+
+          var status =
+            container.querySelector(
+              '#govara-step27-customer-status'
+            );
+
+          var box =
+            container.querySelector(
+              '#govara-step27-customer-list'
+            );
+
+          var count =
+            container.querySelector(
+              '#govara-step27-customer-count'
+            );
+
+
+          if (status) {
+
+            status.textContent =
+              'Loading customers from Consolidated API...';
+
+          }
+
+          if (count) {
+
+            count.textContent =
+              'Total Customers: …';
+
+          }
+
+          if (box) {
+
+            box.innerHTML =
+              '<div class="muted" style="padding:12px;">' +
+              'Loading customer records...' +
+              '</div>';
+
           }
 
 
-          updateRenderedStatus(container);
+          try {
+
+            /*
+             * IMPORTANT:
+             *
+             * We directly call customerList().
+             *
+             * We do NOT call testConnection()
+             * here.
+             *
+             * Therefore the customer list can be
+             * loaded even when the Test Result card
+             * still says:
+             *
+             * "API test has not been run."
+             */
+
+            var response =
+              await customerList();
+
+
+            console.log(
+              '[GoVara STEP 27] Customer list loaded.',
+              response
+            );
+
+
+            /*
+             * If the backend explicitly reports
+             * business/API failure, show that
+             * response instead of silently saying
+             * "0 records".
+             */
+
+            if (
+              response &&
+              response.success === false
+            ) {
+
+              var errorMessage =
+                extractError(
+                  response
+                );
+
+              APIState.lastError =
+                errorMessage;
+
+              if (status) {
+
+                status.textContent =
+                  'Customer list request failed.';
+
+              }
+
+              if (box) {
+
+                box.innerHTML =
+                  '<div class="muted" style="padding:12px;">' +
+                  escapeHTML(
+                    errorMessage
+                  ) +
+                  '</div>';
+
+              }
+
+              updateRenderedStatus(
+                container
+              );
+
+              return;
+
+            }
+
+
+            renderCustomerList(
+              container,
+              response
+            );
+
+
+            /*
+             * Successful request means the
+             * API responded to CUSTOMER/LIST.
+             *
+             * It does NOT falsely mark GET_HEALTH
+             * verification as completed.
+             */
+
+            APIState.lastError =
+              null;
+
+
+            updateRenderedStatus(
+              container
+            );
+
+
+          } catch (error) {
+
+            APIState.lastModule =
+              'CUSTOMER';
+
+            APIState.lastError =
+              error &&
+              error.message
+                ? error.message
+                : String(error);
+
+
+            if (status) {
+
+              status.textContent =
+                'Customer list load failed.';
+
+            }
+
+            if (count) {
+
+              count.textContent =
+                'Total Customers: —';
+
+            }
+
+            if (box) {
+
+              box.innerHTML =
+                '<div class="muted" style="padding:12px;">' +
+                escapeHTML(
+                  APIState.lastError
+                ) +
+                '</div>';
+
+            }
+
+
+            console.error(
+              '[GoVara STEP 27] Customer list failed:',
+              error
+            );
+
+
+            updateRenderedStatus(
+              container
+            );
+
+          }
+
         }
       );
+
     }
+
   }
 
-
   /* ==========================================================
-   * 46. RENDER + BIND
+   * 47. RENDER + BIND
    * ========================================================== */
 
-  function renderAndBind(container) {
+  function renderAndBind(
+    container
+  ) {
 
-    return render(container);
+    return render(
+      container
+    );
+
   }
 
-
   /* ==========================================================
-   * 47. PUBLIC API
+   * 48. PUBLIC API
    * ========================================================== */
 
   var GoVaraAPI = {
 
-    /*
-     * Core
-     */
-    request: request,
-    testConnection: testConnection,
+    /* Core */
 
-    /*
-     * Configuration
-     */
-    getAPIUrl: getAPIUrl,
-    getAPIEndpoint: getAPIEndpoint,
-    setAPIEndpoint: setAPIEndpoint,
-    clearAPIEndpoint: clearAPIEndpoint,
-    getConfiguration: getConfiguration,
+    request:
+      request,
 
-    /*
-     * State
-     */
-    getState: getState,
-    diagnostics: diagnostics,
+    testConnection:
+      testConnection,
 
-    /*
-     * Modules
-     */
-    getModules: getModules,
-    getModule: getModule,
 
-    /*
-     * Generic
-     */
-    list: list,
-    get: get,
-    validate: validate,
-    create: create,
-    update: update,
+    /* Configuration */
 
-    /*
-     * Customer
-     */
-    customerRegister: customerRegister,
-    customerList: customerList,
-    customerGet: customerGet,
-    customerValidate: customerValidate,
-    customerCreate: customerCreate,
-    customerUpdate: customerUpdate,
+    getAPIUrl:
+      getAPIUrl,
 
-    /*
-     * Fare
-     */
-    fareCalculate: fareCalculate,
+    getAPIEndpoint:
+      getAPIEndpoint,
 
-    /*
-     * Transaction
-     */
-    transactionCreate: transactionCreate,
+    setAPIEndpoint:
+      setAPIEndpoint,
 
-    /*
-     * Wallet
-     */
-    walletGet: walletGet,
-    walletUpdate: walletUpdate,
+    clearAPIEndpoint:
+      clearAPIEndpoint,
 
-    /*
-     * Admin
-     */
-    adminGet: adminGet,
-    adminUpdate: adminUpdate,
+    getConfiguration:
+      getConfiguration,
 
-    /*
-     * Audit
-     */
-    auditList: auditList,
 
-    /*
-     * Travel
-     */
-    flight: flight,
-    train: train,
-    hotel: hotel,
+    /* State */
 
-    /*
-     * Other modules
-     */
-    welfare: welfare,
-    location: location,
-    notifications: notifications,
-    authentication: authentication,
+    getState:
+      getState,
 
-    /*
-     * UI
-     */
-    render: render,
-    renderAndBind: renderAndBind
+    diagnostics:
+      diagnostics,
+
+
+    /* Modules */
+
+    getModules:
+      getModules,
+
+    getModule:
+      getModule,
+
+
+    /* Generic */
+
+    list:
+      list,
+
+    get:
+      get,
+
+    validate:
+      validate,
+
+    create:
+      create,
+
+    update:
+      update,
+
+
+    /* Customer */
+
+    customerRegister:
+      customerRegister,
+
+    customerList:
+      customerList,
+
+    customerGet:
+      customerGet,
+
+    customerValidate:
+      customerValidate,
+
+    customerCreate:
+      customerCreate,
+
+    customerUpdate:
+      customerUpdate,
+
+
+    /* Fare */
+
+    fareCalculate:
+      fareCalculate,
+
+
+    /* Transaction */
+
+    transactionCreate:
+      transactionCreate,
+
+
+    /* Wallet */
+
+    walletGet:
+      walletGet,
+
+    walletUpdate:
+      walletUpdate,
+
+
+    /* Admin */
+
+    adminGet:
+      adminGet,
+
+    adminUpdate:
+      adminUpdate,
+
+
+    /* Audit */
+
+    auditList:
+      auditList,
+
+
+    /* Travel */
+
+    flight:
+      flight,
+
+    train:
+      train,
+
+    hotel:
+      hotel,
+
+
+    /* Other modules */
+
+    welfare:
+      welfare,
+
+    location:
+      location,
+
+    notifications:
+      notifications,
+
+    authentication:
+      authentication,
+
+
+    /* UI */
+
+    render:
+      render,
+
+    renderAndBind:
+      renderAndBind
+
   };
 
-
   /* ==========================================================
-   * 48. STEP 27 PUBLIC OBJECT
+   * 49. STEP 27 PUBLIC OBJECT
    * ========================================================== */
 
   var GoVara27 = {
 
-    VERSION: CONFIG.VERSION,
+    VERSION:
+      CONFIG.VERSION,
 
-    CONFIG: CONFIG,
+    CONFIG:
+      CONFIG,
 
-    STATE: APIState,
+    STATE:
+      APIState,
 
-    MODULES: MODULES,
+    MODULES:
+      MODULES,
 
-    ModuleRegistry: ModuleRegistry,
+    ModuleRegistry:
+      ModuleRegistry,
 
-    CUSTOMER_CONTRACT: CUSTOMER_CONTRACT,
+    CUSTOMER_CONTRACT:
+      CUSTOMER_CONTRACT,
 
-    APIState: APIState,
+    APIState:
+      APIState,
 
-    /*
-     * Configuration
-     */
-    getAPIUrl: getAPIUrl,
-    setAPIEndpoint: setAPIEndpoint,
-    getAPIEndpoint: getAPIEndpoint,
-    clearAPIEndpoint: clearAPIEndpoint,
-    getConfiguration: getConfiguration,
 
-    /*
-     * API
-     */
-    request: request,
-    testConnection: testConnection,
+    /* Configuration */
 
-    /*
-     * Generic
-     */
-    list: list,
-    get: get,
-    validate: validate,
-    create: create,
-    update: update,
+    getAPIUrl:
+      getAPIUrl,
 
-    /*
-     * Customer
-     */
-    customerRegister: customerRegister,
-    customerList: customerList,
-    customerGet: customerGet,
-    customerValidate: customerValidate,
-    customerCreate: customerCreate,
-    customerUpdate: customerUpdate,
+    setAPIEndpoint:
+      setAPIEndpoint,
 
-    /*
-     * Business
-     */
-    fareCalculate: fareCalculate,
-    transactionCreate: transactionCreate,
-    walletGet: walletGet,
-    walletUpdate: walletUpdate,
+    getAPIEndpoint:
+      getAPIEndpoint,
 
-    /*
-     * Admin
-     */
-    adminGet: adminGet,
-    adminUpdate: adminUpdate,
-    auditList: auditList,
+    clearAPIEndpoint:
+      clearAPIEndpoint,
 
-    /*
-     * Travel
-     */
-    flight: flight,
-    train: train,
-    hotel: hotel,
+    getConfiguration:
+      getConfiguration,
 
-    /*
-     * Other
-     */
-    welfare: welfare,
-    location: location,
-    notifications: notifications,
-    authentication: authentication,
 
-    /*
-     * Diagnostics
-     */
-    getState: getState,
-    diagnostics: diagnostics,
-    getModules: getModules,
-    getModule: getModule,
+    /* API */
 
-    /*
-     * UI
-     */
-    render: render,
-    renderAndBind: renderAndBind
+    request:
+      request,
+
+    testConnection:
+      testConnection,
+
+
+    /* Generic */
+
+    list:
+      list,
+
+    get:
+      get,
+
+    validate:
+      validate,
+
+    create:
+      create,
+
+    update:
+      update,
+
+
+    /* Customer */
+
+    customerRegister:
+      customerRegister,
+
+    customerList:
+      customerList,
+
+    customerGet:
+      customerGet,
+
+    customerValidate:
+      customerValidate,
+
+    customerCreate:
+      customerCreate,
+
+    customerUpdate:
+      customerUpdate,
+
+
+    /* Business */
+
+    fareCalculate:
+      fareCalculate,
+
+    transactionCreate:
+      transactionCreate,
+
+    walletGet:
+      walletGet,
+
+    walletUpdate:
+      walletUpdate,
+
+
+    /* Admin */
+
+    adminGet:
+      adminGet,
+
+    adminUpdate:
+      adminUpdate,
+
+    auditList:
+      auditList,
+
+
+    /* Travel */
+
+    flight:
+      flight,
+
+    train:
+      train,
+
+    hotel:
+      hotel,
+
+
+    /* Other */
+
+    welfare:
+      welfare,
+
+    location:
+      location,
+
+    notifications:
+      notifications,
+
+    authentication:
+      authentication,
+
+
+    /* Diagnostics */
+
+    getState:
+      getState,
+
+    diagnostics:
+      diagnostics,
+
+    getModules:
+      getModules,
+
+    getModule:
+      getModule,
+
+
+    /* UI */
+
+    render:
+      render,
+
+    renderAndBind:
+      renderAndBind
+
   };
 
-
   /* ==========================================================
-   * 49. GLOBAL REGISTRIES
+   * 50. GLOBAL REGISTRIES
    *
    * Preserve compatibility with existing frontend.
    * ========================================================== */
 
-  window.GoVaraAPI = GoVaraAPI;
+  window.GoVaraAPI =
+    GoVaraAPI;
 
-  window.GoVara27 = GoVara27;
-
+  window.GoVara27 =
+    GoVara27;
 
   window.GoVaraModules =
-    window.GoVaraModules || {};
+    window.GoVaraModules ||
+    {};
 
   window.GoVaraModules['27'] =
     GoVara27;
@@ -2658,9 +3749,9 @@ function render(container) {
   window.GoVaraModules['STEP 27'] =
     GoVara27;
 
-
   window.GoVaraModuleRegistry =
-    window.GoVaraModuleRegistry || {};
+    window.GoVaraModuleRegistry ||
+    {};
 
   window.GoVaraModuleRegistry['27'] =
     GoVara27;
@@ -2673,7 +3764,7 @@ function render(container) {
 
 
   /* ==========================================================
-   * 50. INITIAL CONFIGURATION LOAD
+   * 51. INITIAL CONFIGURATION LOAD
    *
    * IMPORTANT:
    * Only local configuration is loaded.
@@ -2684,18 +3775,29 @@ function render(container) {
 
 
   /* ==========================================================
-   * 51. CONSOLE STATUS
+   * 52. CONSOLE STATUS
    * ========================================================== */
 
   console.log(
     '[GoVara STEP 27] Consolidated API loaded.',
     {
-      version: CONFIG.VERSION,
-      configured: APIState.configured,
-      environment: CONFIG.ENVIRONMENT,
-      realMoney: CONFIG.REAL_MONEY,
-      realPayment: CONFIG.REAL_PAYMENT,
-      bankTransfer: CONFIG.BANK_TRANSFER
+      version:
+        CONFIG.VERSION,
+
+      configured:
+        APIState.configured,
+
+      environment:
+        CONFIG.ENVIRONMENT,
+
+      realMoney:
+        CONFIG.REAL_MONEY,
+
+      realPayment:
+        CONFIG.REAL_PAYMENT,
+
+      bankTransfer:
+        CONFIG.BANK_TRANSFER
     }
   );
 

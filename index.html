@@ -1,10 +1,13 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GoVara Administrator Control Center" />
   <meta name="theme-color" content="#111827" />
-  <title>GoVara — Administrator Control Center</title>  <style>
+  <title>GoVara — Administrator Control Center</title>
+
+  <style>
     :root {
       --bg: #0f172a;
       --bg-deep: #0b1120;
@@ -68,6 +71,239 @@
     a {
       color: inherit;
       text-decoration: none;
+    }
+
+    /* =========================================================
+       STEP 29 — AUTHENTICATION OVERLAY
+       Existing application UI is preserved underneath.
+       ========================================================= */
+
+    .govara-auth-overlay {
+      position: fixed;
+      z-index: 10000;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background:
+        radial-gradient(
+          circle at top right,
+          rgba(59, 130, 246, 0.13),
+          transparent 34%
+        ),
+        rgba(11, 17, 32, 0.97);
+    }
+
+    .govara-auth-overlay.active {
+      display: flex;
+    }
+
+    .govara-auth-card {
+      width: min(440px, 100%);
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background:
+        linear-gradient(
+          145deg,
+          #1a2639,
+          #151f31
+        );
+      box-shadow:
+        0 25px 70px rgba(0, 0, 0, 0.50);
+    }
+
+    .govara-auth-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .govara-auth-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary-strong),
+          #2563eb
+        );
+      color: #ffffff;
+      font-size: 19px;
+      font-weight: 900;
+      box-shadow:
+        0 7px 18px rgba(37, 99, 235, 0.35);
+    }
+
+    .govara-auth-brand-title {
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .govara-auth-brand-subtitle {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .govara-auth-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 850;
+    }
+
+    .govara-auth-description {
+      margin: 8px 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .govara-auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .govara-auth-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .govara-auth-group label {
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .govara-auth-group input {
+      width: 100%;
+      border: 1px solid #45566f;
+      border-radius: 9px;
+      background: #111b2b;
+      color: #f8fafc;
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    .govara-auth-group input:focus {
+      border-color: #60a5fa;
+      box-shadow:
+        0 0 0 3px
+        rgba(96, 165, 250, 0.14);
+    }
+
+    .govara-auth-button {
+      width: 100%;
+      margin-top: 3px;
+      border: 1px solid #3973b8;
+      border-radius: 9px;
+      padding: 11px 16px;
+      background: #1d4f91;
+      color: #ffffff;
+      font-weight: 850;
+    }
+
+    .govara-auth-button:hover {
+      background: #2563a8;
+    }
+
+    .govara-auth-button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .govara-auth-message {
+      display: none;
+      margin-bottom: 15px;
+      padding: 11px 13px;
+      border-radius: 9px;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .govara-auth-message.active {
+      display: block;
+    }
+
+    .govara-auth-message.error {
+      border: 1px solid #7f3040;
+      background: #351923;
+      color: #fecdd3;
+    }
+
+    .govara-auth-message.success {
+      border: 1px solid #347a4b;
+      background: #153321;
+      color: #bbf7d0;
+    }
+
+    .govara-auth-message.info {
+      border: 1px solid #2c6070;
+      background: #102c38;
+      color: #bae6fd;
+    }
+
+    .govara-auth-safety {
+      margin-top: 18px;
+      padding: 11px 13px;
+      border: 1px solid #655326;
+      border-radius: 9px;
+      background: #302814;
+      color: #fde68a;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .govara-session-control {
+      position: fixed;
+      z-index: 1100;
+      right: 16px;
+      bottom: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      border: 1px solid #45566f;
+      border-radius: 10px;
+      background: #172033;
+      box-shadow: var(--shadow);
+    }
+
+    .govara-session-control.active {
+      display: flex;
+    }
+
+    .govara-session-user {
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .govara-session-role {
+      color: #93c5fd;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .govara-logout-button {
+      border: 1px solid #7f3040;
+      border-radius: 7px;
+      padding: 5px 8px;
+      background: #351923;
+      color: #fecdd3;
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .govara-logout-button:hover {
+      background: #48202c;
     }
 
     /* =========================================================
@@ -913,6 +1149,11 @@
       .govara-status-badge {
         align-self: flex-start;
       }
+
+      .govara-session-control {
+        right: 10px;
+        bottom: 10px;
+      }
     }
 
     @media (max-width: 450px) {
@@ -931,1348 +1172,1487 @@
       .govara-customer-module {
         padding: 16px;
       }
+
+      .govara-auth-card {
+        padding: 20px;
+      }
     }
-  </style></head><body>  <!-- =======================================================
-       TOPBAR
-       ======================================================= -->  <header class="topbar"><div class="brand">
-  <div class="brand-mark">G</div>
+  </style>
+</head>
 
-  <div class="brand-text">
-    <div class="brand-title">
-      GoVara Administrator Control Center
-    </div>
+<body>
 
-    <div class="brand-subtitle">
-      New Transport & Mobility Platform
-    </div>
-  </div>
-</div>
-
-<div class="status-badges">
+  <!-- =======================================================
+       STEP 29 — UNIFIED LOGIN
+       ======================================================= -->
 
   <div
-    id="status-frontend"
-    class="status-badge ready"
-  >
-    ● FRONTEND READY
-  </div>
-
-  <div
-    id="status-api"
-    class="status-badge api"
-  >
-    ● API NOT CONFIGURED
-  </div>
-
-  <div
-    id="status-testing"
-    class="status-badge testing"
-  >
-    ● TESTING MODE
-  </div>
-
-  <div
-    id="status-money"
-    class="status-badge blocked"
-  >
-    ● REAL MONEY BLOCKED
-  </div>
-
-</div>
-
-  </header>  <!-- =======================================================
-       APP SHELL
-       ======================================================= -->  <div class="app-shell"><!-- =====================================================
-     SIDEBAR
-     ===================================================== -->
-
-<aside class="sidebar">
-
-  <div class="sidebar-section-title">
-    Main
-  </div>
-
-  <nav
-    id="govara-sidebar"
-    class="nav-list"
-    aria-label="GoVara Navigation"
-  >
-
-    <button
-      type="button"
-      class="nav-btn active"
-      data-page="dashboard"
-    >
-      <span class="nav-code">HOME</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Dashboard
-        </span>
-
-        <span class="nav-description">
-          Platform overview
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26A"
-    >
-      <span class="nav-code">26A</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          System Configuration
-        </span>
-
-        <span class="nav-description">
-          Platform identity & system controls
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26B"
-    >
-      <span class="nav-code">26B</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          User & Role Control
-        </span>
-
-        <span class="nav-description">
-          Roles, users & permissions
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26C"
-    >
-      <span class="nav-code">26C</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Business Policies
-        </span>
-
-        <span class="nav-description">
-          Fare, charges & business rules
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26D"
-    >
-      <span class="nav-code">26D</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Operations Control
-        </span>
-
-        <span class="nav-description">
-          Booking, duty & operations
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26E"
-    >
-      <span class="nav-code">26E</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Financial Control
-        </span>
-
-        <span class="nav-description">
-          Financial safety & controls
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26F"
-    >
-      <span class="nav-code">26F</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Documents & KYC
-        </span>
-
-        <span class="nav-description">
-          Documents, KYC & verification
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="26G"
-    >
-      <span class="nav-code">26G</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Audit & Monitoring
-        </span>
-
-        <span class="nav-description">
-          Audit events & system monitoring
-        </span>
-      </span>
-    </button>
-
-
-    <!-- =================================================
-         NEW CUSTOMER MODULE
-         ================================================= -->
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="28"
-    >
-      <span class="nav-code">28</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Customer
-        </span>
-
-        <span class="nav-description">
-          Customer registration & profile
-        </span>
-      </span>
-    </button>
-
-
-    <button
-      type="button"
-      class="nav-btn"
-      data-page="27"
-    >
-      <span class="nav-code">27</span>
-
-      <span class="nav-text">
-        <span class="nav-title">
-          Consolidated API
-        </span>
-
-        <span class="nav-description">
-          Single API boundary
-        </span>
-      </span>
-    </button>
-
-  </nav>
-
-
-  <div class="future-card">
-
-    <span class="future-badge">
-      NEXT
-    </span>
-
-    <div class="future-title">
-      Modular Expansion
-    </div>
-
-    <div class="future-text">
-      New modules can be added without
-      rebuilding the entire frontend.
-    </div>
-
-  </div>
-
-</aside>
-
-
-<!-- =====================================================
-     MAIN CONTENT
-     ===================================================== -->
-
-<main class="main">
-
-  <!-- ===================================================
-       DASHBOARD
-       =================================================== -->
-
-  <section
-    id="page-dashboard"
-    class="page active"
-  >
-
-    <div class="page-header">
-
-      <div class="page-kicker">
-        GoVara Platform
-      </div>
-
-      <h1 class="page-title">
-        Administrator Control Center
-      </h1>
-
-      <div class="page-description">
-        Central frontend control surface for
-        GoVara system configuration, roles,
-        business policies, operations,
-        financial safety, documents, audit,
-        customer management and the consolidated
-        API boundary.
-      </div>
-
-    </div>
-
-
-    <div class="dashboard-grid">
-
-      <div class="dashboard-card success">
-        <div class="dashboard-card-label">
-          Frontend
-        </div>
-
-        <div class="dashboard-card-value">
-          READY
-        </div>
-
-        <div class="dashboard-card-note">
-          Master frontend loaded successfully.
-        </div>
-      </div>
-
-
-      <div
-        id="dashboard-api-card"
-        class="dashboard-card warning"
-      >
-        <div class="dashboard-card-label">
-          Backend API
-        </div>
-
-        <div
-          id="dashboard-api-status"
-          class="dashboard-card-value"
-        >
-          NOT CONFIGURED
-        </div>
-
-        <div
-          id="dashboard-api-note"
-          class="dashboard-card-note"
-        >
-          API boundary is not configured.
-        </div>
-      </div>
-
-
-      <div class="dashboard-card danger">
-        <div class="dashboard-card-label">
-          Financial Safety
-        </div>
-
-        <div class="dashboard-card-value">
-          BLOCKED
-        </div>
-
-        <div class="dashboard-card-note">
-          Real money, real payment and
-          bank transfer remain blocked.
-        </div>
-      </div>
-
-
-      <div class="dashboard-card info">
-        <div class="dashboard-card-label">
-          Environment
-        </div>
-
-        <div class="dashboard-card-value">
-          TESTING
-        </div>
-
-        <div class="dashboard-card-note">
-          Frontend remains in controlled
-          testing mode.
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="overview-card">
-
-      <div class="overview-title">
-        Platform Overview
-      </div>
-
-      <div class="overview-text">
-        The current frontend architecture uses
-        modular control sections while keeping
-        Backend and Database authority separate.
-        STEP 27 provides the single consolidated
-        API boundary. Customer registration is
-        exposed through STEP 28 and communicates
-        only through the consolidated API.
-      </div>
-
-
-      <div class="overview-list">
-
-        <div class="overview-item">
-          <strong>
-            26A — System Configuration
-          </strong>
-
-          <span>
-            Platform identity and system-level
-            configuration controls.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            26B — User & Role Control
-          </strong>
-
-          <span>
-            Roles, permissions and access
-            control configuration.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            26C — Business Policies
-          </strong>
-
-          <span>
-            Fare, charges, discounts,
-            KYC and business policies.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            26D — Operations Control
-          </strong>
-
-          <span>
-            Booking lifecycle, duty,
-            dispatch and operational controls.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            26E — Financial Control
-          </strong>
-
-          <span>
-            Financial safety boundary and
-            controlled financial configuration.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            26F — Documents & KYC
-          </strong>
-
-          <span>
-            Document handling, KYC workflow,
-            validation and verification controls.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            26G — Audit & Monitoring
-          </strong>
-
-          <span>
-            Audit events, monitoring,
-            security and integrity controls.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            28 — Customer
-          </strong>
-
-          <span>
-            Customer registration using
-            backend-generated identity.
-          </span>
-        </div>
-
-
-        <div class="overview-item">
-          <strong>
-            27 — Consolidated API
-          </strong>
-
-          <span>
-            One API boundary for communication
-            with the authoritative backend.
-          </span>
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ===================================================
-       26A
-       =================================================== -->
-
-  <section
-    id="page-26A"
-    class="page"
+    id="govara-auth-overlay"
+    class="govara-auth-overlay"
+    aria-hidden="true"
   >
     <div
-      id="module-26A"
-      class="module-container"
+      class="govara-auth-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="govara-auth-title"
     >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26A — System Configuration
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26B
-       =================================================== -->
-
-  <section
-    id="page-26B"
-    class="page"
-  >
-    <div
-      id="module-26B"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26B — User & Role Control
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26C
-       =================================================== -->
-
-  <section
-    id="page-26C"
-    class="page"
-  >
-    <div
-      id="module-26C"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26C — Business Policies
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26D
-       =================================================== -->
-
-  <section
-    id="page-26D"
-    class="page"
-  >
-    <div
-      id="module-26D"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26D — Operations Control
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===================================================
-       26E
-       =================================================== -->
-
-  <section
-    id="page-26E"
-    class="page"
-  >
-    <div
-      id="module-26E"
-      class="module-container"
-    >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26E — Financial Control
-        </h2>
-
-        <div class="muted">
-          Loading module...
-        </div>
-      </div>
-    </div>
-  </section>
-
-
- <!-- ===================================================
-     26F — CENTRAL DOCUMENTS & KYC ENGINE
-     =================================================== -->
-<section
-  id="page-26F"
-  class="page"
->
-  <div
-    id="module-26F"
-    class="module-container"
-  >
-
-    <div class="govara-customer-module">
-
-      <!-- =================================================
-           HEADER
-           ================================================= -->
-      <div class="govara-module-header">
+      <div class="govara-auth-brand">
+        <div class="govara-auth-mark">G</div>
 
         <div>
-          <h2>
-            Central Documents & KYC Engine
-          </h2>
+          <div class="govara-auth-brand-title">
+            GoVara
+          </div>
 
-          <p>
-            One centralized KYC engine for Customer,
-            Vendor and Driver with role-based
-            document distribution.
-          </p>
+          <div class="govara-auth-brand-subtitle">
+            Unified Authentication
+          </div>
         </div>
-
-        <div class="govara-status-badge">
-          CENTRAL KYC ENGINE
-        </div>
-
       </div>
 
-
-      <!-- =================================================
-           ENGINE STATUS
-           ================================================= -->
-      <div
-        style="
-          margin-bottom:18px;
-          padding:14px;
-          border:1px solid #2c6070;
-          border-radius:12px;
-          background:#102c38;
-        "
+      <h1
+        id="govara-auth-title"
+        class="govara-auth-title"
       >
+        Sign in
+      </h1>
 
-        <strong
-          style="
-            display:block;
-            color:#a5f3fc;
-            font-size:13px;
-          "
-        >
-          KYC ENGINE STATUS
-        </strong>
-
-        <div
-          style="
-            margin-top:7px;
-            color:#bae6fd;
-            font-size:12px;
-            line-height:1.6;
-          "
-        >
-          Central engine is designed to serve
-          Customer, Vendor and Driver using the
-          same document and verification pipeline.
-        </div>
-
+      <div class="govara-auth-description">
+        Sign in using your GoVara username,
+        mobile number or email address.
+        Your role and access permissions are
+        determined by the authoritative backend.
       </div>
 
-
-      <!-- =================================================
-           ROLE DISTRIBUTION
-           ================================================= -->
       <div
-        style="
-          display:grid;
-          grid-template-columns:
-            repeat(3,minmax(0,1fr));
-          gap:12px;
-          margin-bottom:20px;
-        "
+        id="govara-auth-message"
+        class="govara-auth-message"
+      ></div>
+
+      <form
+        id="govara-login-form"
+        class="govara-auth-form"
+        autocomplete="on"
       >
+        <div class="govara-auth-group">
+          <label for="govara-login-identifier">
+            Username / Mobile / Email
+          </label>
 
-        <!-- CUSTOMER -->
-
-        <div
-          style="
-            padding:16px;
-            border:1px solid #34445b;
-            border-radius:12px;
-            background:#1d2a3d;
-          "
-        >
-
-          <div
-            style="
-              color:#93c5fd;
-              font-size:11px;
-              font-weight:900;
-            "
-          >
-            CUSTOMER
-          </div>
-
-          <div
-            style="
-              margin-top:7px;
-              font-size:15px;
-              font-weight:800;
-            "
-          >
-            Customer KYC
-          </div>
-
-          <div
-            class="muted"
-            style="
-              margin-top:5px;
-              font-size:11px;
-            "
-          >
-            Individual identity and
-            supporting documents.
-          </div>
-
+          <input
+            id="govara-login-identifier"
+            name="username"
+            type="text"
+            autocomplete="username"
+            placeholder="Enter username, mobile or email"
+            required
+          />
         </div>
 
+        <div class="govara-auth-group">
+          <label for="govara-login-password">
+            Password
+          </label>
 
-        <!-- VENDOR -->
-
-        <div
-          style="
-            padding:16px;
-            border:1px solid #34445b;
-            border-radius:12px;
-            background:#1d2a3d;
-          "
-        >
-
-          <div
-            style="
-              color:#93c5fd;
-              font-size:11px;
-              font-weight:900;
-            "
-          >
-            VENDOR
-          </div>
-
-          <div
-            style="
-              margin-top:7px;
-              font-size:15px;
-              font-weight:800;
-            "
-          >
-            Vendor KYC
-          </div>
-
-          <div
-            class="muted"
-            style="
-              margin-top:5px;
-              font-size:11px;
-            "
-          >
-            Business, ownership and
-            supporting documents.
-          </div>
-
+          <input
+            id="govara-login-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Enter password"
+            required
+          />
         </div>
 
-
-        <!-- DRIVER -->
-
-        <div
-          style="
-            padding:16px;
-            border:1px solid #34445b;
-            border-radius:12px;
-            background:#1d2a3d;
-          "
+        <button
+          id="govara-login-button"
+          class="govara-auth-button"
+          type="submit"
         >
+          Sign In
+        </button>
+      </form>
 
-          <div
-            style="
-              color:#93c5fd;
-              font-size:11px;
-              font-weight:900;
-            "
-          >
-            DRIVER
-          </div>
-
-          <div
-            style="
-              margin-top:7px;
-              font-size:15px;
-              font-weight:800;
-            "
-          >
-            Driver KYC
-          </div>
-
-          <div
-            class="muted"
-            style="
-              margin-top:5px;
-              font-size:11px;
-            "
-          >
-            Identity, licence and
-            driver-specific documents.
-          </div>
-
-        </div>
-
+      <div class="govara-auth-safety">
+        Backend authentication is authoritative.
+        Frontend does not verify or generate passwords,
+        roles, permissions or business identity.
+        Real Money, Real Payment and Bank Transfer
+        remain BLOCKED.
       </div>
-
-
-      <!-- =================================================
-           KYC CONTROL
-           ================================================= -->
-      <div
-        style="
-          padding:18px;
-          border:1px solid #3b4a61;
-          border-radius:12px;
-          background:#172033;
-        "
-      >
-
-        <h3
-          style="
-            margin:0 0 16px;
-            font-size:17px;
-          "
-        >
-          KYC Control
-        </h3>
-
-
-        <div class="govara-form-grid">
-
-          <!-- ROLE -->
-
-          <div class="govara-form-group">
-
-            <label>
-              KYC Entity / Role
-            </label>
-
-            <select
-              id="govara-kyc-role"
-            >
-
-              <option value="CUSTOMER">
-                Customer
-              </option>
-
-              <option value="VENDOR">
-                Vendor
-              </option>
-
-              <option value="DRIVER">
-                Driver
-              </option>
-
-            </select>
-
-            <small>
-              Same Central KYC Engine with
-              role-specific distribution.
-            </small>
-
-          </div>
-
-
-          <!-- STATUS -->
-
-          <div class="govara-form-group">
-
-            <label>
-              KYC Status
-            </label>
-
-            <select
-              id="govara-kyc-status"
-            >
-
-              <option value="PENDING">
-                Pending
-              </option>
-
-              <option value="SUBMITTED">
-                Submitted
-              </option>
-
-              <option value="VERIFIED">
-                Verified
-              </option>
-
-              <option value="REJECTED">
-                Rejected
-              </option>
-
-            </select>
-
-            <small>
-              Final verification authority remains
-              with the backend.
-            </small>
-
-          </div>
-
-
-          <!-- ENTITY ID -->
-
-          <div class="govara-form-group">
-
-            <label>
-              Entity ID
-            </label>
-
-            <input
-              type="text"
-              id="govara-kyc-entity-id"
-              placeholder="Customer / Vendor / Driver ID"
-            />
-
-            <small>
-              Existing entity identifier.
-            </small>
-
-          </div>
-
-
-          <!-- DOCUMENT TYPE -->
-
-          <div class="govara-form-group">
-
-            <label>
-              Document Type
-            </label>
-
-            <select
-              id="govara-kyc-document-type"
-            >
-
-              <option value="">
-                Select Document Type
-              </option>
-
-              <option value="IDENTITY">
-                Identity Document
-              </option>
-
-              <option value="ADDRESS">
-                Address Proof
-              </option>
-
-              <option value="PAN">
-                PAN
-              </option>
-
-              <option value="DRIVING_LICENSE">
-                Driving Licence
-              </option>
-
-              <option value="BUSINESS">
-                Business Document
-              </option>
-
-              <option value="OTHER">
-                Other
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <!-- DOCUMENT NUMBER -->
-
-          <div class="govara-form-group">
-
-            <label>
-              Document Number
-            </label>
-
-            <input
-              type="text"
-              id="govara-kyc-document-number"
-              placeholder="Document number"
-            />
-
-          </div>
-
-
-          <!-- FILE -->
-
-          <div class="govara-form-group">
-
-            <label>
-              Document File
-            </label>
-
-            <input
-              type="file"
-              id="govara-kyc-document-file"
-              accept="
-                image/*,
-                application/pdf
-              "
-            />
-
-            <small>
-              File will be checked before upload.
-            </small>
-
-          </div>
-
-        </div>
-
-
-        <!-- =================================================
-             COMPRESSION CONTROL
-             ================================================= -->
-
-        <div
-          style="
-            margin-top:20px;
-            padding:15px;
-            border:1px solid #655326;
-            border-radius:11px;
-            background:#302814;
-          "
-        >
-
-          <strong
-            style="
-              color:#fde68a;
-              font-size:13px;
-            "
-          >
-            Document Compression / Optimization
-          </strong>
-
-          <div
-            style="
-              margin-top:6px;
-              color:#e8d9a3;
-              font-size:11px;
-              line-height:1.55;
-            "
-          >
-            KYC documents should be optimized before
-            storage while preserving readability.
-            Compression must not destroy identity
-            document information.
-          </div>
-
-          <div
-            id="govara-kyc-file-info"
-            style="
-              margin-top:10px;
-              color:#fde68a;
-              font-size:11px;
-            "
-          >
-            No file selected.
-          </div>
-
-        </div>
-
-
-        <!-- =================================================
-             ACTIONS
-             ================================================= -->
-
-        <div class="govara-form-actions">
-
-          <button
-            type="button"
-            id="govara-kyc-validate"
-          >
-            Validate KYC
-          </button>
-
-          <button
-            type="button"
-            id="govara-kyc-clear"
-          >
-            Clear
-          </button>
-
-        </div>
-
-
-        <!-- =================================================
-             STATUS
-             ================================================= -->
-
-        <div
-          id="govara-kyc-message"
-          class="govara-message govara-message-info"
-          style="
-            margin-top:16px;
-            margin-bottom:0;
-          "
-        >
-          KYC Engine ready.
-          Select role, entity and document details.
-        </div>
-
-
-        <!-- =================================================
-             PIPELINE
-             ================================================= -->
-
-        <div
-          style="
-            margin-top:18px;
-            padding:14px;
-            border:1px solid #34445b;
-            border-radius:11px;
-            background:#111b2b;
-          "
-        >
-
-          <div
-            style="
-              color:#e2e8f0;
-              font-size:12px;
-              font-weight:800;
-            "
-          >
-            KYC DOCUMENT PIPELINE
-          </div>
-
-          <div
-            style="
-              margin-top:9px;
-              color:#aebbd0;
-              font-size:11px;
-              line-height:1.8;
-            "
-          >
-            1. Select Role
-            →
-            2. Select Entity
-            →
-            3. Select Document
-            →
-            4. Validate
-            →
-            5. Compress / Optimize
-            →
-            6. Store
-            →
-            7. Verify
-            →
-            8. KYC Status
-          </div>
-
-        </div>
-
-      </div>
-
     </div>
-
   </div>
-</section>
 
+  <!-- =======================================================
+       SESSION CONTROL
+       Appears only after successful authentication.
+       ======================================================= -->
 
-
-  <!-- ===================================================
-       26G
-       =================================================== -->
-
-  <section
-    id="page-26G"
-    class="page"
+  <div
+    id="govara-session-control"
+    class="govara-session-control"
   >
-    <div
-      id="module-26G"
-      class="module-container"
+    <span
+      id="govara-session-user"
+      class="govara-session-user"
     >
-      <div class="module-placeholder">
-        <h2>
-          STEP 26G — Audit & Monitoring
-        </h2>
+      User
+    </span>
 
-        <div class="muted">
-          Loading module...
+    <span
+      id="govara-session-role"
+      class="govara-session-role"
+    >
+      Role
+    </span>
+
+    <button
+      id="govara-logout-button"
+      class="govara-logout-button"
+      type="button"
+    >
+      Logout
+    </button>
+  </div>
+
+  <!-- =======================================================
+       TOPBAR
+       ======================================================= -->
+
+  <header class="topbar">
+
+    <div class="brand">
+      <div class="brand-mark">G</div>
+
+      <div class="brand-text">
+        <div class="brand-title">
+          GoVara Administrator Control Center
+        </div>
+
+        <div class="brand-subtitle">
+          New Transport & Mobility Platform
         </div>
       </div>
     </div>
-  </section>
 
+    <div class="status-badges">
 
-  <!-- ===================================================
-       STEP 28 — CUSTOMER
-       =================================================== -->
+      <div
+        id="status-frontend"
+        class="status-badge ready"
+      >
+        ● FRONTEND READY
+      </div>
 
-  <section
-    id="page-28"
-    class="page"
-  >
+      <div
+        id="status-api"
+        class="status-badge api"
+      >
+        ● API NOT CONFIGURED
+      </div>
 
-    <div
-      id="module-28"
-      class="module-container"
-    >
+      <div
+        id="status-testing"
+        class="status-badge testing"
+      >
+        ● TESTING MODE
+      </div>
 
-      <!--
-        IMPORTANT:
-        28-Customer.js looks for #customer-page
-        or #main-content.
-      -->
-
-      <div id="customer-page"></div>
+      <div
+        id="status-money"
+        class="status-badge blocked"
+      >
+        ● REAL MONEY BLOCKED
+      </div>
 
     </div>
+  </header>
 
-  </section>
+  <!-- =======================================================
+       APP SHELL
+       ======================================================= -->
 
+  <div class="app-shell">
 
-  <!-- ===================================================
-     STEP 27
-     =================================================== -->
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
 
-  <section
-    id="page-27"
-    class="page"
-  >
+    <aside class="sidebar">
 
-    <div
-      id="module-27"
-      class="module-container"
-    ></div>
+      <div class="sidebar-section-title">
+        Main
+      </div>
 
-  </section>
+      <nav
+        id="govara-sidebar"
+        class="nav-list"
+        aria-label="GoVara Navigation"
+      >
 
-</main>
-  </div>  <!-- =======================================================
+        <button
+          type="button"
+          class="nav-btn active"
+          data-page="dashboard"
+        >
+          <span class="nav-code">HOME</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Dashboard
+            </span>
+
+            <span class="nav-description">
+              Platform overview
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26A"
+        >
+          <span class="nav-code">26A</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              System Configuration
+            </span>
+
+            <span class="nav-description">
+              Platform identity & system controls
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26B"
+        >
+          <span class="nav-code">26B</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              User & Role Control
+            </span>
+
+            <span class="nav-description">
+              Roles, users & permissions
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26C"
+        >
+          <span class="nav-code">26C</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Business Policies
+            </span>
+
+            <span class="nav-description">
+              Fare, charges & business rules
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26D"
+        >
+          <span class="nav-code">26D</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Operations Control
+            </span>
+
+            <span class="nav-description">
+              Booking, duty & operations
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26E"
+        >
+          <span class="nav-code">26E</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Financial Control
+            </span>
+
+            <span class="nav-description">
+              Financial safety & controls
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26F"
+        >
+          <span class="nav-code">26F</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Documents & KYC
+            </span>
+
+            <span class="nav-description">
+              Documents, KYC & verification
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="26G"
+        >
+          <span class="nav-code">26G</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Audit & Monitoring
+            </span>
+
+            <span class="nav-description">
+              Audit events & system monitoring
+            </span>
+          </span>
+        </button>
+
+        <!-- =================================================
+             NEW CUSTOMER MODULE
+             ================================================= -->
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="28"
+        >
+          <span class="nav-code">28</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Customer
+            </span>
+
+            <span class="nav-description">
+              Customer registration & profile
+            </span>
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="nav-btn"
+          data-page="27"
+        >
+          <span class="nav-code">27</span>
+
+          <span class="nav-text">
+            <span class="nav-title">
+              Consolidated API
+            </span>
+
+            <span class="nav-description">
+              Single API boundary
+            </span>
+          </span>
+        </button>
+
+      </nav>
+
+      <div class="future-card">
+
+        <span class="future-badge">
+          NEXT
+        </span>
+
+        <div class="future-title">
+          Modular Expansion
+        </div>
+
+        <div class="future-text">
+          New modules can be added without
+          rebuilding the entire frontend.
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
+
+    <main class="main">
+
+      <!-- ===================================================
+           DASHBOARD
+           =================================================== -->
+
+      <section
+        id="page-dashboard"
+        class="page active"
+      >
+
+        <div class="page-header">
+
+          <div class="page-kicker">
+            GoVara Platform
+          </div>
+
+          <h1 class="page-title">
+            Administrator Control Center
+          </h1>
+
+          <div class="page-description">
+            Central frontend control surface for
+            GoVara system configuration, roles,
+            business policies, operations,
+            financial safety, documents, audit,
+            customer management and the consolidated
+            API boundary.
+          </div>
+
+        </div>
+
+        <div class="dashboard-grid">
+
+          <div class="dashboard-card success">
+
+            <div class="dashboard-card-label">
+              Frontend
+            </div>
+
+            <div class="dashboard-card-value">
+              READY
+            </div>
+
+            <div class="dashboard-card-note">
+              Master frontend loaded successfully.
+            </div>
+
+          </div>
+
+          <div
+            id="dashboard-api-card"
+            class="dashboard-card warning"
+          >
+
+            <div class="dashboard-card-label">
+              Backend API
+            </div>
+
+            <div
+              id="dashboard-api-status"
+              class="dashboard-card-value"
+            >
+              NOT CONFIGURED
+            </div>
+
+            <div
+              id="dashboard-api-note"
+              class="dashboard-card-note"
+            >
+              API boundary is not configured.
+            </div>
+
+          </div>
+
+          <div class="dashboard-card danger">
+
+            <div class="dashboard-card-label">
+              Financial Safety
+            </div>
+
+            <div class="dashboard-card-value">
+              BLOCKED
+            </div>
+
+            <div class="dashboard-card-note">
+              Real money, real payment and
+              bank transfer remain blocked.
+            </div>
+
+          </div>
+
+          <div class="dashboard-card info">
+
+            <div class="dashboard-card-label">
+              Environment
+            </div>
+
+            <div class="dashboard-card-value">
+              TESTING
+            </div>
+
+            <div class="dashboard-card-note">
+              Frontend remains in controlled
+              testing mode.
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="overview-card">
+
+          <div class="overview-title">
+            Platform Overview
+          </div>
+
+          <div class="overview-text">
+            The current frontend architecture uses
+            modular control sections while keeping
+            Backend and Database authority separate.
+            STEP 27 provides the single consolidated
+            API boundary. Customer registration is
+            exposed through STEP 28 and communicates
+            only through the consolidated API.
+          </div>
+
+          <div class="overview-list">
+
+            <div class="overview-item">
+              <strong>
+                26A — System Configuration
+              </strong>
+              <span>
+                Platform identity and system-level
+                configuration controls.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                26B — User & Role Control
+              </strong>
+              <span>
+                Roles, permissions and access
+                control configuration.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                26C — Business Policies
+              </strong>
+              <span>
+                Fare, charges, discounts,
+                KYC and business policies.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                26D — Operations Control
+              </strong>
+              <span>
+                Booking lifecycle, duty,
+                dispatch and operational controls.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                26E — Financial Control
+              </strong>
+              <span>
+                Financial safety boundary and
+                controlled financial configuration.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                26F — Documents & KYC
+              </strong>
+              <span>
+                Document handling, KYC workflow,
+                validation and verification controls.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                26G — Audit & Monitoring
+              </strong>
+              <span>
+                Audit events, monitoring,
+                security and integrity controls.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                28 — Customer
+              </strong>
+              <span>
+                Customer registration using
+                backend-generated identity.
+              </span>
+            </div>
+
+            <div class="overview-item">
+              <strong>
+                27 — Consolidated API
+              </strong>
+              <span>
+                One API boundary for communication
+                with the authoritative backend.
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================
+           26A
+           =================================================== -->
+
+      <section
+        id="page-26A"
+        class="page"
+      >
+
+        <div
+          id="module-26A"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26A — System Configuration
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           26B
+           =================================================== -->
+
+      <section
+        id="page-26B"
+        class="page"
+      >
+
+        <div
+          id="module-26B"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26B — User & Role Control
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           26C
+           =================================================== -->
+
+      <section
+        id="page-26C"
+        class="page"
+      >
+
+        <div
+          id="module-26C"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26C — Business Policies
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           26D
+           =================================================== -->
+
+      <section
+        id="page-26D"
+        class="page"
+      >
+
+        <div
+          id="module-26D"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26D — Operations Control
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           26E
+           =================================================== -->
+
+      <section
+        id="page-26E"
+        class="page"
+      >
+
+        <div
+          id="module-26E"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26E — Financial Control
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           26F — CENTRAL DOCUMENTS & KYC ENGINE
+           =================================================== -->
+
+      <section
+        id="page-26F"
+        class="page"
+      >
+
+        <div
+          id="module-26F"
+          class="module-container"
+        >
+
+          <div class="govara-customer-module">
+
+            <!-- HEADER -->
+
+            <div class="govara-module-header">
+
+              <div>
+
+                <h2>
+                  Central Documents & KYC Engine
+                </h2>
+
+                <p>
+                  One centralized KYC engine for Customer,
+                  Vendor and Driver with role-based
+                  document distribution.
+                </p>
+
+              </div>
+
+              <div class="govara-status-badge">
+                CENTRAL KYC ENGINE
+              </div>
+
+            </div>
+
+            <!-- ENGINE STATUS -->
+
+            <div
+              style="
+                margin-bottom:18px;
+                padding:14px;
+                border:1px solid #2c6070;
+                border-radius:12px;
+                background:#102c38;
+              "
+            >
+
+              <strong
+                style="
+                  display:block;
+                  color:#a5f3fc;
+                  font-size:13px;
+                "
+              >
+                KYC ENGINE STATUS
+              </strong>
+
+              <div
+                style="
+                  margin-top:7px;
+                  color:#bae6fd;
+                  font-size:12px;
+                  line-height:1.6;
+                "
+              >
+                Central engine is designed to serve
+                Customer, Vendor and Driver using the
+                same document and verification pipeline.
+              </div>
+
+            </div>
+
+            <!-- ROLE DISTRIBUTION -->
+
+            <div
+              style="
+                display:grid;
+                grid-template-columns:
+                  repeat(3,minmax(0,1fr));
+                gap:12px;
+                margin-bottom:20px;
+              "
+            >
+
+              <!-- CUSTOMER -->
+
+              <div
+                style="
+                  padding:16px;
+                  border:1px solid #34445b;
+                  border-radius:12px;
+                  background:#1d2a3d;
+                "
+              >
+
+                <div
+                  style="
+                    color:#93c5fd;
+                    font-size:11px;
+                    font-weight:900;
+                  "
+                >
+                  CUSTOMER
+                </div>
+
+                <div
+                  style="
+                    margin-top:7px;
+                    font-size:15px;
+                    font-weight:800;
+                  "
+                >
+                  Customer KYC
+                </div>
+
+                <div
+                  class="muted"
+                  style="
+                    margin-top:5px;
+                    font-size:11px;
+                  "
+                >
+                  Individual identity and
+                  supporting documents.
+                </div>
+
+              </div>
+
+              <!-- VENDOR -->
+
+              <div
+                style="
+                  padding:16px;
+                  border:1px solid #34445b;
+                  border-radius:12px;
+                  background:#1d2a3d;
+                "
+              >
+
+                <div
+                  style="
+                    color:#93c5fd;
+                    font-size:11px;
+                    font-weight:900;
+                  "
+                >
+                  VENDOR
+                </div>
+
+                <div
+                  style="
+                    margin-top:7px;
+                    font-size:15px;
+                    font-weight:800;
+                  "
+                >
+                  Vendor KYC
+                </div>
+
+                <div
+                  class="muted"
+                  style="
+                    margin-top:5px;
+                    font-size:11px;
+                  "
+                >
+                  Business, ownership and
+                  supporting documents.
+                </div>
+
+              </div>
+
+              <!-- DRIVER -->
+
+              <div
+                style="
+                  padding:16px;
+                  border:1px solid #34445b;
+                  border-radius:12px;
+                  background:#1d2a3d;
+                "
+              >
+
+                <div
+                  style="
+                    color:#93c5fd;
+                    font-size:11px;
+                    font-weight:900;
+                  "
+                >
+                  DRIVER
+                </div>
+
+                <div
+                  style="
+                    margin-top:7px;
+                    font-size:15px;
+                    font-weight:800;
+                  "
+                >
+                  Driver KYC
+                </div>
+
+                <div
+                  class="muted"
+                  style="
+                    margin-top:5px;
+                    font-size:11px;
+                  "
+                >
+                  Identity, licence and
+                  driver-specific documents.
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- KYC CONTROL -->
+
+            <div
+              style="
+                padding:18px;
+                border:1px solid #3b4a61;
+                border-radius:12px;
+                background:#172033;
+              "
+            >
+
+              <h3
+                style="
+                  margin:0 0 16px;
+                  font-size:17px;
+                "
+              >
+                KYC Control
+              </h3>
+
+              <div class="govara-form-grid">
+
+                <!-- ROLE -->
+
+                <div class="govara-form-group">
+
+                  <label>
+                    KYC Entity / Role
+                  </label>
+
+                  <select
+                    id="govara-kyc-role"
+                  >
+
+                    <option value="CUSTOMER">
+                      Customer
+                    </option>
+
+                    <option value="VENDOR">
+                      Vendor
+                    </option>
+
+                    <option value="DRIVER">
+                      Driver
+                    </option>
+
+                  </select>
+
+                  <small>
+                    Same Central KYC Engine with
+                    role-specific distribution.
+                  </small>
+
+                </div>
+
+                <!-- STATUS -->
+
+                <div class="govara-form-group">
+
+                  <label>
+                    KYC Status
+                  </label>
+
+                  <select
+                    id="govara-kyc-status"
+                  >
+
+                    <option value="PENDING">
+                      Pending
+                    </option>
+
+                    <option value="SUBMITTED">
+                      Submitted
+                    </option>
+
+                    <option value="VERIFIED">
+                      Verified
+                    </option>
+
+                    <option value="REJECTED">
+                      Rejected
+                    </option>
+
+                  </select>
+
+                  <small>
+                    Final verification authority remains
+                    with the backend.
+                  </small>
+
+                </div>
+
+                <!-- ENTITY ID -->
+
+                <div class="govara-form-group">
+
+                  <label>
+                    Entity ID
+                  </label>
+
+                  <input
+                    type="text"
+                    id="govara-kyc-entity-id"
+                    placeholder="Customer / Vendor / Driver ID"
+                  />
+
+                  <small>
+                    Existing entity identifier.
+                  </small>
+
+                </div>
+
+                <!-- DOCUMENT TYPE -->
+
+                <div class="govara-form-group">
+
+                  <label>
+                    Document Type
+                  </label>
+
+                  <select
+                    id="govara-kyc-document-type"
+                  >
+
+                    <option value="">
+                      Select Document Type
+                    </option>
+
+                    <option value="IDENTITY">
+                      Identity Document
+                    </option>
+
+                    <option value="ADDRESS">
+                      Address Proof
+                    </option>
+
+                    <option value="PAN">
+                      PAN
+                    </option>
+
+                    <option value="DRIVING_LICENSE">
+                      Driving Licence
+                    </option>
+
+                    <option value="BUSINESS">
+                      Business Document
+                    </option>
+
+                    <option value="OTHER">
+                      Other
+                    </option>
+
+                  </select>
+
+                </div>
+
+                <!-- DOCUMENT NUMBER -->
+
+                <div class="govara-form-group">
+
+                  <label>
+                    Document Number
+                  </label>
+
+                  <input
+                    type="text"
+                    id="govara-kyc-document-number"
+                    placeholder="Document number"
+                  />
+
+                </div>
+
+                <!-- FILE -->
+
+                <div class="govara-form-group">
+
+                  <label>
+                    Document File
+                  </label>
+
+                  <input
+                    type="file"
+                    id="govara-kyc-document-file"
+                    accept="
+                      image/*,
+                      application/pdf
+                    "
+                  />
+
+                  <small>
+                    File will be checked before upload.
+                  </small>
+
+                </div>
+
+              </div>
+
+              <!-- COMPRESSION CONTROL -->
+
+              <div
+                style="
+                  margin-top:20px;
+                  padding:15px;
+                  border:1px solid #655326;
+                  border-radius:11px;
+                  background:#302814;
+                "
+              >
+
+                <strong
+                  style="
+                    color:#fde68a;
+                    font-size:13px;
+                  "
+                >
+                  Document Compression / Optimization
+                </strong>
+
+                <div
+                  style="
+                    margin-top:6px;
+                    color:#e8d9a3;
+                    font-size:11px;
+                    line-height:1.55;
+                  "
+                >
+                  KYC documents should be optimized before
+                  storage while preserving readability.
+                  Compression must not destroy identity
+                  document information.
+                </div>
+
+                <div
+                  id="govara-kyc-file-info"
+                  style="
+                    margin-top:10px;
+                    color:#fde68a;
+                    font-size:11px;
+                  "
+                >
+                  No file selected.
+                </div>
+
+              </div>
+
+              <!-- ACTIONS -->
+
+              <div class="govara-form-actions">
+
+                <button
+                  type="button"
+                  id="govara-kyc-validate"
+                >
+                  Validate KYC
+                </button>
+
+                <button
+                  type="button"
+                  id="govara-kyc-clear"
+                >
+                  Clear
+                </button>
+
+              </div>
+
+              <!-- STATUS -->
+
+              <div
+                id="govara-kyc-message"
+                class="govara-message govara-message-info"
+                style="
+                  margin-top:16px;
+                  margin-bottom:0;
+                "
+              >
+                KYC Engine ready.
+                Select role, entity and document details.
+              </div>
+
+              <!-- PIPELINE -->
+
+              <div
+                style="
+                  margin-top:18px;
+                  padding:14px;
+                  border:1px solid #34445b;
+                  border-radius:11px;
+                  background:#111b2b;
+                "
+              >
+
+                <div
+                  style="
+                    color:#e2e8f0;
+                    font-size:12px;
+                    font-weight:800;
+                  "
+                >
+                  KYC DOCUMENT PIPELINE
+                </div>
+
+                <div
+                  style="
+                    margin-top:9px;
+                    color:#aebbd0;
+                    font-size:11px;
+                    line-height:1.8;
+                  "
+                >
+                  1. Select Role
+                  →
+                  2. Select Entity
+                  →
+                  3. Select Document
+                  →
+                  4. Validate
+                  →
+                  5. Compress / Optimize
+                  →
+                  6. Store
+                  →
+                  7. Verify
+                  →
+                  8. KYC Status
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           26G
+           =================================================== -->
+
+      <section
+        id="page-26G"
+        class="page"
+      >
+
+        <div
+          id="module-26G"
+          class="module-container"
+        >
+
+          <div class="module-placeholder">
+
+            <h2>
+              STEP 26G — Audit & Monitoring
+            </h2>
+
+            <div class="muted">
+              Loading module...
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           STEP 28 — CUSTOMER
+           =================================================== -->
+
+      <section
+        id="page-28"
+        class="page"
+      >
+
+        <div
+          id="module-28"
+          class="module-container"
+        >
+
+          <!--
+            IMPORTANT:
+            28-Customer.js looks for #customer-page
+            or #main-content.
+          -->
+
+          <div id="customer-page"></div>
+
+        </div>
+
+      </section>
+
+      <!-- ===================================================
+           STEP 27
+           =================================================== -->
+
+      <section
+        id="page-27"
+        class="page"
+      >
+
+        <div
+          id="module-27"
+          class="module-container"
+        ></div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- =======================================================
        GOVARA MODULES
-       ======================================================= -->  
-    <script src="assets/js/modules/26A-System.js"></script> 
-    <script src="assets/js/modules/26B-Roles.js"></script> 
-    <script src="assets/js/modules/26C-policies.js"></script>  
-    <script src="assets/js/modules/26D-operations.js"></script> 
-    <script src="assets/js/modules/26E-financial.js"></script>  
-    <script src="assets/js/modules/26F-documents.js"></script> 
-    <script src="assets/js/modules/26G-audit.js"></script>  
-    <script src="assets/js/modules/27-api.js"></script> 
-    <script src="assets/js/modules/28-Customer.js"></script> 
-    <!-- =======================================================
-       MASTER ROUTER
-       ======================================================= -->  <script>
+       ======================================================= -->
+
+  <script src="assets/js/modules/26A-System.js"></script>
+  <script src="assets/js/modules/26B-Roles.js"></script>
+  <script src="assets/js/modules/26C-policies.js"></script>
+  <script src="assets/js/modules/26D-operations.js"></script>
+  <script src="assets/js/modules/26E-financial.js"></script>
+  <script src="assets/js/modules/26F-documents.js"></script>
+  <script src="assets/js/modules/26G-audit.js"></script>
+  <script src="assets/js/modules/27-api.js"></script>
+  <script src="assets/js/modules/28-Customer.js"></script>
+
+  <!-- =======================================================
+       STEP 29 — UNIFIED AUTHENTICATION + MASTER ROUTER
+       ======================================================= -->
+
+  <script>
     (function () {
-
       "use strict";
-
 
       /* ======================================================
          GoVara Master Application State
+         STEP 29:
+         No hard-coded Admin login.
          ====================================================== */
 
       const GoVaraAppState = {
-        loggedIn: true,
-        role: "Admin",
-        currentPage: "dashboard"
+        loggedIn: false,
+        role: null,
+        currentPage: "dashboard",
+        user: null,
+        session: null,
+        accessProfile: null,
+        authInitialized: false,
+        authBusy: false
       };
 
-
       /* ======================================================
-         Utility
+         STEP 29 — SESSION STORAGE
          ====================================================== */
 
-      function safeText(value) {
+      const GOVARA_SESSION_KEY =
+        "GOVARA_UNIFIED_SESSION_V1";
 
+      function safeText(value) {
         if (
           value === null ||
           value === undefined
@@ -2283,6 +2663,1242 @@
         return String(value);
       }
 
+      function safeJsonParse(value) {
+        if (!value) {
+          return null;
+        }
+
+        try {
+          return JSON.parse(value);
+        } catch (error) {
+          console.warn(
+            "GoVara session JSON parse failed."
+          );
+
+          return null;
+        }
+      }
+
+      function saveFrontendSession(sessionData) {
+        if (!sessionData) {
+          return false;
+        }
+
+        try {
+          sessionStorage.setItem(
+            GOVARA_SESSION_KEY,
+            JSON.stringify(sessionData)
+          );
+
+          return true;
+        } catch (error) {
+          console.warn(
+            "GoVara sessionStorage unavailable:",
+            error
+          );
+
+          return false;
+        }
+      }
+
+      function readFrontendSession() {
+        try {
+          return safeJsonParse(
+            sessionStorage.getItem(
+              GOVARA_SESSION_KEY
+            )
+          );
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function clearFrontendSession() {
+        try {
+          sessionStorage.removeItem(
+            GOVARA_SESSION_KEY
+          );
+        } catch (error) {
+          console.warn(
+            "GoVara sessionStorage clear failed."
+          );
+        }
+      }
+
+      /* ======================================================
+         STEP 29 — AUTH UI
+         ====================================================== */
+
+      function getAuthOverlay() {
+        return document.getElementById(
+          "govara-auth-overlay"
+        );
+      }
+
+      function getAuthMessage() {
+        return document.getElementById(
+          "govara-auth-message"
+        );
+      }
+
+      function setAuthMessage(
+        message,
+        type
+      ) {
+        const element =
+          getAuthMessage();
+
+        if (!element) {
+          return;
+        }
+
+        element.textContent =
+          safeText(message);
+
+        element.className =
+          "govara-auth-message active " +
+          (
+            type ||
+            "info"
+          );
+      }
+
+      function clearAuthMessage() {
+        const element =
+          getAuthMessage();
+
+        if (!element) {
+          return;
+        }
+
+        element.textContent = "";
+
+        element.className =
+          "govara-auth-message";
+      }
+
+      function showLoginScreen(
+        message
+      ) {
+        const overlay =
+          getAuthOverlay();
+
+        if (!overlay) {
+          return;
+        }
+
+        overlay.classList.add(
+          "active"
+        );
+
+        overlay.setAttribute(
+          "aria-hidden",
+          "false"
+        );
+
+        if (message) {
+          setAuthMessage(
+            message,
+            "info"
+          );
+        }
+
+        const identifier =
+          document.getElementById(
+            "govara-login-identifier"
+          );
+
+        if (identifier) {
+          setTimeout(
+            function () {
+              identifier.focus();
+            },
+            50
+          );
+        }
+      }
+
+      function hideLoginScreen() {
+        const overlay =
+          getAuthOverlay();
+
+        if (!overlay) {
+          return;
+        }
+
+        overlay.classList.remove(
+          "active"
+        );
+
+        overlay.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+        clearAuthMessage();
+      }
+
+      function setLoginBusy(
+        busy
+      ) {
+        GoVaraAppState.authBusy =
+          Boolean(busy);
+
+        const button =
+          document.getElementById(
+            "govara-login-button"
+          );
+
+        const identifier =
+          document.getElementById(
+            "govara-login-identifier"
+          );
+
+        const password =
+          document.getElementById(
+            "govara-login-password"
+          );
+
+        if (button) {
+          button.disabled =
+            Boolean(busy);
+
+          button.textContent =
+            busy
+              ? "Signing In..."
+              : "Sign In";
+        }
+
+        if (identifier) {
+          identifier.disabled =
+            Boolean(busy);
+        }
+
+        if (password) {
+          password.disabled =
+            Boolean(busy);
+        }
+      }
+
+      function updateSessionControl() {
+        const control =
+          document.getElementById(
+            "govara-session-control"
+          );
+
+        const userElement =
+          document.getElementById(
+            "govara-session-user"
+          );
+
+        const roleElement =
+          document.getElementById(
+            "govara-session-role"
+          );
+
+        if (!control) {
+          return;
+        }
+
+        if (
+          !GoVaraAppState.loggedIn
+        ) {
+          control.classList.remove(
+            "active"
+          );
+
+          return;
+        }
+
+        const user =
+          GoVaraAppState.user || {};
+
+        const role =
+          GoVaraAppState.role ||
+          "User";
+
+        const userName =
+          user.Username ||
+          user.username ||
+          user.Name ||
+          user.name ||
+          user.Mobile ||
+          user.mobile ||
+          user.Email ||
+          user.email ||
+          user.User_ID ||
+          user.userId ||
+          "Authenticated User";
+
+        if (userElement) {
+          userElement.textContent =
+            safeText(userName);
+        }
+
+        if (roleElement) {
+          roleElement.textContent =
+            safeText(role);
+        }
+
+        control.classList.add(
+          "active"
+        );
+      }
+
+      /* ======================================================
+         STEP 29 — API URL
+         ====================================================== */
+
+      function getConsolidatedApiUrl() {
+        try {
+          if (
+            window.GoVaraAPI &&
+            typeof window.GoVaraAPI.getAPIUrl ===
+              "function"
+          ) {
+            const url =
+              window.GoVaraAPI.getAPIUrl();
+
+            if (url) {
+              return String(url);
+            }
+          }
+        } catch (error) {
+          console.warn(
+            "GoVara API URL lookup failed:",
+            error
+          );
+        }
+
+        return "";
+      }
+
+      /* ======================================================
+         STEP 29 — RAW CONSOLIDATED API REQUEST
+         IMPORTANT:
+         Uses text/plain to preserve Apps Script
+         web-app CORS behaviour already established.
+         ====================================================== */
+
+      async function govaraAuthRequest(
+        action,
+        data,
+        sessionToken
+      ) {
+        const apiUrl =
+          getConsolidatedApiUrl();
+
+        if (!apiUrl) {
+          throw new Error(
+            "Consolidated API endpoint is not configured."
+          );
+        }
+
+        const payload = {
+          action: action,
+          data: data || {}
+        };
+
+        if (sessionToken) {
+          payload.sessionToken =
+            sessionToken;
+        }
+
+        const controller =
+          typeof AbortController !==
+          "undefined"
+            ? new AbortController()
+            : null;
+
+        let timeoutId = null;
+
+        if (controller) {
+          timeoutId =
+            setTimeout(
+              function () {
+                controller.abort();
+              },
+              20000
+            );
+        }
+
+        try {
+          const response =
+            await fetch(
+              apiUrl,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type":
+                    "text/plain;charset=utf-8"
+                },
+                body:
+                  JSON.stringify(
+                    payload
+                  ),
+                signal:
+                  controller
+                    ? controller.signal
+                    : undefined
+              }
+            );
+
+          const responseText =
+            await response.text();
+
+          let result =
+            safeJsonParse(
+              responseText
+            );
+
+          if (!result) {
+            throw new Error(
+              responseText ||
+              "Invalid API response."
+            );
+          }
+
+          if (
+            !response.ok &&
+            !result.success
+          ) {
+            throw new Error(
+              result.message ||
+              result.error ||
+              "Authentication API request failed."
+            );
+          }
+
+          return result;
+
+        } catch (error) {
+
+          if (
+            error &&
+            error.name ===
+              "AbortError"
+          ) {
+            throw new Error(
+              "Authentication request timed out."
+            );
+          }
+
+          throw error;
+
+        } finally {
+
+          if (timeoutId) {
+            clearTimeout(
+              timeoutId
+            );
+          }
+
+        }
+      }
+
+      /* ======================================================
+         STEP 29 — RESPONSE EXTRACTION
+         Handles the consolidated API response without
+         assuming a single nested response shape.
+         ====================================================== */
+
+      function firstObject(
+        candidates
+      ) {
+        for (
+          let i = 0;
+          i < candidates.length;
+          i++
+        ) {
+          const value =
+            candidates[i];
+
+          if (
+            value &&
+            typeof value ===
+              "object" &&
+            !Array.isArray(value)
+          ) {
+            return value;
+          }
+        }
+
+        return null;
+      }
+
+      function firstString(
+        candidates
+      ) {
+        for (
+          let i = 0;
+          i < candidates.length;
+          i++
+        ) {
+          const value =
+            candidates[i];
+
+          if (
+            value !== null &&
+            value !== undefined &&
+            String(value).trim()
+          ) {
+            return String(value);
+          }
+        }
+
+        return "";
+      }
+
+      function extractSessionToken(
+        result
+      ) {
+        if (!result) {
+          return "";
+        }
+
+        const session =
+          firstObject([
+            result.session,
+            result.data &&
+              result.data.session,
+            result.result &&
+              result.result.session,
+            result.payload &&
+              result.payload.session
+          ]);
+
+        return firstString([
+          result.sessionToken,
+          result.token,
+          session &&
+            session.sessionToken,
+          session &&
+            session.token,
+          result.data &&
+            result.data.sessionToken,
+          result.data &&
+            result.data.token,
+          result.result &&
+            result.result.sessionToken,
+          result.result &&
+            result.result.token
+        ]);
+      }
+
+      function extractUser(
+        result
+      ) {
+        if (!result) {
+          return null;
+        }
+
+        return firstObject([
+          result.user,
+          result.currentUser,
+          result.data &&
+            result.data.user,
+          result.data &&
+            result.data.currentUser,
+          result.result &&
+            result.result.user,
+          result.result &&
+            result.result.currentUser
+        ]);
+      }
+
+      function extractRole(
+        result,
+        user,
+        accessProfile
+      ) {
+        return firstString([
+          result &&
+            result.role,
+          result &&
+            result.Role,
+          result &&
+            result.data &&
+            result.data.role,
+          result &&
+            result.data &&
+            result.data.Role,
+          result &&
+            result.result &&
+            result.result.role,
+          user &&
+            user.Role_Name,
+          user &&
+            user.roleName,
+          user &&
+            user.role,
+          user &&
+            user.Role,
+          accessProfile &&
+            accessProfile.role,
+          accessProfile &&
+            accessProfile.Role_Name,
+          accessProfile &&
+            accessProfile.primaryRole
+        ]);
+      }
+
+      function extractAccessProfile(
+        result
+      ) {
+        if (!result) {
+          return null;
+        }
+
+        return firstObject([
+          result.accessProfile,
+          result.profile,
+          result.data &&
+            result.data.accessProfile,
+          result.data &&
+            result.data.profile,
+          result.result &&
+            result.result.accessProfile,
+          result.result &&
+            result.result.profile
+        ]);
+      }
+
+      function isApiSuccess(
+        result
+      ) {
+        if (!result) {
+          return false;
+        }
+
+        if (
+          result.success === true
+        ) {
+          return true;
+        }
+
+        if (
+          result.status ===
+            "SUCCESS" ||
+          result.status ===
+            "OK" ||
+          result.status ===
+            "AUTHENTICATED"
+        ) {
+          return true;
+        }
+
+        if (
+          result.data &&
+          result.data.success ===
+            true
+        ) {
+          return true;
+        }
+
+        if (
+          result.result &&
+          result.result.success ===
+            true
+        ) {
+          return true;
+        }
+
+        return false;
+      }
+
+      function extractApiError(
+        result
+      ) {
+        if (!result) {
+          return "Authentication failed.";
+        }
+
+        return firstString([
+          result.message,
+          result.error,
+          result.reason,
+          result.statusMessage,
+          result.data &&
+            result.data.message,
+          result.data &&
+            result.data.error,
+          result.result &&
+            result.result.message,
+          result.result &&
+            result.result.error
+        ]) ||
+          "Authentication failed.";
+      }
+
+      /* ======================================================
+         STEP 29 — LOGIN
+         ====================================================== */
+
+      async function performLogin(
+        identifier,
+        password
+      ) {
+        if (
+          !identifier ||
+          !password
+        ) {
+          throw new Error(
+            "Username / Mobile / Email and Password are required."
+          );
+        }
+
+        const result =
+          await govaraAuthRequest(
+            "LOGIN",
+            {
+              identifier:
+                String(identifier).trim(),
+              username:
+                String(identifier).trim(),
+              mobile:
+                String(identifier).trim(),
+              email:
+                String(identifier).trim(),
+              password:
+                String(password)
+            }
+          );
+
+        if (
+          !isApiSuccess(result)
+        ) {
+          throw new Error(
+            extractApiError(result)
+          );
+        }
+
+        const token =
+          extractSessionToken(
+            result
+          );
+
+        if (!token) {
+          throw new Error(
+            "Login succeeded but no backend session token was returned."
+          );
+        }
+
+        let user =
+          extractUser(result);
+
+        let accessProfile =
+          extractAccessProfile(
+            result
+          );
+
+        /*
+         * If LOGIN does not include the complete user/profile,
+         * retrieve it using the newly created backend session.
+         */
+
+        if (!user) {
+          try {
+            const currentUserResult =
+              await govaraAuthRequest(
+                "GET_CURRENT_USER",
+                {},
+                token
+              );
+
+            if (
+              isApiSuccess(
+                currentUserResult
+              )
+            ) {
+              user =
+                extractUser(
+                  currentUserResult
+                ) ||
+                user;
+            }
+          } catch (error) {
+            console.warn(
+              "GET_CURRENT_USER after login failed:",
+              error
+            );
+          }
+        }
+
+        if (!accessProfile) {
+          try {
+            const profileResult =
+              await govaraAuthRequest(
+                "GET_ACCESS_PROFILE",
+                {},
+                token
+              );
+
+            if (
+              isApiSuccess(
+                profileResult
+              )
+            ) {
+              accessProfile =
+                extractAccessProfile(
+                  profileResult
+                ) ||
+                profileResult.data ||
+                profileResult.result ||
+                accessProfile;
+            }
+          } catch (error) {
+            console.warn(
+              "GET_ACCESS_PROFILE after login failed:",
+              error
+            );
+          }
+        }
+
+        const role =
+          extractRole(
+            result,
+            user,
+            accessProfile
+          ) ||
+          "User";
+
+        const sessionData = {
+          sessionToken:
+            token,
+          user:
+            user,
+          role:
+            role,
+          accessProfile:
+            accessProfile,
+          authenticatedAt:
+            new Date().toISOString()
+        };
+
+        saveFrontendSession(
+          sessionData
+        );
+
+        GoVaraAppState.loggedIn =
+          true;
+
+        GoVaraAppState.role =
+          role;
+
+        GoVaraAppState.user =
+          user;
+
+        GoVaraAppState.session =
+          {
+            sessionToken:
+              token
+          };
+
+        GoVaraAppState.accessProfile =
+          accessProfile;
+
+        GoVaraAppState.authInitialized =
+          true;
+
+        updateSessionControl();
+
+        hideLoginScreen();
+
+        /*
+         * Preserve the existing dashboard as the first
+         * authenticated page.
+         */
+
+        showGoVaraPage(
+          "dashboard"
+        );
+
+        return sessionData;
+      }
+
+      /* ======================================================
+         STEP 29 — SESSION RESTORE
+         ====================================================== */
+
+      async function restoreExistingSession() {
+        const stored =
+          readFrontendSession();
+
+        if (
+          !stored ||
+          !stored.sessionToken
+        ) {
+          return false;
+        }
+
+        try {
+
+          const result =
+            await govaraAuthRequest(
+              "GET_CURRENT_USER",
+              {},
+              stored.sessionToken
+            );
+
+          if (
+            !isApiSuccess(result)
+          ) {
+            clearFrontendSession();
+
+            return false;
+          }
+
+          const user =
+            extractUser(result) ||
+            stored.user ||
+            null;
+
+          let accessProfile =
+            stored.accessProfile ||
+            null;
+
+          try {
+            const profileResult =
+              await govaraAuthRequest(
+                "GET_ACCESS_PROFILE",
+                {},
+                stored.sessionToken
+              );
+
+            if (
+              isApiSuccess(
+                profileResult
+              )
+            ) {
+              accessProfile =
+                extractAccessProfile(
+                  profileResult
+                ) ||
+                profileResult.data ||
+                profileResult.result ||
+                accessProfile;
+            }
+          } catch (error) {
+            console.warn(
+              "Session access profile refresh failed:",
+              error
+            );
+          }
+
+          const role =
+            extractRole(
+              result,
+              user,
+              accessProfile
+            ) ||
+            stored.role ||
+            "User";
+
+          GoVaraAppState.loggedIn =
+            true;
+
+          GoVaraAppState.role =
+            role;
+
+          GoVaraAppState.user =
+            user;
+
+          GoVaraAppState.session =
+            {
+              sessionToken:
+                stored.sessionToken
+            };
+
+          GoVaraAppState.accessProfile =
+            accessProfile;
+
+          GoVaraAppState.authInitialized =
+            true;
+
+          saveFrontendSession({
+            sessionToken:
+              stored.sessionToken,
+            user:
+              user,
+            role:
+              role,
+            accessProfile:
+              accessProfile,
+            authenticatedAt:
+              stored.authenticatedAt ||
+              new Date().toISOString()
+          });
+
+          updateSessionControl();
+
+          hideLoginScreen();
+
+          return true;
+
+        } catch (error) {
+
+          console.warn(
+            "Existing GoVara session could not be restored:",
+            error
+          );
+
+          clearFrontendSession();
+
+          return false;
+        }
+      }
+
+      /* ======================================================
+         STEP 29 — LOGOUT
+         ====================================================== */
+
+      async function performLogout() {
+        const token =
+          GoVaraAppState.session &&
+          GoVaraAppState.session.sessionToken;
+
+        try {
+          if (token) {
+            await govaraAuthRequest(
+              "LOGOUT",
+              {},
+              token
+            );
+          }
+        } catch (error) {
+          console.warn(
+            "Backend logout request failed:",
+            error
+          );
+        }
+
+        clearFrontendSession();
+
+        GoVaraAppState.loggedIn =
+          false;
+
+        GoVaraAppState.role =
+          null;
+
+        GoVaraAppState.user =
+          null;
+
+        GoVaraAppState.session =
+          null;
+
+        GoVaraAppState.accessProfile =
+          null;
+
+        GoVaraAppState.currentPage =
+          "dashboard";
+
+        GoVaraAppState.authInitialized =
+          true;
+
+        updateSessionControl();
+
+        showLoginScreen(
+          "You have been logged out."
+        );
+      }
+
+      /* ======================================================
+         STEP 29 — ACCESS CONTROL
+         Backend remains authoritative.
+         Frontend only consumes the backend profile.
+         ====================================================== */
+
+      function normalizeText(
+        value
+      ) {
+        return safeText(
+          value
+        )
+          .trim()
+          .toUpperCase()
+          .replace(
+            /[\s_-]+/g,
+            ""
+          );
+      }
+
+      function collectAccessValues(
+        source,
+        output
+      ) {
+        if (!source) {
+          return;
+        }
+
+        if (
+          typeof source ===
+          "string"
+        ) {
+          output.push(
+            normalizeText(source)
+          );
+
+          return;
+        }
+
+        if (
+          Array.isArray(source)
+        ) {
+          source.forEach(
+            function (item) {
+              collectAccessValues(
+                item,
+                output
+              );
+            }
+          );
+
+          return;
+        }
+
+        if (
+          typeof source ===
+          "object"
+        ) {
+          [
+            "code",
+            "Code",
+            "name",
+            "Name",
+            "module",
+            "Module",
+            "moduleCode",
+            "Module_Code",
+            "tab",
+            "Tab",
+            "tabCode",
+            "Tab_Code",
+            "page",
+            "Page",
+            "pageCode",
+            "Page_Code",
+            "permissionCode",
+            "Permission_Code",
+            "action",
+            "Action"
+          ].forEach(
+            function (key) {
+              if (
+                source[key] !==
+                  undefined &&
+                source[key] !==
+                  null
+              ) {
+                collectAccessValues(
+                  source[key],
+                  output
+                );
+              }
+            }
+          );
+        }
+      }
+
+      function accessProfileAllowsPage(
+        page
+      ) {
+        /*
+         * Dashboard remains available after authentication.
+         */
+
+        if (
+          page ===
+          "dashboard"
+        ) {
+          return true;
+        }
+
+        const profile =
+          GoVaraAppState.accessProfile;
+
+        /*
+         * The frontend does not invent permissions.
+         * If the backend supplies no access profile,
+         * the safe behaviour is to deny protected pages.
+         */
+
+        if (!profile) {
+          return false;
+        }
+
+        const values = [];
+
+        collectAccessValues(
+          profile,
+          values
+        );
+
+        const normalizedPage =
+          normalizeText(
+            page
+          );
+
+        const aliases = [
+          normalizedPage,
+          "STEP" +
+            normalizedPage,
+          "PAGE" +
+            normalizedPage,
+          "MODULE" +
+            normalizedPage
+        ];
+
+        /*
+         * Administrator role may have an explicit
+         * backend-provided full-access indicator.
+         */
+
+        const fullAccessFlags = [
+          profile.allAccess,
+          profile.AllAccess,
+          profile.fullAccess,
+          profile.FullAccess,
+          profile.isSuperAdmin,
+          profile.IsSuperAdmin
+        ];
+
+        if (
+          fullAccessFlags.some(
+            function (flag) {
+              return flag === true;
+            }
+          )
+        ) {
+          return true;
+        }
+
+        return aliases.some(
+          function (alias) {
+            return values.indexOf(
+              normalizeText(alias)
+            ) !== -1;
+          }
+        );
+      }
+
+      function canOpenPage(
+        page
+      ) {
+        if (
+          !GoVaraAppState.loggedIn
+        ) {
+          return false;
+        }
+
+        /*
+         * The current Administrator Control Center
+         * remains backend-authorized.
+         */
+
+        return accessProfileAllowsPage(
+          page
+        );
+      }
 
       /* ======================================================
          Module Renderer
@@ -2292,12 +3908,12 @@
         moduleObject,
         mountId
       ) {
-
         const mount =
-          document.getElementById(mountId);
+          document.getElementById(
+            mountId
+          );
 
         if (!mount) {
-
           console.error(
             "GoVara mount element not found:",
             mountId
@@ -2306,9 +3922,7 @@
           return;
         }
 
-
         if (!moduleObject) {
-
           mount.innerHTML = `
             <div class="module-placeholder">
               <h2>
@@ -2330,48 +3944,42 @@
           return;
         }
 
-
         try {
 
           if (
             typeof moduleObject.renderAndBind ===
             "function"
           ) {
-
             moduleObject.renderAndBind();
 
             return;
           }
 
-
           if (
             typeof moduleObject.render ===
             "function"
           ) {
-
             const rendered =
               moduleObject.render();
 
             if (
-              rendered !== undefined &&
-              rendered !== null
+              rendered !==
+                undefined &&
+              rendered !==
+                null
             ) {
-
               mount.innerHTML =
-                safeText(rendered);
-
+                safeText(
+                  rendered
+                );
             }
-
           }
-
 
           if (
             typeof moduleObject.bind ===
             "function"
           ) {
-
             moduleObject.bind();
-
           }
 
         } catch (error) {
@@ -2383,7 +3991,6 @@
 
           mount.innerHTML = `
             <div class="module-placeholder">
-
               <h2>
                 Module Error
               </h2>
@@ -2396,27 +4003,22 @@
                     : error
                 )}
               </div>
-
             </div>
           `;
         }
-
       }
-
 
       /* ======================================================
          Customer Module Renderer
          ====================================================== */
 
       function renderCustomerModule() {
-
         const mount =
           document.getElementById(
             "module-28"
           );
 
         if (!mount) {
-
           console.error(
             "Customer module mount not found."
           );
@@ -2424,16 +4026,13 @@
           return;
         }
 
-
         if (
           !window.GoVaraCustomer ||
           typeof window.GoVaraCustomer.init !==
-          "function"
+            "function"
         ) {
-
           mount.innerHTML = `
             <div class="module-placeholder">
-
               <h2>
                 Customer Module Not Loaded
               </h2>
@@ -2442,7 +4041,6 @@
                 28-Customer.js could not be loaded.
                 Check the module file path and deployment.
               </div>
-
             </div>
           `;
 
@@ -2452,7 +4050,6 @@
 
           return;
         }
-
 
         try {
 
@@ -2467,7 +4064,6 @@
 
           mount.innerHTML = `
             <div class="module-placeholder">
-
               <h2>
                 Customer Module Error
               </h2>
@@ -2480,77 +4076,118 @@
                     : error
                 )}
               </div>
-
             </div>
           `;
-
         }
-
       }
-
 
       /* ======================================================
          Page Router
          ====================================================== */
 
-      function showGoVaraPage(page) {
-
+      function showGoVaraPage(
+        page
+      ) {
         const requestedPage =
-          page || "dashboard";
+          page ||
+          "dashboard";
 
+        /*
+         * Authentication guard.
+         */
+
+        if (
+          !GoVaraAppState.loggedIn
+        ) {
+          showLoginScreen(
+            "Please sign in to access GoVara."
+          );
+
+          return false;
+        }
+
+        /*
+         * Backend access-profile guard.
+         */
+
+        if (
+          !canOpenPage(
+            requestedPage
+          )
+        ) {
+          console.warn(
+            "GoVara access denied for page:",
+            requestedPage
+          );
+
+          if (
+            requestedPage !==
+            "dashboard"
+          ) {
+            showGoVaraPage(
+              "dashboard"
+            );
+          }
+
+          return false;
+        }
 
         GoVaraAppState.currentPage =
           requestedPage;
 
-
-        /* Hide every page */
+        /*
+         * Hide every page.
+         */
 
         document
-          .querySelectorAll(".page")
+          .querySelectorAll(
+            ".page"
+          )
           .forEach(
-            function (pageElement) {
-
+            function (
+              pageElement
+            ) {
               pageElement.classList.remove(
                 "active"
               );
-
             }
           );
 
-
-        /* Show requested page */
+        /*
+         * Show requested page.
+         */
 
         const targetPage =
           document.getElementById(
-            "page-" + requestedPage
+            "page-" +
+            requestedPage
           );
 
-
         if (!targetPage) {
-
           console.error(
             "GoVara page not found:",
             requestedPage
           );
 
-          return;
+          return false;
         }
-
 
         targetPage.classList.add(
           "active"
         );
 
-
-        /* Update sidebar active state */
+        /*
+         * Update sidebar active state.
+         */
 
         document
           .querySelectorAll(
             ".nav-btn[data-page]"
           )
           .forEach(
-            function (button) {
-
+            function (
+              button
+            ) {
               const isActive =
                 button.dataset.page ===
                 requestedPage;
@@ -2559,212 +4196,207 @@
                 "active",
                 isActive
               );
-
             }
           );
 
+        /* ====================================================
+           Module Routing
+           ==================================================== */
 
-       /* ====================================================
-   Module Routing
-   ==================================================== */
+        switch (
+          requestedPage
+        ) {
 
-switch (requestedPage) {
+          case "dashboard":
 
-  case "dashboard":
+            updateDashboardStatus();
 
-    updateDashboardStatus();
+            break;
 
-    break;
+          /* ==================================================
+             26A — SYSTEM CONFIGURATION
+             ================================================== */
 
+          case "26A":
 
-  /* ==================================================
-     26A — SYSTEM CONFIGURATION
-     ================================================== */
+            renderGoVaraModule(
+              window.GoVara26A,
+              "module-26A"
+            );
 
-  case "26A":
+            break;
 
-    renderGoVaraModule(
-      window.GoVara26A,
-      "module-26A"
-    );
+          /* ==================================================
+             26B — USER & ROLE CONTROL
+             ================================================== */
 
-    break;
+          case "26B":
 
+            renderGoVaraModule(
+              window.GoVara26B,
+              "module-26B"
+            );
 
-  /* ==================================================
-     26B — USER & ROLE CONTROL
-     ================================================== */
+            break;
 
-  case "26B":
+          /* ==================================================
+             26C — BUSINESS POLICIES
+             ================================================== */
 
-    renderGoVaraModule(
-      window.GoVara26B,
-      "module-26B"
-    );
+          case "26C":
 
-    break;
+            renderGoVaraModule(
+              window.GoVara26C,
+              "module-26C"
+            );
 
+            break;
 
-  /* ==================================================
-     26C — BUSINESS POLICIES
-     ================================================== */
+          /* ==================================================
+             26D — OPERATIONS CONTROL
+             ================================================== */
 
-  case "26C":
+          case "26D":
 
-    renderGoVaraModule(
-      window.GoVara26C,
-      "module-26C"
-    );
+            renderGoVaraModule(
+              window.GoVara26D,
+              "module-26D"
+            );
 
-    break;
+            break;
 
+          /* ==================================================
+             26E — FINANCIAL CONTROL
+             ================================================== */
 
-  /* ==================================================
-     26D — OPERATIONS CONTROL
-     ================================================== */
+          case "26E":
 
-  case "26D":
+            renderGoVaraModule(
+              window.GoVara26E,
+              "module-26E"
+            );
 
-    renderGoVaraModule(
-      window.GoVara26D,
-      "module-26D"
-    );
+            break;
 
-    break;
+          /* ==================================================
+             26F — DOCUMENTS & KYC
+             ================================================== */
 
+          case "26F":
 
-  /* ==================================================
-     26E — FINANCIAL CONTROL
-     ================================================== */
+            renderGoVaraModule(
+              window.GoVara26F,
+              "module-26F"
+            );
 
-  case "26E":
+            break;
 
-    renderGoVaraModule(
-      window.GoVara26E,
-      "module-26E"
-    );
+          /* ==================================================
+             26G — AUDIT & MONITORING
+             ================================================== */
 
-    break;
+          case "26G":
 
+            renderGoVaraModule(
+              window.GoVara26G,
+              "module-26G"
+            );
 
-  /* ==================================================
-     26F — DOCUMENTS & KYC
-     ================================================== */
+            break;
 
-  case "26F":
+          /* ==================================================
+             STEP 27 — CONSOLIDATED API
+             ================================================== */
 
-    renderGoVaraModule(
-      window.GoVara26F,
-      "module-26F"
-    );
+          case "27": {
 
-    break;
+            var step27Container =
+              document.getElementById(
+                "module-27"
+              );
 
+            if (
+              window.GoVara27 &&
+              typeof window.GoVara27.render ===
+                "function"
+            ) {
 
-  /* ==================================================
-     26G — AUDIT & MONITORING
-     ================================================== */
+              if (
+                step27Container
+              ) {
 
-  case "26G":
+                window.GoVara27.render(
+                  step27Container
+                );
 
-    renderGoVaraModule(
-      window.GoVara26G,
-      "module-26G"
-    );
+              } else {
 
-    break;
+                console.error(
+                  "STEP 27 mount element not found: module-27"
+                );
 
+              }
 
-  /* ==================================================
-     STEP 27 — CONSOLIDATED API
-     ================================================== */
+            } else {
 
-  case "27": {
+              console.error(
+                "STEP 27 module is not loaded: GoVara27"
+              );
 
-    var step27Container =
-      document.getElementById("module-27");
+              if (
+                step27Container
+              ) {
 
-    if (
-      window.GoVara27 &&
-      typeof window.GoVara27.render === "function"
-    ) {
+                step27Container.innerHTML = `
+                  <div class="module-placeholder">
+                    <h2>
+                      STEP 27 — Consolidated API
+                    </h2>
 
-      if (step27Container) {
+                    <div class="muted">
+                      STEP 27 module JavaScript is not loaded.
+                    </div>
+                  </div>
+                `;
 
-        window.GoVara27.render(
-          step27Container
-        );
+              }
 
-      } else {
+            }
 
-        console.error(
-          "STEP 27 mount element not found: module-27"
-        );
+            break;
+          }
 
+          /* ==================================================
+             STEP 28 — CUSTOMER
+             ================================================== */
+
+          case "28":
+
+            renderCustomerModule();
+
+            break;
+
+          /* ==================================================
+             DEFAULT
+             ================================================== */
+
+          default:
+
+            console.warn(
+              "Unknown GoVara page:",
+              requestedPage
+            );
+
+        }
+
+        return true;
       }
 
-    } else {
+      /* ======================================================
+         Dashboard Status
+         ====================================================== */
 
-      console.error(
-        "STEP 27 module is not loaded: GoVara27"
-      );
-
-      if (step27Container) {
-
-        step27Container.innerHTML = `
-          <div class="module-placeholder">
-
-            <h2>
-              STEP 27 — Consolidated API
-            </h2>
-
-            <div class="muted">
-              STEP 27 module JavaScript is not loaded.
-            </div>
-
-          </div>
-        `;
-
-      }
-
-    }
-
-    break;
-  }
-
-
-  /* ==================================================
-     STEP 28 — CUSTOMER
-     ================================================== */
-
-  case "28":
-
-    renderCustomerModule();
-
-    break;
-
-
-  /* ==================================================
-     DEFAULT
-     ================================================== */
-
-  default:
-
-    console.warn(
-      "Unknown GoVara page:",
-      requestedPage
-    );
-
-  }
-
-}   // END showGoVaraPage()
-
-
-/* ======================================================
-   Dashboard Status
-   ====================================================== */
-
-function updateDashboardStatus() {
+      function updateDashboardStatus() {
 
         const apiStatus =
           document.getElementById(
@@ -2781,92 +4413,85 @@ function updateDashboardStatus() {
             "status-api"
           );
 
-
-        /* Financial safety always visible */
+        /*
+         * Financial safety always visible.
+         */
 
         const moneyStatus =
           document.getElementById(
             "status-money"
           );
 
-
-        if (moneyStatus) {
-
+        if (
+          moneyStatus
+        ) {
           moneyStatus.textContent =
             "● REAL MONEY BLOCKED";
-
         }
 
-
-        /* API state */
+        /*
+         * API state.
+         */
 
         if (
-          window.GoVaraAPI &&
-          typeof window.GoVaraAPI.getAPIUrl ===
-          "function" &&
-          window.GoVaraAPI.getAPIUrl()
+          getConsolidatedApiUrl()
         ) {
 
-          if (apiStatus) {
-
+          if (
+            apiStatus
+          ) {
             apiStatus.textContent =
               "CONFIGURED";
-
           }
 
-
-          if (apiNote) {
-
+          if (
+            apiNote
+          ) {
             apiNote.textContent =
               "API endpoint is configured.";
-
           }
 
-
-          if (topApi) {
-
+          if (
+            topApi
+          ) {
             topApi.textContent =
               "● API CONFIGURED";
 
             topApi.className =
               "status-badge testing";
-
           }
 
           return;
         }
 
+        /*
+         * Default safe state.
+         */
 
-        /* Default safe state */
-
-        if (apiStatus) {
-
+        if (
+          apiStatus
+        ) {
           apiStatus.textContent =
             "NOT CONFIGURED";
-
         }
 
-
-        if (apiNote) {
-
+        if (
+          apiNote
+        ) {
           apiNote.textContent =
             "API boundary is not configured.";
-
         }
 
-
-        if (topApi) {
-
+        if (
+          topApi
+        ) {
           topApi.textContent =
             "● API NOT CONFIGURED";
 
           topApi.className =
             "status-badge api";
-
         }
-
       }
-
 
       /* ======================================================
          Sidebar Binding
@@ -2879,9 +4504,10 @@ function updateDashboardStatus() {
             ".nav-btn[data-page]"
           );
 
-
         buttons.forEach(
-          function (button) {
+          function (
+            button
+          ) {
 
             button.addEventListener(
               "click",
@@ -2890,16 +4516,187 @@ function updateDashboardStatus() {
                 const page =
                   button.dataset.page;
 
-                showGoVaraPage(page);
+                showGoVaraPage(
+                  page
+                );
 
               }
             );
 
           }
         );
-
       }
 
+      /* ======================================================
+         STEP 29 — LOGIN FORM
+         ====================================================== */
+
+      function bindLoginForm() {
+
+        const form =
+          document.getElementById(
+            "govara-login-form"
+          );
+
+        if (!form) {
+          return;
+        }
+
+        form.addEventListener(
+          "submit",
+          async function (
+            event
+          ) {
+
+            event.preventDefault();
+
+            if (
+              GoVaraAppState.authBusy
+            ) {
+              return;
+            }
+
+            const identifierElement =
+              document.getElementById(
+                "govara-login-identifier"
+              );
+
+            const passwordElement =
+              document.getElementById(
+                "govara-login-password"
+              );
+
+            const identifier =
+              identifierElement
+                ? identifierElement.value.trim()
+                : "";
+
+            const password =
+              passwordElement
+                ? passwordElement.value
+                : "";
+
+            clearAuthMessage();
+
+            if (
+              !identifier ||
+              !password
+            ) {
+              setAuthMessage(
+                "Username / Mobile / Email and Password are required.",
+                "error"
+              );
+
+              return;
+            }
+
+            setLoginBusy(
+              true
+            );
+
+            setAuthMessage(
+              "Authenticating with the GoVara backend...",
+              "info"
+            );
+
+            try {
+
+              await performLogin(
+                identifier,
+                password
+              );
+
+              setAuthMessage(
+                "Login successful.",
+                "success"
+              );
+
+              if (
+                passwordElement
+              ) {
+                passwordElement.value =
+                  "";
+              }
+
+              console.log(
+                "GoVara STEP 29 unified login successful."
+              );
+
+            } catch (error) {
+
+              console.error(
+                "GoVara login failed:",
+                error
+              );
+
+              setAuthMessage(
+                error &&
+                error.message
+                  ? error.message
+                  : "Login failed.",
+                "error"
+              );
+
+              GoVaraAppState.loggedIn =
+                false;
+
+              GoVaraAppState.role =
+                null;
+
+            } finally {
+
+              setLoginBusy(
+                false
+              );
+
+            }
+
+          }
+        );
+      }
+
+      /* ======================================================
+         STEP 29 — LOGOUT BUTTON
+         ====================================================== */
+
+      function bindLogout() {
+
+        const button =
+          document.getElementById(
+            "govara-logout-button"
+          );
+
+        if (!button) {
+          return;
+        }
+
+        button.addEventListener(
+          "click",
+          async function () {
+
+            if (
+              GoVaraAppState.authBusy
+            ) {
+              return;
+            }
+
+            button.disabled =
+              true;
+
+            try {
+
+              await performLogout();
+
+            } finally {
+
+              button.disabled =
+                false;
+
+            }
+
+          }
+        );
+      }
 
       /* ======================================================
          Global Router
@@ -2912,13 +4709,10 @@ function updateDashboardStatus() {
 
         current:
           function () {
-
             return GoVaraAppState.currentPage;
-
           }
 
       };
-
 
       /* ======================================================
          Global App State
@@ -2927,6 +4721,183 @@ function updateDashboardStatus() {
       window.GoVaraAppState =
         GoVaraAppState;
 
+      /* ======================================================
+         STEP 29 — GLOBAL AUTH API
+         ====================================================== */
+
+      window.GoVaraAuth = {
+
+        login:
+          performLogin,
+
+        logout:
+          performLogout,
+
+        restoreSession:
+          restoreExistingSession,
+
+        getSession:
+          function () {
+            return GoVaraAppState.session;
+          },
+
+        getUser:
+          function () {
+            return GoVaraAppState.user;
+          },
+
+        getRole:
+          function () {
+            return GoVaraAppState.role;
+          },
+
+        getAccessProfile:
+          function () {
+            return GoVaraAppState.accessProfile;
+          },
+
+        isAuthenticated:
+          function () {
+            return Boolean(
+              GoVaraAppState.loggedIn
+            );
+          }
+
+      };
+
+      /* ======================================================
+         STEP 29 — INITIALIZATION
+         ====================================================== */
+
+      async function initializeGoVaraApplication() {
+
+        bindSidebar();
+
+        bindLoginForm();
+
+        bindLogout();
+
+        updateDashboardStatus();
+
+        /*
+         * IMPORTANT:
+         *
+         * No testConnection().
+         * No GET_HEALTH.
+         * No API connection test.
+         *
+         * Only an existing browser session token is
+         * validated here. If no session exists,
+         * NO API request is made.
+         */
+
+        const storedSession =
+          readFrontendSession();
+
+        if (
+          storedSession &&
+          storedSession.sessionToken
+        ) {
+
+          const restored =
+            await restoreExistingSession();
+
+          if (
+            restored
+          ) {
+
+            showGoVaraPage(
+              "dashboard"
+            );
+
+          } else {
+
+            GoVaraAppState.loggedIn =
+              false;
+
+            GoVaraAppState.role =
+              null;
+
+            GoVaraAppState.user =
+              null;
+
+            GoVaraAppState.session =
+              null;
+
+            GoVaraAppState.accessProfile =
+              null;
+
+            showLoginScreen(
+              "Please sign in to continue."
+            );
+
+          }
+
+        } else {
+
+          /*
+           * Safe first-load state.
+           */
+
+          GoVaraAppState.loggedIn =
+            false;
+
+          GoVaraAppState.role =
+            null;
+
+          GoVaraAppState.user =
+            null;
+
+          GoVaraAppState.session =
+            null;
+
+          GoVaraAppState.accessProfile =
+            null;
+
+          GoVaraAppState.authInitialized =
+            true;
+
+          /*
+           * Existing pages remain untouched underneath,
+           * but are inaccessible until authenticated.
+           */
+
+          showLoginScreen(
+            "Please sign in to access GoVara."
+          );
+
+        }
+
+        updateSessionControl();
+
+        console.log(
+          "GoVara Master Frontend loaded successfully."
+        );
+
+        console.log(
+          "GoVara STEP 29 Unified Login Frontend Integration loaded."
+        );
+
+        console.log(
+          "Customer module STEP 28 registered."
+        );
+
+        console.log(
+          "Real Money remains BLOCKED."
+        );
+
+        console.log(
+          "Real Payment remains BLOCKED."
+        );
+
+        console.log(
+          "Bank Transfer remains BLOCKED."
+        );
+
+        console.log(
+          "No automatic GET_HEALTH / testConnection executed."
+        );
+      }
 
       /* ======================================================
          DOM READY
@@ -2935,55 +4906,12 @@ function updateDashboardStatus() {
       document.addEventListener(
         "DOMContentLoaded",
         function () {
-
-          bindSidebar();
-
-          updateDashboardStatus();
-
-          showGoVaraPage(
-            "dashboard"
-          );
-
-
-          console.log(
-            "GoVara Master Frontend loaded successfully."
-          );
-
-
-          /*
-           * IMPORTANT:
-           * No automatic API connection test.
-           */
-
-          if (
-            !(
-              window.GoVaraAPI &&
-              typeof window.GoVaraAPI.getAPIUrl ===
-              "function" &&
-              window.GoVaraAPI.getAPIUrl()
-            )
-          ) {
-
-            console.log(
-              "API remains NOT CONFIGURED."
-            );
-
-          }
-
-
-          console.log(
-            "Customer module STEP 28 registered."
-          );
-
-
-          console.log(
-            "Real Money remains BLOCKED."
-          );
-
+          initializeGoVaraApplication();
         }
       );
 
-   })();
-        
-      </script></body>
+    })();
+  </script>
+
+</body>
 </html>

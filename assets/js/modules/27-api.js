@@ -142,7 +142,8 @@
     'VALIDATE',
     'CREATE',
     'UPDATE',
-    'CUSTOMER_REGISTER'
+    'CUSTOMER_REGISTER',
+    'GET_ACCESS_PROFILE'
   ];
 
   /* ==========================================================
@@ -667,21 +668,49 @@
       nowISO();
 
     var requestBody = {
-      action:
-        cleanAction,
+  action:
+    cleanAction,
 
-      payload:
-        payload,
+  payload:
+    payload,
 
-      version:
-        CONFIG.VERSION,
+  version:
+    CONFIG.VERSION,
 
-      project:
-        CONFIG.PROJECT,
+  project:
+    CONFIG.PROJECT,
 
-      environment:
-        CONFIG.ENVIRONMENT
-    };
+  environment:
+    CONFIG.ENVIRONMENT
+};
+
+/*
+ * Authentication contract:
+ *
+ * Backend reads:
+ * request.sessionToken || request.token
+ *
+ * Keep sessionToken at TOP LEVEL.
+ * Do not move authentication authority
+ * into the frontend.
+ */
+
+var sessionToken =
+  payload &&
+  (
+    payload.sessionToken ||
+    payload.token
+  )
+    ? safeString(
+        payload.sessionToken ||
+        payload.token
+      ).trim()
+    : '';
+
+if (sessionToken) {
+  requestBody.sessionToken =
+    sessionToken;
+}
 
     /*
      * CUSTOMER_REGISTER backend contract:

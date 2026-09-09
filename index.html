@@ -3000,13 +3000,28 @@ async function govaraAuthRequest(
   const payloadData =
     data || {};
 
-  const payload = {
-    action: action,
+ const payloadData =
+  data || {};
 
-    payload:
-      payloadData
-  };
+const payload = {
+  action: action,
 
+  payload:
+    payloadData
+};
+
+if (
+  String(action).toUpperCase() ===
+  "LOGIN"
+) {
+  payload.data =
+    payloadData;
+}
+
+if (sessionToken) {
+  payload.sessionToken =
+    sessionToken;
+}
   /*
    * Backend authentication contract:
    *

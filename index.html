@@ -3096,917 +3096,1060 @@
         }
       }
 
-      /* ======================================================
-         STEP 29 — RESPONSE EXTRACTION
-         Handles the consolidated API response without
-         assuming a single nested response shape.
-         ====================================================== */
+     /* ======================================================
+   STEP 29 — RESPONSE EXTRACTION
+   Handles the consolidated API response without
+   assuming a single nested response shape.
+   ====================================================== */
 
-      function firstObject(
-        candidates
-      ) {
-        for (
-          let i = 0;
-          i < candidates.length;
-          i++
-        ) {
-          const value =
-            candidates[i];
+function firstObject(
+  candidates
+) {
+  for (
+    let i = 0;
+    i < candidates.length;
+    i++
+  ) {
+    const value =
+      candidates[i];
 
-          if (
-            value &&
-            typeof value ===
-              "object" &&
-            !Array.isArray(value)
-          ) {
-            return value;
-          }
-        }
+    if (
+      value &&
+      typeof value ===
+        "object" &&
+      !Array.isArray(value)
+    ) {
+      return value;
+    }
+  }
 
-        return null;
+  return null;
+}
+
+
+function firstString(
+  candidates
+) {
+  for (
+    let i = 0;
+    i < candidates.length;
+    i++
+  ) {
+    const value =
+      candidates[i];
+
+    if (
+      value !== null &&
+      value !== undefined &&
+      String(value).trim()
+    ) {
+      return String(value);
+    }
+  }
+
+  return "";
+}
+
+
+function extractSessionToken(
+  result
+) {
+  if (!result) {
+    return "";
+  }
+
+  const session =
+    firstObject([
+      result.session,
+
+      result.authentication &&
+        result.authentication.session,
+
+      result.data &&
+        result.data.session,
+
+      result.result &&
+        result.result.session,
+
+      result.result &&
+        result.result.authentication &&
+        result.result.authentication.session,
+
+      result.payload &&
+        result.payload.session
+    ]);
+
+  return firstString([
+    result.sessionToken,
+    result.token,
+    result.sessionId,
+
+    session &&
+      session.sessionToken,
+
+    session &&
+      session.token,
+
+    session &&
+      session.sessionId,
+
+    result.authentication &&
+      result.authentication.sessionToken,
+
+    result.authentication &&
+      result.authentication.token,
+
+    result.authentication &&
+      result.authentication.sessionId,
+
+    result.authentication &&
+      result.authentication.session &&
+      result.authentication.sessionToken,
+
+    result.authentication &&
+      result.authentication.session &&
+      result.authentication.sessionId,
+
+    result.data &&
+      result.data.sessionToken,
+
+    result.data &&
+      result.data.token,
+
+    result.data &&
+      result.data.sessionId,
+
+    result.result &&
+      result.result.sessionToken,
+
+    result.result &&
+      result.result.token,
+
+    result.result &&
+      result.result.sessionId,
+
+    result.result &&
+      result.result.session &&
+      result.result.sessionToken,
+
+    result.result &&
+      result.result.session &&
+      result.result.token,
+
+    result.result &&
+      result.result.session &&
+      result.result.sessionId
+  ]);
+}
+
+
+function extractUser(
+  result
+) {
+  if (!result) {
+    return null;
+  }
+
+  return firstObject([
+    result.user,
+    result.currentUser,
+
+    result.authentication &&
+      result.authentication.user,
+
+    result.data &&
+      result.data.user,
+
+    result.data &&
+      result.data.currentUser,
+
+    result.result &&
+      result.result.user,
+
+    result.result &&
+      result.result.currentUser,
+
+    result.result &&
+      result.result.authentication &&
+      result.result.authentication.user
+  ]);
+}
+
+
+function extractRole(
+  result,
+  user,
+  accessProfile
+) {
+  return firstString([
+    result &&
+      result.role,
+
+    result &&
+      result.Role,
+
+    result &&
+      result.data &&
+      result.data.role,
+
+    result &&
+      result.data &&
+      result.data.Role,
+
+    result &&
+      result.result &&
+      result.result.role,
+
+    user &&
+      user.Role_Name,
+
+    user &&
+      user.roleName,
+
+    user &&
+      user.role,
+
+    user &&
+      user.Role,
+
+    user &&
+      user.userType,
+
+    user &&
+      user.User_Type,
+
+    accessProfile &&
+      accessProfile.role,
+
+    accessProfile &&
+      accessProfile.Role_Name,
+
+    accessProfile &&
+      accessProfile.primaryRole
+  ]);
+}
+
+
+function extractAccessProfile(
+  result
+) {
+  if (!result) {
+    return null;
+  }
+
+  return firstObject([
+    result.accessProfile,
+    result.profile,
+
+    result.access,
+
+    result.authentication &&
+      result.authentication.accessProfile,
+
+    result.authentication &&
+      result.authentication.access,
+
+    result.data &&
+      result.data.accessProfile,
+
+    result.data &&
+      result.data.profile,
+
+    result.data &&
+      result.data.access,
+
+    result.result &&
+      result.result.accessProfile,
+
+    result.result &&
+      result.result.profile,
+
+    result.result &&
+      result.result.access,
+
+    result.result &&
+      result.result.authentication &&
+      result.result.authentication.accessProfile,
+
+    result.result &&
+      result.result.authentication &&
+      result.result.authentication.access
+  ]);
+}
+
+
+function isApiSuccess(
+  result
+) {
+  if (!result) {
+    return false;
+  }
+
+  if (
+    result.success === true
+  ) {
+    return true;
+  }
+
+  if (
+    result.status ===
+      "SUCCESS" ||
+    result.status ===
+      "OK" ||
+    result.status ===
+      "AUTHENTICATED"
+  ) {
+    return true;
+  }
+
+  if (
+    result.data &&
+    result.data.success ===
+      true
+  ) {
+    return true;
+  }
+
+  if (
+    result.result &&
+    result.result.success ===
+      true
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+
+function extractApiError(
+  result
+) {
+  if (!result) {
+    return "Authentication failed.";
+  }
+
+  return firstString([
+    result.message,
+    result.error,
+    result.reason,
+    result.statusMessage,
+
+    result.data &&
+      result.data.message,
+
+    result.data &&
+      result.data.error,
+
+    result.result &&
+      result.result.message,
+
+    result.result &&
+      result.result.error
+  ]) ||
+    "Authentication failed.";
+}
+
+
+/* ======================================================
+   STEP 29 — LOGIN
+   ====================================================== */
+
+async function performLogin(
+  identifier,
+  password
+) {
+  if (
+    !identifier ||
+    !password
+  ) {
+    throw new Error(
+      "Username / Mobile / Email and Password are required."
+    );
+  }
+
+  const result =
+    await govaraAuthRequest(
+      "LOGIN",
+      {
+        identifier:
+          String(identifier).trim(),
+
+        username:
+          String(identifier).trim(),
+
+        mobile:
+          String(identifier).trim(),
+
+        email:
+          String(identifier).trim(),
+
+        password:
+          String(password)
       }
+    );
 
-      function firstString(
-        candidates
+  if (
+    !isApiSuccess(result)
+  ) {
+    throw new Error(
+      extractApiError(result)
+    );
+  }
+
+  const token =
+    extractSessionToken(
+      result
+    );
+
+  if (!token) {
+    throw new Error(
+      "Login succeeded but no backend session token was returned."
+    );
+  }
+
+  let user =
+    extractUser(result);
+
+  let accessProfile =
+    extractAccessProfile(
+      result
+    );
+
+  /*
+   * If LOGIN does not include the complete user/profile,
+   * retrieve it using the newly created backend session.
+   */
+
+  if (!user) {
+    try {
+      const currentUserResult =
+        await govaraAuthRequest(
+          "GET_CURRENT_USER",
+          {},
+          token
+        );
+
+      if (
+        isApiSuccess(
+          currentUserResult
+        )
       ) {
-        for (
-          let i = 0;
-          i < candidates.length;
-          i++
-        ) {
-          const value =
-            candidates[i];
-
-          if (
-            value !== null &&
-            value !== undefined &&
-            String(value).trim()
-          ) {
-            return String(value);
-          }
-        }
-
-        return "";
+        user =
+          extractUser(
+            currentUserResult
+          ) ||
+          user;
       }
+    } catch (error) {
+      console.warn(
+        "GET_CURRENT_USER after login failed:",
+        error
+      );
+    }
+  }
 
-      function extractSessionToken(
-        result
+  if (!accessProfile) {
+    try {
+      const profileResult =
+        await govaraAuthRequest(
+          "GET_ACCESS_PROFILE",
+          {},
+          token
+        );
+
+      if (
+        isApiSuccess(
+          profileResult
+        )
       ) {
-        if (!result) {
-          return "";
-        }
-
-        const session =
-          firstObject([
-            result.session,
-            result.data &&
-              result.data.session,
-            result.result &&
-              result.result.session,
-            result.payload &&
-              result.payload.session
-          ]);
-
-        return firstString([
-          result.sessionToken,
-          result.token,
-          session &&
-            session.sessionToken,
-          session &&
-            session.token,
-          result.data &&
-            result.data.sessionToken,
-          result.data &&
-            result.data.token,
-          result.result &&
-            result.result.sessionToken,
-          result.result &&
-            result.result.token
-        ]);
+        accessProfile =
+          extractAccessProfile(
+            profileResult
+          ) ||
+          profileResult.data ||
+          profileResult.result ||
+          accessProfile;
       }
+    } catch (error) {
+      console.warn(
+        "GET_ACCESS_PROFILE after login failed:",
+        error
+      );
+    }
+  }
 
-      function extractUser(
-        result
+  const role =
+    extractRole(
+      result,
+      user,
+      accessProfile
+    ) ||
+    "User";
+
+  const sessionData = {
+    sessionToken:
+      token,
+
+    user:
+      user,
+
+    role:
+      role,
+
+    accessProfile:
+      accessProfile,
+
+    authenticatedAt:
+      new Date().toISOString()
+  };
+
+  saveFrontendSession(
+    sessionData
+  );
+
+  GoVaraAppState.loggedIn =
+    true;
+
+  GoVaraAppState.role =
+    role;
+
+  GoVaraAppState.user =
+    user;
+
+  GoVaraAppState.session =
+    {
+      sessionToken:
+        token
+    };
+
+  GoVaraAppState.accessProfile =
+    accessProfile;
+
+  GoVaraAppState.authInitialized =
+    true;
+
+  updateSessionControl();
+
+  hideLoginScreen();
+
+  /*
+   * Preserve the existing dashboard as the first
+   * authenticated page.
+   */
+
+  showGoVaraPage(
+    "dashboard"
+  );
+
+  return sessionData;
+}
+
+
+/* ======================================================
+   STEP 29 — SESSION RESTORE
+   ====================================================== */
+
+async function restoreExistingSession() {
+  const stored =
+    readFrontendSession();
+
+  if (
+    !stored ||
+    !stored.sessionToken
+  ) {
+    return false;
+  }
+
+  try {
+
+    const result =
+      await govaraAuthRequest(
+        "GET_CURRENT_USER",
+        {},
+        stored.sessionToken
+      );
+
+    if (
+      !isApiSuccess(result)
+    ) {
+      clearFrontendSession();
+
+      return false;
+    }
+
+    const user =
+      extractUser(result) ||
+      stored.user ||
+      null;
+
+    let accessProfile =
+      stored.accessProfile ||
+      null;
+
+    try {
+      const profileResult =
+        await govaraAuthRequest(
+          "GET_ACCESS_PROFILE",
+          {},
+          stored.sessionToken
+        );
+
+      if (
+        isApiSuccess(
+          profileResult
+        )
       ) {
-        if (!result) {
-          return null;
-        }
-
-        return firstObject([
-          result.user,
-          result.currentUser,
-          result.data &&
-            result.data.user,
-          result.data &&
-            result.data.currentUser,
-          result.result &&
-            result.result.user,
-          result.result &&
-            result.result.currentUser
-        ]);
+        accessProfile =
+          extractAccessProfile(
+            profileResult
+          ) ||
+          profileResult.data ||
+          profileResult.result ||
+          accessProfile;
       }
+    } catch (error) {
+      console.warn(
+        "Session access profile refresh failed:",
+        error
+      );
+    }
 
-      function extractRole(
+    const role =
+      extractRole(
         result,
         user,
         accessProfile
-      ) {
-        return firstString([
-          result &&
-            result.role,
-          result &&
-            result.Role,
-          result &&
-            result.data &&
-            result.data.role,
-          result &&
-            result.data &&
-            result.data.Role,
-          result &&
-            result.result &&
-            result.result.role,
-          user &&
-            user.Role_Name,
-          user &&
-            user.roleName,
-          user &&
-            user.role,
-          user &&
-            user.Role,
-          accessProfile &&
-            accessProfile.role,
-          accessProfile &&
-            accessProfile.Role_Name,
-          accessProfile &&
-            accessProfile.primaryRole
-        ]);
-      }
-
-      function extractAccessProfile(
-        result
-      ) {
-        if (!result) {
-          return null;
-        }
-
-        return firstObject([
-          result.accessProfile,
-          result.profile,
-          result.data &&
-            result.data.accessProfile,
-          result.data &&
-            result.data.profile,
-          result.result &&
-            result.result.accessProfile,
-          result.result &&
-            result.result.profile
-        ]);
-      }
-
-      function isApiSuccess(
-        result
-      ) {
-        if (!result) {
-          return false;
-        }
-
-        if (
-          result.success === true
-        ) {
-          return true;
-        }
-
-        if (
-          result.status ===
-            "SUCCESS" ||
-          result.status ===
-            "OK" ||
-          result.status ===
-            "AUTHENTICATED"
-        ) {
-          return true;
-        }
-
-        if (
-          result.data &&
-          result.data.success ===
-            true
-        ) {
-          return true;
-        }
-
-        if (
-          result.result &&
-          result.result.success ===
-            true
-        ) {
-          return true;
-        }
-
-        return false;
-      }
-
-      function extractApiError(
-        result
-      ) {
-        if (!result) {
-          return "Authentication failed.";
-        }
-
-        return firstString([
-          result.message,
-          result.error,
-          result.reason,
-          result.statusMessage,
-          result.data &&
-            result.data.message,
-          result.data &&
-            result.data.error,
-          result.result &&
-            result.result.message,
-          result.result &&
-            result.result.error
-        ]) ||
-          "Authentication failed.";
-      }
-
-      /* ======================================================
-         STEP 29 — LOGIN
-         ====================================================== */
-
-      async function performLogin(
-        identifier,
-        password
-      ) {
-        if (
-          !identifier ||
-          !password
-        ) {
-          throw new Error(
-            "Username / Mobile / Email and Password are required."
-          );
-        }
-
-        const result =
-          await govaraAuthRequest(
-            "LOGIN",
-            {
-              identifier:
-                String(identifier).trim(),
-              username:
-                String(identifier).trim(),
-              mobile:
-                String(identifier).trim(),
-              email:
-                String(identifier).trim(),
-              password:
-                String(password)
-            }
-          );
-
-        if (
-          !isApiSuccess(result)
-        ) {
-          throw new Error(
-            extractApiError(result)
-          );
-        }
-
-        const token =
-          extractSessionToken(
-            result
-          );
-
-        if (!token) {
-          throw new Error(
-            "Login succeeded but no backend session token was returned."
-          );
-        }
-
-        let user =
-          extractUser(result);
-
-        let accessProfile =
-          extractAccessProfile(
-            result
-          );
-
-        /*
-         * If LOGIN does not include the complete user/profile,
-         * retrieve it using the newly created backend session.
-         */
-
-        if (!user) {
-          try {
-            const currentUserResult =
-              await govaraAuthRequest(
-                "GET_CURRENT_USER",
-                {},
-                token
-              );
-
-            if (
-              isApiSuccess(
-                currentUserResult
-              )
-            ) {
-              user =
-                extractUser(
-                  currentUserResult
-                ) ||
-                user;
-            }
-          } catch (error) {
-            console.warn(
-              "GET_CURRENT_USER after login failed:",
-              error
-            );
-          }
-        }
-
-        if (!accessProfile) {
-          try {
-            const profileResult =
-              await govaraAuthRequest(
-                "GET_ACCESS_PROFILE",
-                {},
-                token
-              );
-
-            if (
-              isApiSuccess(
-                profileResult
-              )
-            ) {
-              accessProfile =
-                extractAccessProfile(
-                  profileResult
-                ) ||
-                profileResult.data ||
-                profileResult.result ||
-                accessProfile;
-            }
-          } catch (error) {
-            console.warn(
-              "GET_ACCESS_PROFILE after login failed:",
-              error
-            );
-          }
-        }
-
-        const role =
-          extractRole(
-            result,
-            user,
-            accessProfile
-          ) ||
-          "User";
-
-        const sessionData = {
-          sessionToken:
-            token,
-          user:
-            user,
-          role:
-            role,
-          accessProfile:
-            accessProfile,
-          authenticatedAt:
-            new Date().toISOString()
-        };
-
-        saveFrontendSession(
-          sessionData
-        );
-
-        GoVaraAppState.loggedIn =
-          true;
-
-        GoVaraAppState.role =
-          role;
-
-        GoVaraAppState.user =
-          user;
-
-        GoVaraAppState.session =
-          {
-            sessionToken:
-              token
-          };
-
-        GoVaraAppState.accessProfile =
-          accessProfile;
-
-        GoVaraAppState.authInitialized =
-          true;
-
-        updateSessionControl();
-
-        hideLoginScreen();
-
-        /*
-         * Preserve the existing dashboard as the first
-         * authenticated page.
-         */
-
-        showGoVaraPage(
-          "dashboard"
-        );
-
-        return sessionData;
-      }
-
-      /* ======================================================
-         STEP 29 — SESSION RESTORE
-         ====================================================== */
-
-      async function restoreExistingSession() {
-        const stored =
-          readFrontendSession();
-
-        if (
-          !stored ||
-          !stored.sessionToken
-        ) {
-          return false;
-        }
-
-        try {
-
-          const result =
-            await govaraAuthRequest(
-              "GET_CURRENT_USER",
-              {},
-              stored.sessionToken
-            );
-
-          if (
-            !isApiSuccess(result)
-          ) {
-            clearFrontendSession();
-
-            return false;
-          }
-
-          const user =
-            extractUser(result) ||
-            stored.user ||
-            null;
-
-          let accessProfile =
-            stored.accessProfile ||
-            null;
-
-          try {
-            const profileResult =
-              await govaraAuthRequest(
-                "GET_ACCESS_PROFILE",
-                {},
-                stored.sessionToken
-              );
-
-            if (
-              isApiSuccess(
-                profileResult
-              )
-            ) {
-              accessProfile =
-                extractAccessProfile(
-                  profileResult
-                ) ||
-                profileResult.data ||
-                profileResult.result ||
-                accessProfile;
-            }
-          } catch (error) {
-            console.warn(
-              "Session access profile refresh failed:",
-              error
-            );
-          }
-
-          const role =
-            extractRole(
-              result,
-              user,
-              accessProfile
-            ) ||
-            stored.role ||
-            "User";
-
-          GoVaraAppState.loggedIn =
-            true;
-
-          GoVaraAppState.role =
-            role;
-
-          GoVaraAppState.user =
-            user;
-
-          GoVaraAppState.session =
-            {
-              sessionToken:
-                stored.sessionToken
-            };
-
-          GoVaraAppState.accessProfile =
-            accessProfile;
-
-          GoVaraAppState.authInitialized =
-            true;
-
-          saveFrontendSession({
-            sessionToken:
-              stored.sessionToken,
-            user:
-              user,
-            role:
-              role,
-            accessProfile:
-              accessProfile,
-            authenticatedAt:
-              stored.authenticatedAt ||
-              new Date().toISOString()
-          });
-
-          updateSessionControl();
-
-          hideLoginScreen();
-
-          return true;
-
-        } catch (error) {
-
-          console.warn(
-            "Existing GoVara session could not be restored:",
-            error
-          );
-
-          clearFrontendSession();
-
-          return false;
-        }
-      }
-
-      /* ======================================================
-         STEP 29 — LOGOUT
-         ====================================================== */
-
-      async function performLogout() {
-        const token =
-          GoVaraAppState.session &&
-          GoVaraAppState.session.sessionToken;
-
-        try {
-          if (token) {
-            await govaraAuthRequest(
-              "LOGOUT",
-              {},
-              token
-            );
-          }
-        } catch (error) {
-          console.warn(
-            "Backend logout request failed:",
-            error
-          );
-        }
-
-        clearFrontendSession();
-
-        GoVaraAppState.loggedIn =
-          false;
-
-        GoVaraAppState.role =
-          null;
-
-        GoVaraAppState.user =
-          null;
-
-        GoVaraAppState.session =
-          null;
-
-        GoVaraAppState.accessProfile =
-          null;
-
-        GoVaraAppState.currentPage =
-          "dashboard";
-
-        GoVaraAppState.authInitialized =
-          true;
-
-        updateSessionControl();
-
-        showLoginScreen(
-          "You have been logged out."
-        );
-      }
-
-      /* ======================================================
-         STEP 29 — ACCESS CONTROL
-         Backend remains authoritative.
-         Frontend only consumes the backend profile.
-         ====================================================== */
-
-      function normalizeText(
-        value
-      ) {
-        return safeText(
-          value
-        )
-          .trim()
-          .toUpperCase()
-          .replace(
-            /[\s_-]+/g,
-            ""
-          );
-      }
-
-      function collectAccessValues(
-        source,
-        output
-      ) {
-        if (!source) {
-          return;
-        }
-
-        if (
-          typeof source ===
-          "string"
-        ) {
-          output.push(
-            normalizeText(source)
-          );
-
-          return;
-        }
-
-        if (
-          Array.isArray(source)
-        ) {
-          source.forEach(
-            function (item) {
-              collectAccessValues(
-                item,
-                output
-              );
-            }
-          );
-
-          return;
-        }
-
-        if (
-          typeof source ===
-          "object"
-        ) {
-          [
-            "code",
-            "Code",
-            "name",
-            "Name",
-            "module",
-            "Module",
-            "moduleCode",
-            "Module_Code",
-            "tab",
-            "Tab",
-            "tabCode",
-            "Tab_Code",
-            "page",
-            "Page",
-            "pageCode",
-            "Page_Code",
-            "permissionCode",
-            "Permission_Code",
-            "action",
-            "Action"
-          ].forEach(
-            function (key) {
-              if (
-                source[key] !==
-                  undefined &&
-                source[key] !==
-                  null
-              ) {
-                collectAccessValues(
-                  source[key],
-                  output
-                );
-              }
-            }
-          );
-        }
-      }
-
-      function accessProfileAllowsPage(
-        page
-      ) {
-        /*
-         * Dashboard remains available after authentication.
-         */
-
-        if (
-          page ===
-          "dashboard"
-        ) {
-          return true;
-        }
-
-        const profile =
-          GoVaraAppState.accessProfile;
-
-        /*
-         * The frontend does not invent permissions.
-         * If the backend supplies no access profile,
-         * the safe behaviour is to deny protected pages.
-         */
-
-        if (!profile) {
-          return false;
-        }
-
-        const values = [];
+      ) ||
+      stored.role ||
+      "User";
 
+    GoVaraAppState.loggedIn =
+      true;
+
+    GoVaraAppState.role =
+      role;
+
+    GoVaraAppState.user =
+      user;
+
+    GoVaraAppState.session =
+      {
+        sessionToken:
+          stored.sessionToken
+      };
+
+    GoVaraAppState.accessProfile =
+      accessProfile;
+
+    GoVaraAppState.authInitialized =
+      true;
+
+    saveFrontendSession({
+      sessionToken:
+        stored.sessionToken,
+
+      user:
+        user,
+
+      role:
+        role,
+
+      accessProfile:
+        accessProfile,
+
+      authenticatedAt:
+        stored.authenticatedAt ||
+        new Date().toISOString()
+    });
+
+    updateSessionControl();
+
+    hideLoginScreen();
+
+    return true;
+
+  } catch (error) {
+
+    console.warn(
+      "Existing GoVara session could not be restored:",
+      error
+    );
+
+    clearFrontendSession();
+
+    return false;
+  }
+}
+
+
+/* ======================================================
+   STEP 29 — LOGOUT
+   ====================================================== */
+
+async function performLogout() {
+  const token =
+    GoVaraAppState.session &&
+    GoVaraAppState.session.sessionToken;
+
+  try {
+    if (token) {
+      await govaraAuthRequest(
+        "LOGOUT",
+        {},
+        token
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Backend logout request failed:",
+      error
+    );
+  }
+
+  clearFrontendSession();
+
+  GoVaraAppState.loggedIn =
+    false;
+
+  GoVaraAppState.role =
+    null;
+
+  GoVaraAppState.user =
+    null;
+
+  GoVaraAppState.session =
+    null;
+
+  GoVaraAppState.accessProfile =
+    null;
+
+  GoVaraAppState.currentPage =
+    "dashboard";
+
+  GoVaraAppState.authInitialized =
+    true;
+
+  updateSessionControl();
+
+  showLoginScreen(
+    "You have been logged out."
+  );
+}
+
+
+/* ======================================================
+   STEP 29 — ACCESS CONTROL
+   Backend remains authoritative.
+   Frontend only consumes the backend profile.
+   ====================================================== */
+
+function normalizeText(
+  value
+) {
+  return safeText(
+    value
+  )
+    .trim()
+    .toUpperCase()
+    .replace(
+      /[\s_-]+/g,
+      ""
+    );
+}
+
+
+function collectAccessValues(
+  source,
+  output
+) {
+  if (!source) {
+    return;
+  }
+
+  if (
+    typeof source ===
+    "string"
+  ) {
+    output.push(
+      normalizeText(source)
+    );
+
+    return;
+  }
+
+  if (
+    Array.isArray(source)
+  ) {
+    source.forEach(
+      function (item) {
         collectAccessValues(
-          profile,
-          values
+          item,
+          output
         );
+      }
+    );
 
-        const normalizedPage =
-          normalizeText(
-            page
-          );
+    return;
+  }
 
-        const aliases = [
-          normalizedPage,
-          "STEP" +
-            normalizedPage,
-          "PAGE" +
-            normalizedPage,
-          "MODULE" +
-            normalizedPage
-        ];
-
-        /*
-         * Administrator role may have an explicit
-         * backend-provided full-access indicator.
-         */
-
-        const fullAccessFlags = [
-          profile.allAccess,
-          profile.AllAccess,
-          profile.fullAccess,
-          profile.FullAccess,
-          profile.isSuperAdmin,
-          profile.IsSuperAdmin
-        ];
-
+  if (
+    typeof source ===
+    "object"
+  ) {
+    [
+      "code",
+      "Code",
+      "name",
+      "Name",
+      "module",
+      "Module",
+      "moduleCode",
+      "Module_Code",
+      "tab",
+      "Tab",
+      "tabCode",
+      "Tab_Code",
+      "page",
+      "Page",
+      "pageCode",
+      "Page_Code",
+      "permissionCode",
+      "Permission_Code",
+      "action",
+      "Action"
+    ].forEach(
+      function (key) {
         if (
-          fullAccessFlags.some(
-            function (flag) {
-              return flag === true;
-            }
-          )
+          source[key] !==
+            undefined &&
+          source[key] !==
+            null
         ) {
-          return true;
+          collectAccessValues(
+            source[key],
+            output
+          );
         }
-
-        return aliases.some(
-          function (alias) {
-            return values.indexOf(
-              normalizeText(alias)
-            ) !== -1;
-          }
-        );
       }
+    );
+  }
+}
 
-      function canOpenPage(
-        page
+
+function accessProfileAllowsPage(
+  page
+) {
+  /*
+   * Dashboard remains available after authentication.
+   */
+
+  if (
+    page ===
+    "dashboard"
+  ) {
+    return true;
+  }
+
+  const profile =
+    GoVaraAppState.accessProfile;
+
+  /*
+   * The frontend does not invent permissions.
+   * If the backend supplies no access profile,
+   * the safe behaviour is to deny protected pages.
+   */
+
+  if (!profile) {
+    return false;
+  }
+
+  const values = [];
+
+  collectAccessValues(
+    profile,
+    values
+  );
+
+  const normalizedPage =
+    normalizeText(
+      page
+    );
+
+  const aliases = [
+    normalizedPage,
+
+    "STEP" +
+      normalizedPage,
+
+    "PAGE" +
+      normalizedPage,
+
+    "MODULE" +
+      normalizedPage
+  ];
+
+  /*
+   * Administrator role may have an explicit
+   * backend-provided full-access indicator.
+   */
+
+  const fullAccessFlags = [
+    profile.allAccess,
+    profile.AllAccess,
+    profile.fullAccess,
+    profile.FullAccess,
+    profile.isSuperAdmin,
+    profile.IsSuperAdmin
+  ];
+
+  if (
+    fullAccessFlags.some(
+      function (flag) {
+        return flag === true;
+      }
+    )
+  ) {
+    return true;
+  }
+
+  return aliases.some(
+    function (alias) {
+      return values.indexOf(
+        normalizeText(alias)
+      ) !== -1;
+    }
+  );
+}
+
+
+function canOpenPage(
+  page
+) {
+  if (
+    !GoVaraAppState.loggedIn
+  ) {
+    return false;
+  }
+
+  /*
+   * The current Administrator Control Center
+   * remains backend-authorized.
+   */
+
+  return accessProfileAllowsPage(
+    page
+  );
+}
+
+
+/* ======================================================
+   Module Renderer
+   ====================================================== */
+
+function renderGoVaraModule(
+  moduleObject,
+  mountId
+) {
+  const mount =
+    document.getElementById(
+      mountId
+    );
+
+  if (!mount) {
+    console.error(
+      "GoVara mount element not found:",
+      mountId
+    );
+
+    return;
+  }
+
+  if (!moduleObject) {
+    mount.innerHTML = `
+      <div class="module-placeholder">
+        <h2>
+          Module Not Loaded
+        </h2>
+
+        <div class="muted">
+          The requested module JavaScript
+          is not available.
+        </div>
+      </div>
+    `;
+
+    console.error(
+      "GoVara module unavailable:",
+      mountId
+    );
+
+    return;
+  }
+
+  try {
+
+    if (
+      typeof moduleObject.renderAndBind ===
+      "function"
+    ) {
+      moduleObject.renderAndBind();
+
+      return;
+    }
+
+    if (
+      typeof moduleObject.render ===
+      "function"
+    ) {
+      const rendered =
+        moduleObject.render();
+
+      if (
+        rendered !==
+          undefined &&
+        rendered !==
+          null
       ) {
-        if (
-          !GoVaraAppState.loggedIn
-        ) {
-          return false;
-        }
-
-        /*
-         * The current Administrator Control Center
-         * remains backend-authorized.
-         */
-
-        return accessProfileAllowsPage(
-          page
-        );
+        mount.innerHTML =
+          safeText(
+            rendered
+          );
       }
+    }
 
-      /* ======================================================
-         Module Renderer
-         ====================================================== */
+    if (
+      typeof moduleObject.bind ===
+      "function"
+    ) {
+      moduleObject.bind();
+    }
 
-      function renderGoVaraModule(
-        moduleObject,
-        mountId
-      ) {
-        const mount =
-          document.getElementById(
-            mountId
-          );
+  } catch (error) {
 
-        if (!mount) {
-          console.error(
-            "GoVara mount element not found:",
-            mountId
-          );
+    console.error(
+      "GoVara module render error:",
+      error
+    );
 
-          return;
-        }
+    mount.innerHTML = `
+      <div class="module-placeholder">
+        <h2>
+          Module Error
+        </h2>
 
-        if (!moduleObject) {
-          mount.innerHTML = `
-            <div class="module-placeholder">
-              <h2>
-                Module Not Loaded
-              </h2>
-
-              <div class="muted">
-                The requested module JavaScript
-                is not available.
-              </div>
-            </div>
-          `;
-
-          console.error(
-            "GoVara module unavailable:",
-            mountId
-          );
-
-          return;
-        }
-
-        try {
-
-          if (
-            typeof moduleObject.renderAndBind ===
-            "function"
-          ) {
-            moduleObject.renderAndBind();
-
-            return;
-          }
-
-          if (
-            typeof moduleObject.render ===
-            "function"
-          ) {
-            const rendered =
-              moduleObject.render();
-
-            if (
-              rendered !==
-                undefined &&
-              rendered !==
-                null
-            ) {
-              mount.innerHTML =
-                safeText(
-                  rendered
-                );
-            }
-          }
-
-          if (
-            typeof moduleObject.bind ===
-            "function"
-          ) {
-            moduleObject.bind();
-          }
-
-        } catch (error) {
-
-          console.error(
-            "GoVara module render error:",
-            error
-          );
-
-          mount.innerHTML = `
-            <div class="module-placeholder">
-              <h2>
-                Module Error
-              </h2>
-
-              <div class="muted">
-                ${safeText(
-                  error &&
-                  error.message
-                    ? error.message
-                    : error
-                )}
-              </div>
-            </div>
-          `;
-        }
-      }
+        <div class="muted">
+          ${safeText(
+            error &&
+            error.message
+              ? error.message
+              : error
+          )}
+        </div>
+      </div>
+    `;
+  }
+}
 
       /* ======================================================
          Customer Module Renderer
@@ -4915,3 +5058,4 @@
 
 </body>
 </html>
+

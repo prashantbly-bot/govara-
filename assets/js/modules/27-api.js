@@ -1231,7 +1231,35 @@ if (sessionToken) {
       data
     );
   }
+async function getAccessProfile(
+  sessionToken
+) {
+  var token =
+    safeString(
+      sessionToken
+    ).trim();
 
+  if (!token) {
+    throw new Error(
+      'Session token is required to get access profile.'
+    );
+  }
+
+  APIState.lastAction =
+    'GET_ACCESS_PROFILE';
+
+  APIState.lastModule =
+    'SYSTEM';
+
+  return request(
+    'GET_ACCESS_PROFILE',
+    {
+      sessionToken:
+        token
+    }
+  );
+}
+  
   /* ==========================================================
    * 22. CUSTOMER LIST
    *

@@ -2973,129 +2973,148 @@
         return "";
       }
 
-      /* ======================================================
-         STEP 29 — RAW CONSOLIDATED API REQUEST
-         IMPORTANT:
-         Uses text/plain to preserve Apps Script
-         web-app CORS behaviour already established.
-         ====================================================== */
+     /* ======================================================
+   STEP 29 — RAW CONSOLIDATED API REQUEST
+   FIX:
+   Uses "payload" to match GoVara Consolidated API
+   contract in 23_Api.gs.
 
-      async function govaraAuthRequest(
-        action,
-        data,
-        sessionToken
-      ) {
-        const apiUrl =
-          getConsolidatedApiUrl();
+   Authentication:
+   sessionToken is also propagated at TOP LEVEL.
+   ====================================================== */
 
-        if (!apiUrl) {
-          throw new Error(
-            "Consolidated API endpoint is not configured."
-          );
+async function govaraAuthRequest(
+  action,
+  data,
+  sessionToken
+) {
+  const apiUrl =
+    getConsolidatedApiUrl();
+
+  if (!apiUrl) {
+    throw new Error(
+      "Consolidated API endpoint is not configured."
+    );
+  }
+
+  const payloadData =
+    data || {};
+
+  const payload = {
+    action: action,
+
+    payload:
+      payloadData
+  };
+
+  /*
+   * Backend authentication contract:
+   *
+   * request.sessionToken ||
+   * request.token
+   *
+   * Keep token at TOP LEVEL.
+   */
+  if (sessionToken) {
+    payload.sessionToken =
+      sessionToken;
+  }
+
+  const controller =
+    typeof AbortController !==
+    "undefined"
+      ? new AbortController()
+      : null;
+
+  let timeoutId = null;
+
+  if (controller) {
+    timeoutId =
+      setTimeout(
+        function () {
+          controller.abort();
+        },
+        20000
+      );
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        apiUrl,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "text/plain;charset=utf-8"
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            ),
+
+          signal:
+            controller
+              ? controller.signal
+              : undefined
         }
+      );
 
-        const payload = {
-          action: action,
-          data: data || {}
-        };
+    const responseText =
+      await response.text();
 
-        if (sessionToken) {
-          payload.sessionToken =
-            sessionToken;
-        }
+    let result =
+      safeJsonParse(
+        responseText
+      );
 
-        const controller =
-          typeof AbortController !==
-          "undefined"
-            ? new AbortController()
-            : null;
+    if (!result) {
+      throw new Error(
+        responseText ||
+        "Invalid API response."
+      );
+    }
 
-        let timeoutId = null;
+    if (
+      !response.ok &&
+      !result.success
+    ) {
+      throw new Error(
+        result.message ||
+        result.error ||
+        "Authentication API request failed."
+      );
+    }
 
-        if (controller) {
-          timeoutId =
-            setTimeout(
-              function () {
-                controller.abort();
-              },
-              20000
-            );
-        }
+    return result;
 
-        try {
-          const response =
-            await fetch(
-              apiUrl,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type":
-                    "text/plain;charset=utf-8"
-                },
-                body:
-                  JSON.stringify(
-                    payload
-                  ),
-                signal:
-                  controller
-                    ? controller.signal
-                    : undefined
-              }
-            );
+  } catch (error) {
 
-          const responseText =
-            await response.text();
+    if (
+      error &&
+      error.name ===
+        "AbortError"
+    ) {
+      throw new Error(
+        "Authentication request timed out."
+      );
+    }
 
-          let result =
-            safeJsonParse(
-              responseText
-            );
+    throw error;
 
-          if (!result) {
-            throw new Error(
-              responseText ||
-              "Invalid API response."
-            );
-          }
+  } finally {
 
-          if (
-            !response.ok &&
-            !result.success
-          ) {
-            throw new Error(
-              result.message ||
-              result.error ||
-              "Authentication API request failed."
-            );
-          }
+    if (timeoutId) {
+      clearTimeout(
+        timeoutId
+      );
+    }
 
-          return result;
-
-        } catch (error) {
-
-          if (
-            error &&
-            error.name ===
-              "AbortError"
-          ) {
-            throw new Error(
-              "Authentication request timed out."
-            );
-          }
-
-          throw error;
-
-        } finally {
-
-          if (timeoutId) {
-            clearTimeout(
-              timeoutId
-            );
-          }
-
-        }
-      }
-
+  }
+}
      /* ======================================================
    STEP 29 — RESPONSE EXTRACTION
    Handles the consolidated API response without

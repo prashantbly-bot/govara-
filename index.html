@@ -3956,43 +3956,22 @@ function accessProfileAllowsPage(
     GoVaraAppState.accessProfile;
 
   /*
-   * The frontend does not invent permissions.
-   * If the backend supplies no access profile,
-   * the safe behaviour is to deny protected pages.
+   * No backend access profile =
+   * protected page denied.
    */
 
   if (!profile) {
     return false;
   }
 
-  const values = [];
-
-  collectAccessValues(
-    profile,
-    values
-  );
-
   const normalizedPage =
     normalizeText(
       page
     );
 
-  const aliases = [
-    normalizedPage,
-
-    "STEP" +
-      normalizedPage,
-
-    "PAGE" +
-      normalizedPage,
-
-    "MODULE" +
-      normalizedPage
-  ];
-
   /*
-   * Administrator role may have an explicit
-   * backend-provided full-access indicator.
+   * Backend may provide an explicit
+   * full-access indicator.
    */
 
   const fullAccessFlags = [
@@ -4014,15 +3993,143 @@ function accessProfileAllowsPage(
     return true;
   }
 
+  /*
+   * Primary authorization source:
+   * Backend Modules.
+   *
+   * Example:
+   * Module_Code = 26B
+   * Module_Code = 28
+   * Module_Code = 27
+   */
+
+  if (
+    Array.isArray(
+      profile.modules
+    )
+  ) {
+    const moduleAllowed =
+      profile.modules.some(
+        function (module) {
+
+          if (!module) {
+            return false;
+          }
+
+          const moduleCode =
+            normalizeText(
+              module.Module_Code
+            );
+
+          const moduleName =
+            normalizeText(
+              module.Module_Name
+            );
+
+          return (
+            moduleCode ===
+              normalizedPage ||
+
+            moduleName ===
+              normalizedPage
+          );
+        }
+      );
+
+    if (moduleAllowed) {
+      return true;
+    }
+  }
+
+  /*
+   * Secondary authorization source:
+   * Backend Tabs.
+   *
+   * Route_Key is the direct frontend
+   * route mapping.
+   */
+
+  if (
+    Array.isArray(
+      profile.tabs
+    )
+  ) {
+    const tabAllowed =
+      profile.tabs.some(
+        function (tab) {
+
+          if (!tab) {
+            return false;
+          }
+
+          const tabCode =
+            normalizeText(
+              tab.Tab_Code
+            );
+
+          const routeKey =
+            normalizeText(
+              tab.Route_Key
+            );
+
+          const tabName =
+            normalizeText(
+              tab.Tab_Name
+            );
+
+          return (
+            tabCode ===
+              normalizedPage ||
+
+            routeKey ===
+              normalizedPage ||
+
+            tabName ===
+              normalizedPage
+          );
+        }
+      );
+
+    if (tabAllowed) {
+      return true;
+    }
+  }
+
+  /*
+   * Compatibility fallback for older
+   * access-profile structures.
+   */
+
+  const values = [];
+
+  collectAccessValues(
+    profile,
+    values
+  );
+
+  const aliases = [
+    normalizedPage,
+
+    "STEP" +
+      normalizedPage,
+
+    "PAGE" +
+      normalizedPage,
+
+    "MODULE" +
+      normalizedPage
+  ];
+
   return aliases.some(
     function (alias) {
       return values.indexOf(
-        normalizeText(alias)
+        normalizeText(
+          alias
+        )
       ) !== -1;
     }
   );
 }
-
 
 function canOpenPage(
   page

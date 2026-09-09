@@ -3171,74 +3171,58 @@ function extractSessionToken(
       result.result &&
         result.result.session,
 
-      result.result &&
-        result.result.authentication &&
-        result.result.authentication.session,
-
       result.payload &&
         result.payload.session
     ]);
 
   return firstString([
+    /* Direct response */
     result.sessionToken,
-    result.token,
     result.sessionId,
+    result.token,
 
+    /* Nested session */
     session &&
       session.sessionToken,
 
     session &&
-      session.token,
-
-    session &&
       session.sessionId,
 
-    result.authentication &&
-      result.authentication.sessionToken,
+    session &&
+      session.token,
 
+    /* authentication.session */
     result.authentication &&
-      result.authentication.token,
-
-    result.authentication &&
-      result.authentication.sessionId,
+      result.authentication.session &&
+      result.authentication.session.sessionToken,
 
     result.authentication &&
       result.authentication.session &&
-      result.authentication.sessionToken,
+      result.authentication.session.sessionId,
 
     result.authentication &&
       result.authentication.session &&
-      result.authentication.sessionId,
+      result.authentication.session.token,
 
+    /* data */
     result.data &&
       result.data.sessionToken,
 
     result.data &&
-      result.data.token,
-
-    result.data &&
       result.data.sessionId,
 
+    result.data &&
+      result.data.token,
+
+    /* result */
     result.result &&
       result.result.sessionToken,
-
-    result.result &&
-      result.result.token,
 
     result.result &&
       result.result.sessionId,
 
     result.result &&
-      result.result.session &&
-      result.result.sessionToken,
-
-    result.result &&
-      result.result.session &&
-      result.result.token,
-
-    result.result &&
-      result.result.session &&
-      result.result.sessionId
+      result.result.token
   ]);
 }
 

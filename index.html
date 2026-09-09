@@ -2997,27 +2997,10 @@ async function govaraAuthRequest(
     );
   }
 
-  const payloadData =
-    data || {};
-
- const payloadData =
-  data || {};
-
 const payload = {
   action: action,
-
-  payload:
-    payloadData
+  data: data || {}
 };
-
-if (
-  String(action).toUpperCase() ===
-  "LOGIN"
-) {
-  payload.data =
-    payloadData;
-}
-
 if (sessionToken) {
   payload.sessionToken =
     sessionToken;

@@ -136,16 +136,19 @@
    * ========================================================== */
 
   var ACTIONS = [
-    'GET_HEALTH',
-    'LIST',
-    'GET',
-    'VALIDATE',
-    'CREATE',
-    'UPDATE',
-    'CUSTOMER_REGISTER',
-    'GET_ACCESS_PROFILE'
-  ];
-
+  'GET_HEALTH',
+  'LIST',
+  'GET',
+  'VALIDATE',
+  'CREATE',
+  'UPDATE',
+  'CUSTOMER_REGISTER',
+  'LOGIN',
+  'LOGOUT',
+  'GET_SESSION',
+  'GET_CURRENT_USER',
+  'GET_ACCESS_PROFILE'
+];
   /* ==========================================================
    * 05. PROTECTED ACTIONS
    * ========================================================== */

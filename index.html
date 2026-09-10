@@ -3260,14 +3260,9 @@
         return "";
       }
 
-     /* ======================================================
+    /* ======================================================
    STEP 29 — RAW CONSOLIDATED API REQUEST
-   FIX:
-   Uses "payload" to match GoVara Consolidated API
-   contract in 23_Api.gs.
-
-   Authentication:
-   sessionToken is also propagated at TOP LEVEL.
+   Uses the same request contract as 27-api.js.
    ====================================================== */
 
 async function govaraAuthRequest(
@@ -3284,25 +3279,31 @@ async function govaraAuthRequest(
     );
   }
 
-const payload = {
-  action: action,
-  data: data || {}
-};
-if (sessionToken) {
-  payload.sessionToken =
-    sessionToken;
-}
-  /*
-   * Backend authentication contract:
-   *
-   * request.sessionToken ||
-   * request.token
-   *
-   * Keep token at TOP LEVEL.
-   */
+  const payload =
+    data || {};
+
+  const requestBody = {
+    action:
+      String(action)
+        .trim()
+        .toUpperCase(),
+
+    payload:
+      payload,
+
+    version:
+      "GOVARA-CONSOLIDATED-API-V6",
+
+    project:
+      "GoVara",
+
+    environment:
+      "TESTING"
+  };
+
   if (sessionToken) {
-    payload.sessionToken =
-      sessionToken;
+    requestBody.sessionToken =
+      String(sessionToken).trim();
   }
 
   const controller =
@@ -3338,7 +3339,7 @@ if (sessionToken) {
 
           body:
             JSON.stringify(
-              payload
+              requestBody
             ),
 
           signal:

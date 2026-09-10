@@ -1183,33 +1183,53 @@
 <body>
 
   <!-- =======================================================
-       STEP 29 — UNIFIED LOGIN
-       ======================================================= -->
+     STEP 29 + STEP 30 — UNIFIED LOGIN / BASIC SIGNUP
+     ======================================================= -->
 
+<div
+  id="govara-auth-overlay"
+  class="govara-auth-overlay"
+  aria-hidden="true"
+>
   <div
-    id="govara-auth-overlay"
-    class="govara-auth-overlay"
-    aria-hidden="true"
+    class="govara-auth-card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="govara-auth-title"
   >
-    <div
-      class="govara-auth-card"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="govara-auth-title"
-    >
-      <div class="govara-auth-brand">
-        <div class="govara-auth-mark">G</div>
 
-        <div>
-          <div class="govara-auth-brand-title">
-            GoVara
-          </div>
+    <!-- =================================================
+         AUTH BRAND
+         ================================================= -->
 
-          <div class="govara-auth-brand-subtitle">
-            Unified Authentication
-          </div>
-        </div>
+    <div class="govara-auth-brand">
+
+      <div class="govara-auth-mark">
+        G
       </div>
+
+      <div>
+
+        <div class="govara-auth-brand-title">
+          GoVara
+        </div>
+
+        <div class="govara-auth-brand-subtitle">
+          Unified Authentication
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         LOGIN PANEL
+         ================================================= -->
+
+    <div
+      id="govara-login-panel"
+    >
 
       <h1
         id="govara-auth-title"
@@ -1235,7 +1255,9 @@
         class="govara-auth-form"
         autocomplete="on"
       >
+
         <div class="govara-auth-group">
+
           <label for="govara-login-identifier">
             Username / Mobile / Email
           </label>
@@ -1248,9 +1270,12 @@
             placeholder="Enter username, mobile or email"
             required
           />
+
         </div>
 
+
         <div class="govara-auth-group">
+
           <label for="govara-login-password">
             Password
           </label>
@@ -1263,7 +1288,9 @@
             placeholder="Enter password"
             required
           />
+
         </div>
+
 
         <button
           id="govara-login-button"
@@ -1272,18 +1299,278 @@
         >
           Sign In
         </button>
+
       </form>
 
+
+      <!-- =============================================
+           STEP 30 — OPEN SIGNUP
+           ============================================= -->
+
+      <button
+        id="govara-show-signup-button"
+        type="button"
+        style="
+          width:100%;
+          margin-top:12px;
+          padding:11px 14px;
+          border:1px solid rgba(100,116,139,0.35);
+          border-radius:8px;
+          background:transparent;
+          cursor:pointer;
+          font-weight:600;
+        "
+      >
+        Create a new account
+      </button>
+
+
       <div class="govara-auth-safety">
+
         Backend authentication is authoritative.
         Frontend does not verify or generate passwords,
         roles, permissions or business identity.
         Real Money, Real Payment and Bank Transfer
         remain BLOCKED.
-      </div>
-    </div>
-  </div>
 
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         STEP 30 — BASIC SIGNUP PANEL
+         ================================================= -->
+
+    <div
+      id="govara-signup-panel"
+      style="display:none;"
+    >
+
+      <h1
+        class="govara-auth-title"
+      >
+        Create GoVara Account
+      </h1>
+
+      <div class="govara-auth-description">
+
+        Create a basic GoVara account as
+        Customer, Vendor or Driver.
+        Your profile and onboarding will be
+        completed after login.
+
+      </div>
+
+
+      <div
+        id="govara-signup-message"
+        class="govara-auth-message"
+      ></div>
+
+
+      <form
+        id="govara-signup-form"
+        class="govara-auth-form"
+        autocomplete="off"
+      >
+
+
+        <!-- ACCOUNT TYPE -->
+
+        <div class="govara-auth-group">
+
+          <label for="govara-signup-type">
+            Account Type
+          </label>
+
+          <select
+            id="govara-signup-type"
+            name="userType"
+            required
+          >
+
+            <option value="">
+              Select account type
+            </option>
+
+            <option value="CUSTOMER">
+              Customer
+            </option>
+
+            <option value="VENDOR">
+              Vendor
+            </option>
+
+            <option value="DRIVER">
+              Driver
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- NAME -->
+
+        <div class="govara-auth-group">
+
+          <label for="govara-signup-name">
+            Full Name
+          </label>
+
+          <input
+            id="govara-signup-name"
+            name="name"
+            type="text"
+            maxlength="150"
+            autocomplete="name"
+            placeholder="Enter your full name"
+            required
+          />
+
+        </div>
+
+
+        <!-- MOBILE -->
+
+        <div class="govara-auth-group">
+
+          <label for="govara-signup-mobile">
+            Mobile Number
+          </label>
+
+          <input
+            id="govara-signup-mobile"
+            name="mobile"
+            type="tel"
+            maxlength="15"
+            inputmode="numeric"
+            autocomplete="tel"
+            placeholder="Enter 10 digit mobile number"
+            required
+          />
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div class="govara-auth-group">
+
+          <label for="govara-signup-email">
+            Email
+          </label>
+
+          <input
+            id="govara-signup-email"
+            name="email"
+            type="email"
+            maxlength="150"
+            autocomplete="email"
+            placeholder="Optional"
+          />
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="govara-auth-group">
+
+          <label for="govara-signup-password">
+            Password
+          </label>
+
+          <input
+            id="govara-signup-password"
+            name="password"
+            type="password"
+            minlength="6"
+            maxlength="128"
+            autocomplete="new-password"
+            placeholder="Minimum 6 characters"
+            required
+          />
+
+        </div>
+
+
+        <!-- CONFIRM PASSWORD -->
+
+        <div class="govara-auth-group">
+
+          <label for="govara-signup-confirm-password">
+            Confirm Password
+          </label>
+
+          <input
+            id="govara-signup-confirm-password"
+            name="confirmPassword"
+            type="password"
+            minlength="6"
+            maxlength="128"
+            autocomplete="new-password"
+            placeholder="Re-enter password"
+            required
+          />
+
+        </div>
+
+
+        <!-- CREATE ACCOUNT -->
+
+        <button
+          id="govara-signup-button"
+          class="govara-auth-button"
+          type="submit"
+        >
+          Create Account
+        </button>
+
+      </form>
+
+
+      <!-- BACK TO LOGIN -->
+
+      <button
+        id="govara-show-login-button"
+        type="button"
+        style="
+          width:100%;
+          margin-top:12px;
+          padding:11px 14px;
+          border:1px solid rgba(100,116,139,0.35);
+          border-radius:8px;
+          background:transparent;
+          cursor:pointer;
+          font-weight:600;
+        "
+      >
+        Already have an account? Sign in
+      </button>
+
+
+      <div class="govara-auth-safety">
+
+        Account creation is controlled by the
+        authoritative GoVara backend.
+        Passwords are processed by the central
+        authentication system.
+        Profile, KYC and onboarding are completed
+        separately after login.
+
+        <br><br>
+
+        Real Money, Real Payment and Bank Transfer
+        remain BLOCKED.
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
   <!-- =======================================================
        SESSION CONTROL
        Appears only after successful authentication.

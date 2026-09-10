@@ -3260,9 +3260,9 @@
         return "";
       }
 
-    /* ======================================================
+   /* ======================================================
    STEP 29 — RAW CONSOLIDATED API REQUEST
-   Uses the same request contract as 27-api.js.
+   Compatible with existing 23_Api.gs
    ====================================================== */
 
 async function govaraAuthRequest(
@@ -3288,7 +3288,17 @@ async function govaraAuthRequest(
         .trim()
         .toUpperCase(),
 
+    /*
+     * Keep payload for Consolidated API contract.
+     */
     payload:
+      payload,
+
+    /*
+     * Existing backend 23_Api.gs
+     * currently reads request.data.
+     */
+    data:
       payload,
 
     version:

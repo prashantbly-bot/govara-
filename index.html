@@ -5064,11 +5064,381 @@ function renderGoVaraModule(
           }
         );
       }
+/* ======================================================
+   STEP 30 — BASIC SIGNUP UI
+   Login / Signup Panel Switching
+   API connection will be added later.
+   ====================================================== */
 
+function showSignupPanel() {
+
+  const loginPanel =
+    document.getElementById(
+      "govara-login-panel"
+    );
+
+  const signupPanel =
+    document.getElementById(
+      "govara-signup-panel"
+    );
+
+  const signupMessage =
+    document.getElementById(
+      "govara-signup-message"
+    );
+
+  if (!loginPanel || !signupPanel) {
+    return;
+  }
+
+  loginPanel.style.display =
+    "none";
+
+  signupPanel.style.display =
+    "block";
+
+  if (signupMessage) {
+    signupMessage.textContent =
+      "";
+    signupMessage.className =
+      "govara-auth-message";
+  }
+}
+
+
+function showLoginPanel() {
+
+  const loginPanel =
+    document.getElementById(
+      "govara-login-panel"
+    );
+
+  const signupPanel =
+    document.getElementById(
+      "govara-signup-panel"
+    );
+
+  if (!loginPanel || !signupPanel) {
+    return;
+  }
+
+  signupPanel.style.display =
+    "none";
+
+  loginPanel.style.display =
+    "block";
+
+  const identifier =
+    document.getElementById(
+      "govara-login-identifier"
+    );
+
+  if (identifier) {
+    identifier.focus();
+  }
+}
+
+
+/* ======================================================
+   STEP 30 — SIGNUP MESSAGE
+   ====================================================== */
+
+function setSignupMessage(
+  message,
+  type
+) {
+
+  const element =
+    document.getElementById(
+      "govara-signup-message"
+    );
+
+  if (!element) {
+    return;
+  }
+
+  element.textContent =
+    message || "";
+
+  element.className =
+    "govara-auth-message";
+
+  if (type) {
+    element.classList.add(
+      type
+    );
+  }
+}
+
+
+/* ======================================================
+   STEP 30 — SIGNUP FORM BINDING
+   UI + VALIDATION ONLY
+   ====================================================== */
+
+function bindSignupForm() {
+
+  const showSignupButton =
+    document.getElementById(
+      "govara-show-signup-button"
+    );
+
+  const showLoginButton =
+    document.getElementById(
+      "govara-show-login-button"
+    );
+
+  const form =
+    document.getElementById(
+      "govara-signup-form"
+    );
+
+  if (showSignupButton) {
+
+    showSignupButton.addEventListener(
+      "click",
+      function () {
+
+        showSignupPanel();
+
+      }
+    );
+
+  }
+
+
+  if (showLoginButton) {
+
+    showLoginButton.addEventListener(
+      "click",
+      function () {
+
+        showLoginPanel();
+
+      }
+    );
+
+  }
+
+
+  if (!form) {
+    return;
+  }
+
+
+  form.addEventListener(
+    "submit",
+    async function (event) {
+
+      event.preventDefault();
+
+
+      const typeElement =
+        document.getElementById(
+          "govara-signup-type"
+        );
+
+      const nameElement =
+        document.getElementById(
+          "govara-signup-name"
+        );
+
+      const mobileElement =
+        document.getElementById(
+          "govara-signup-mobile"
+        );
+
+      const emailElement =
+        document.getElementById(
+          "govara-signup-email"
+        );
+
+      const passwordElement =
+        document.getElementById(
+          "govara-signup-password"
+        );
+
+      const confirmPasswordElement =
+        document.getElementById(
+          "govara-signup-confirm-password"
+        );
+
+
+      const type =
+        typeElement
+          ? typeElement.value.trim().toUpperCase()
+          : "";
+
+      const name =
+        nameElement
+          ? nameElement.value.trim()
+          : "";
+
+      const mobile =
+        mobileElement
+          ? mobileElement.value.trim()
+          : "";
+
+      const email =
+        emailElement
+          ? emailElement.value.trim()
+          : "";
+
+      const password =
+        passwordElement
+          ? passwordElement.value
+          : "";
+
+      const confirmPassword =
+        confirmPasswordElement
+          ? confirmPasswordElement.value
+          : "";
+
+
+      setSignupMessage(
+        "",
+        ""
+      );
+
+
+      /* ================================================
+         BASIC VALIDATION
+         ================================================ */
+
+      if (
+        type !== "CUSTOMER" &&
+        type !== "VENDOR" &&
+        type !== "DRIVER"
+      ) {
+
+        setSignupMessage(
+          "Please select a valid account type.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (
+        !name ||
+        name.length < 2
+      ) {
+
+        setSignupMessage(
+          "Please enter your full name.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (!mobile) {
+
+        setSignupMessage(
+          "Mobile number is required.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      const normalizedMobile =
+        mobile
+          .replace(/\D/g, "")
+          .replace(/^91/, "");
+
+
+      if (
+        !/^[6-9][0-9]{9}$/.test(
+          normalizedMobile
+        )
+      ) {
+
+        setSignupMessage(
+          "Please enter a valid 10 digit Indian mobile number.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (
+        email &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+          email
+        )
+      ) {
+
+        setSignupMessage(
+          "Please enter a valid email address.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (
+        !password ||
+        password.length < 6
+      ) {
+
+        setSignupMessage(
+          "Password must contain at least 6 characters.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      if (
+        password !== confirmPassword
+      ) {
+
+        setSignupMessage(
+          "Password and Confirm Password do not match.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      /* ================================================
+         STEP 30 UI CHECK COMPLETE
+         ================================================ */
+
+      setSignupMessage(
+        "Signup details are valid. Backend signup will be connected in the next step.",
+        "success"
+      );
+
+
+      console.log(
+        "GoVara STEP 30 signup form validated.",
+        {
+          userType: type,
+          name: name,
+          mobile: normalizedMobile,
+          email: email
+        }
+      );
+
+    }
+  );
+}
       /* ======================================================
          STEP 29 — LOGIN FORM
          ====================================================== */
 
+
+
+      
       function bindLoginForm() {
 
         const form =
@@ -5312,6 +5682,8 @@ function renderGoVaraModule(
         bindSidebar();
 
         bindLoginForm();
+
+        bindSignupForm();
 
         bindLogout();
 

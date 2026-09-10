@@ -143,6 +143,7 @@
   'CREATE',
   'UPDATE',
   'CUSTOMER_REGISTER',
+    'BASIC_SIGNUP',
   'LOGIN',
   'LOGOUT',
   'GET_SESSION',
@@ -1264,7 +1265,7 @@ async function getAccessProfile(
 }
 
   /* ======================================================
-   STEP 30 — BASIC SIGNUP
+   STEP 31 — BASIC SIGNUP
    Customer / Vendor / Driver
    ====================================================== */
 
@@ -3810,10 +3811,13 @@ async function basicSignup(data) {
      */
 
     customerRegister:
-      customerRegister,
+  customerRegister,
 
-    customerList:
-      customerList,
+basicSignup:
+  basicSignup,
+
+customerList:
+  customerList,
 
     customerGet:
       customerGet,
@@ -3988,10 +3992,13 @@ async function basicSignup(data) {
      */
 
     customerRegister:
-      customerRegister,
+  customerRegister,
 
-    customerList:
-      customerList,
+basicSignup:
+  basicSignup,
+
+customerList:
+  customerList,
 
     customerGet:
       customerGet,

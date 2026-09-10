@@ -1262,6 +1262,23 @@ async function getAccessProfile(
     }
   );
 }
+
+  /* ======================================================
+   STEP 30 — BASIC SIGNUP
+   Customer / Vendor / Driver
+   ====================================================== */
+
+async function basicSignup(data) {
+
+  data = data || {};
+
+  APIState.lastModule = 'AUTH';
+
+  return request(
+    'BASIC_SIGNUP',
+    data
+  );
+}
   
   /* ==========================================================
    * 22. CUSTOMER LIST

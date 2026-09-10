@@ -1280,6 +1280,16 @@ async function basicSignup(data) {
     data
   );
 }
+  async function login(data) {
+  data = data || {};
+
+  APIState.lastModule = 'AUTH';
+
+  return request(
+    'LOGIN',
+    data
+  );
+}
   
   /* ==========================================================
    * 22. CUSTOMER LIST
@@ -3815,6 +3825,9 @@ async function basicSignup(data) {
 
 basicSignup:
   basicSignup,
+
+    login:
+      login,
 
 customerList:
   customerList,

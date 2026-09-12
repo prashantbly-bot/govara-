@@ -5424,21 +5424,116 @@ function bindSignupForm() {
          STEP 30 UI CHECK COMPLETE
          ================================================ */
 
+      /* ================================================
+         STEP 30 — BACKEND BASIC SIGNUP
+         ================================================ */
+
+      const signupButton =
+        document.getElementById(
+          "govara-signup-button"
+        );
+
+      if (signupButton) {
+        signupButton.disabled = true;
+      }
+
       setSignupMessage(
-        "Signup details are valid. Backend signup will be connected in the next step.",
-        "success"
+        "Creating your GoVara account...",
+        "info"
       );
 
+      try {
 
-      console.log(
-        "GoVara STEP 30 signup form validated.",
-        {
-          userType: type,
-          name: name,
-          mobile: normalizedMobile,
-          email: email
+        const result =
+          await govaraAuthRequest(
+            "BASIC_SIGNUP",
+            {
+              accountType: type,
+              userType: type,
+              name: name,
+              fullName: name,
+              mobile: normalizedMobile,
+              email: email,
+              password: password
+            }
+          );
+
+        console.log(
+          "GoVara STEP 30 BASIC_SIGNUP response:",
+          result
+        );
+
+        if (!isApiSuccess(result)) {
+
+          throw new Error(
+            extractApiError(result)
+          );
+
         }
-      );
+
+        setSignupMessage(
+          "Account created successfully. Please sign in with your mobile number and password.",
+          "success"
+        );
+
+        if (passwordElement) {
+          passwordElement.value = "";
+        }
+
+        if (confirmPasswordElement) {
+          confirmPasswordElement.value = "";
+        }
+
+        /*
+         * Give the user a short confirmation,
+         * then return to Login Window.
+         */
+        setTimeout(
+          function () {
+
+            const loginIdentifier =
+              document.getElementById(
+                "govara-login-identifier"
+              );
+
+            if (loginIdentifier) {
+              loginIdentifier.value =
+                normalizedMobile;
+            }
+
+            showLoginPanel();
+
+            setAuthMessage(
+              "Account created successfully. Please sign in.",
+              "success"
+            );
+
+          },
+          1200
+        );
+
+      } catch (error) {
+
+        console.error(
+          "GoVara STEP 30 BASIC_SIGNUP failed:",
+          error
+        );
+
+        setSignupMessage(
+          error &&
+          error.message
+            ? error.message
+            : "Account creation failed. Please try again.",
+          "error"
+        );
+
+      } finally {
+
+        if (signupButton) {
+          signupButton.disabled = false;
+        }
+
+      }
 
     }
   );

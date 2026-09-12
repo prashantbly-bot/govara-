@@ -1662,225 +1662,297 @@
 
   <div class="app-shell">
 
-    <!-- =====================================================
-         SIDEBAR
-         ===================================================== -->
+    ```html
+<!-- =====================================================
+     SIDEBAR
+     ===================================================== -->
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
-      <div class="sidebar-section-title">
-        Main
-      </div>
+  <div class="sidebar-section-title">
+    Main
+  </div>
 
-      <nav
-        id="govara-sidebar"
-        class="nav-list"
-        aria-label="GoVara Navigation"
-      >
+  <nav
+    id="govara-sidebar"
+    class="nav-list"
+    aria-label="GoVara Navigation"
+  >
 
-        <button
-          type="button"
-          class="nav-btn active"
-          data-page="dashboard"
-        >
-          <span class="nav-code">HOME</span>
+    <!-- HOME — always available -->
+    <button
+      type="button"
+      class="nav-btn active"
+      data-page="dashboard"
+      data-access="public"
+    >
+      <span class="nav-code">HOME</span>
 
-          <span class="nav-text">
-            <span class="nav-title">
-              Dashboard
-            </span>
-
-            <span class="nav-description">
-              Platform overview
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26A"
-        >
-          <span class="nav-code">26A</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              System Configuration
-            </span>
-
-            <span class="nav-description">
-              Platform identity & system controls
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26B"
-        >
-          <span class="nav-code">26B</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              User & Role Control
-            </span>
-
-            <span class="nav-description">
-              Roles, users & permissions
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26C"
-        >
-          <span class="nav-code">26C</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Business Policies
-            </span>
-
-            <span class="nav-description">
-              Fare, charges & business rules
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26D"
-        >
-          <span class="nav-code">26D</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Operations Control
-            </span>
-
-            <span class="nav-description">
-              Booking, duty & operations
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26E"
-        >
-          <span class="nav-code">26E</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Financial Control
-            </span>
-
-            <span class="nav-description">
-              Financial safety & controls
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26F"
-        >
-          <span class="nav-code">26F</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Documents & KYC
-            </span>
-
-            <span class="nav-description">
-              Documents, KYC & verification
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="26G"
-        >
-          <span class="nav-code">26G</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Audit & Monitoring
-            </span>
-
-            <span class="nav-description">
-              Audit events & system monitoring
-            </span>
-          </span>
-        </button>
-
-        <!-- =================================================
-             NEW CUSTOMER MODULE
-             ================================================= -->
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="28"
-        >
-          <span class="nav-code">28</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Customer
-            </span>
-
-            <span class="nav-description">
-              Customer registration & profile
-            </span>
-          </span>
-        </button>
-
-        <button
-          type="button"
-          class="nav-btn"
-          data-page="27"
-        >
-          <span class="nav-code">27</span>
-
-          <span class="nav-text">
-            <span class="nav-title">
-              Consolidated API
-            </span>
-
-            <span class="nav-description">
-              Single API boundary
-            </span>
-          </span>
-        </button>
-
-      </nav>
-
-      <div class="future-card">
-
-        <span class="future-badge">
-          NEXT
+      <span class="nav-text">
+        <span class="nav-title">
+          Dashboard
         </span>
 
-        <div class="future-title">
-          Modular Expansion
-        </div>
+        <span class="nav-description">
+          Platform overview
+        </span>
+      </span>
+    </button>
 
-        <div class="future-text">
-          New modules can be added without
-          rebuilding the entire frontend.
-        </div>
 
-      </div>
-    </aside>
+    <!-- 26A -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26A"
+      data-access="backend"
+    >
+      <span class="nav-code">26A</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          System Configuration
+        </span>
+
+        <span class="nav-description">
+          Platform identity & system controls
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 26B -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26B"
+      data-access="backend"
+    >
+      <span class="nav-code">26B</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          User & Role Control
+        </span>
+
+        <span class="nav-description">
+          Roles, users & permissions
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 26C -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26C"
+      data-access="backend"
+    >
+      <span class="nav-code">26C</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Business Policies
+        </span>
+
+        <span class="nav-description">
+          Fare, charges & business rules
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 26D -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26D"
+      data-access="backend"
+    >
+      <span class="nav-code">26D</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Operations Control
+        </span>
+
+        <span class="nav-description">
+          Booking, duty & operations
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 26E -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26E"
+      data-access="backend"
+    >
+      <span class="nav-code">26E</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Financial Control
+        </span>
+
+        <span class="nav-description">
+          Financial safety & controls
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 26F -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26F"
+      data-access="backend"
+    >
+      <span class="nav-code">26F</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Documents & KYC
+        </span>
+
+        <span class="nav-description">
+          Documents, KYC & verification
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 26G -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="26G"
+      data-access="backend"
+    >
+      <span class="nav-code">26G</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Audit & Monitoring
+        </span>
+
+        <span class="nav-description">
+          Audit events & system monitoring
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 28 CUSTOMER -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="28"
+      data-access="backend"
+    >
+      <span class="nav-code">28</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Customer
+        </span>
+
+        <span class="nav-description">
+          Customer registration & profile
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 29 VENDOR — future backend controlled -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="29"
+      data-access="backend"
+    >
+      <span class="nav-code">29</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Vendor
+        </span>
+
+        <span class="nav-description">
+          Vendor registration & profile
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 30 DRIVER — future backend controlled -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="30"
+      data-access="backend"
+    >
+      <span class="nav-code">30</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Driver
+        </span>
+
+        <span class="nav-description">
+          Driver registration & profile
+        </span>
+      </span>
+    </button>
+
+
+    <!-- 27 CONSOLIDATED API -->
+    <button
+      type="button"
+      class="nav-btn"
+      data-page="27"
+      data-access="backend"
+    >
+      <span class="nav-code">27</span>
+
+      <span class="nav-text">
+        <span class="nav-title">
+          Consolidated API
+        </span>
+
+        <span class="nav-description">
+          Single API boundary
+        </span>
+      </span>
+    </button>
+
+  </nav>
+
+
+  <div class="future-card">
+
+    <span class="future-badge">
+      NEXT
+    </span>
+
+    <div class="future-title">
+      Modular Expansion
+    </div>
+
+    <div class="future-text">
+      New modules can be added without
+      rebuilding the entire frontend.
+    </div>
+
+  </div>
+
+</aside>
+```
+
 
     <!-- =====================================================
          MAIN CONTENT
